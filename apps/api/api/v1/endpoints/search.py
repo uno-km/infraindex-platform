@@ -1,28 +1,31 @@
 from typing import Any
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_, ilike_op
+from sqlalchemy import select, or_
 from sqlalchemy.orm import selectinload
 
+from apps.api.core.limiter import limiter
 from apps.api.core.database import get_db
 from apps.api.models.offering import PricingPlan, InstanceOffering, OfferingGpuConfiguration
 from apps.api.models.hardware import GpuVariant, GpuModel
-from apps.api.schemas.search import SearchRequest, SearchResponse
+from apps.api.schemas.search import SearchResponse
 from apps.api.core.search.normalizer import QueryNormalizer
 from apps.api.core.search.alias_resolver import AliasResolver
 
 router = APIRouter()
 
-@router.post("/", response_model=SearchResponse)
-async def search_offers(
-    request: SearchRequest,
-    db: AsyncSession = Depends(get_db),
+@router.get("/gpus")
+@limiter.limit("5/minute")
+async def search_gpus(
+    request: Request,
+    q: str = Query(..., description="The search query (e.g. 'H100', '에이치백')"),
+    db: AsyncSession = Depends(get_db)
 ) -> Any:
     """
     Search for GPU rental offers using Advanced Search Engine.
     """
     # 1. Pipeline: Normalize & Resolve Alias
-    norm_q = QueryNormalizer.normalize(request.query) if getattr(request, 'query', None) else ""
+    norm_q = QueryNormalizer.normalize(q) if q else ""
     resolved_q = AliasResolver.resolve(norm_q)
     
     # 2. Base Query

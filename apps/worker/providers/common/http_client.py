@@ -1,6 +1,7 @@
 import random
 import httpx
 from typing import Optional, List
+from apps.worker.core.config import settings
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
@@ -18,7 +19,7 @@ class ProxyManager:
         self.current_index = 0
 
     def get_next_proxy(self) -> Optional[str]:
-        if not self.proxies:
+        if not self.proxies or not settings.USE_PROXY:
             return None
         proxy = self.proxies[self.current_index]
         self.current_index = (self.current_index + 1) % len(self.proxies)
@@ -26,7 +27,7 @@ class ProxyManager:
 
 class StealthHttpClient:
     """
-    HTTP Client with User-Agent spoofing and Proxy support.
+    HTTP Client with User-Agent spoofing and feature-flagged Proxy support.
     """
     def __init__(self, proxy_manager: Optional[ProxyManager] = None):
         self.proxy_manager = proxy_manager or ProxyManager()

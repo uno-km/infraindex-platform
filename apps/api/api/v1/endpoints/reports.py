@@ -9,6 +9,7 @@ from docx import Document
 from datetime import datetime
 
 from apps.api.core.database import get_db
+from apps.api.core.ai_service import generate_market_analysis
 
 router = APIRouter()
 
@@ -96,21 +97,22 @@ async def export_word(db: AsyncSession = Depends(get_db)) -> Any:
     row_cells[1].text = 'H100'
     row_cells[2].text = '$2.00'
     
-    # 2. HBM & Memory Prices
-    doc.add_heading('2. Global Memory & HBM Prices', level=1)
-    doc.add_paragraph('DDR5 128GB R-DIMM is currently trading at $320. HBM3E supply remains extremely constrained, driving spot prices up by 4% week-over-week.')
+    # 2. Daily Briefing text generated dynamically by AI
+    doc.add_heading('2. AI Macro Insight & Analysis', level=1)
     
-    # 3. Datacenter Real Estate & Power Grids
-    doc.add_heading('3. Power Grids & Datacenter News', level=1)
-    p = doc.add_paragraph()
-    p.add_run('US Electricity (Texas ERCOT): ').bold = True
-    p.add_run('$0.08 / kWh (Stable)\n')
-    p.add_run('South Korea (KEPCO Industrial): ').bold = True
-    p.add_run('160 KRW / kWh (Expected to rise 5% next month)\n')
+    # We fetch the JSON data first
+    brief_data = await get_daily_brief_json()
     
-    doc.add_heading('Global Datacenter News:', level=2)
-    doc.add_paragraph('- Amazon AWS announces $10B investment in Mississippi datacenter campuses.')
-    doc.add_paragraph('- Korean authorities restrict new high-density power permits in the Seoul metropolitan area.')
+    # Call the LLM to generate the report
+    ai_text = await generate_market_analysis(
+        news_data=brief_data["news"],
+        power_data=brief_data["power"],
+        memory_data=brief_data["memory"]
+    )
+    
+    # Split the AI text into paragraphs
+    for para in ai_text.split('\n\n'):
+        doc.add_paragraph(para.strip())
 
     stream = io.BytesIO()
     doc.save(stream)
