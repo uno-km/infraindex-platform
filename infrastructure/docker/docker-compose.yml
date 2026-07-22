@@ -4,15 +4,16 @@ services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: infraindex
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: infraindex
+      # FIX-03: 하드코딩 비밀번호 제거. 반드시 .env 파일 또는 환경변수로 주입할 것.
+      POSTGRES_USER: ${POSTGRES_USER:-infraindex}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:-infraindex}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U infraindex"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-infraindex}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -37,7 +38,13 @@ services:
       - "8000:8000"
     environment:
       - POSTGRES_SERVER=db
+      - POSTGRES_USER=${POSTGRES_USER:-infraindex}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      - POSTGRES_DB=${POSTGRES_DB:-infraindex}
       - REDIS_URL=redis://redis:6379/0
+      - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS:-["http://localhost:3000"]}
+      - ADMIN_API_KEY=${ADMIN_API_KEY:?ADMIN_API_KEY is required}
+      - USE_REAL_DB=True
     depends_on:
       db:
         condition: service_healthy
@@ -49,8 +56,27 @@ services:
       context: ../../
       dockerfile: apps/worker/Dockerfile
     environment:
-      - POSTGRES_SERVER=db
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-infraindex}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@db:5432/${POSTGRES_DB:-infraindex}
       - REDIS_URL=redis://redis:6379/0
+      - USE_REAL_DB=True
+      - USE_CELERY_QUEUE=True
+      - ENABLE_ALERTS=${ENABLE_ALERTS:-False}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  celery-beat:
+    build:
+      context: ../../
+      dockerfile: apps/worker/Dockerfile
+    command: celery -A apps.worker.celery_app beat --loglevel=info
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-infraindex}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@db:5432/${POSTGRES_DB:-infraindex}
+      - REDIS_URL=redis://redis:6379/0
+      - USE_REAL_DB=True
+      - USE_CELERY_QUEUE=True
     depends_on:
       db:
         condition: service_healthy

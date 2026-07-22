@@ -18,13 +18,17 @@ app.conf.update(
     result_serializer="json",
     timezone="UTC",
     enable_utc=True,
+    # Worker 안전성 설정
+    task_acks_late=True,
+    task_reject_on_worker_lost=True,
+    worker_prefetch_multiplier=1,
 )
 
+# FIX-04: task명을 실제 @shared_task(name=...) 선언과 일치시킴
+# orchestrator.py L47: @shared_task(name="orchestrator.tick")
 app.conf.beat_schedule = {
-    # Instead of static hourly runs, the orchestrator ticks every 5 minutes
-    # and checks the `ScheduleConfig` table to dispatch dynamic jobs.
     "orchestrator-tick": {
-        "task": "orchestrator.run_all_collections",
+        "task": "orchestrator.tick",  # 수정: run_all_collections → tick
         "schedule": crontab(minute="*/5"),
     },
 }
