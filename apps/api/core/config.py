@@ -28,20 +28,42 @@ class Settings(BaseSettings):
             return [o.strip() for o in v.split(",") if o.strip()]
         return v
 
-    # FIX-03: Database - 기본 비밀번호 제거. 미설정 시 시작 실패.
+    # FIX-03: Database Environments (Dev vs Prod)
+    ENVIRONMENT: str = os.environ.get("ENVIRONMENT", "dev") # 'dev' or 'prod'
+    
     POSTGRES_SERVER: str = "localhost"
     POSTGRES_USER: str = "infraindex"
-    POSTGRES_PASSWORD: str  # 기본값 없음 → env 필수
+    POSTGRES_PASSWORD: str = "testpass"  # Provided default for local dev
     POSTGRES_DB: str = "infraindex"
     POSTGRES_PORT: str = "5432"
+    
+    # Overrides for test DB
+    TEST_POSTGRES_DB: str = "infraindex_test"
+
+    @property
+    def db_name(self) -> str:
+        return self.POSTGRES_DB if self.ENVIRONMENT == "prod" else self.TEST_POSTGRES_DB
 
     @property
     def sync_database_uri(self) -> str:
-        return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+        return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.db_name}"
 
     @property
     def async_database_uri(self) -> str:
-        return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+        return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.db_name}"
+
+    # JWT Auth Config
+    JWT_SECRET_KEY: str = os.environ.get("JWT_SECRET_KEY", "super-secret-local-key")
+    JWT_ALGORITHM: str = "HS256"
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 # 1 day
+
+    # OAuth Config (Google, Naver, Kakao)
+    GOOGLE_CLIENT_ID: Optional[str] = None
+    GOOGLE_CLIENT_SECRET: Optional[str] = None
+    NAVER_CLIENT_ID: Optional[str] = None
+    NAVER_CLIENT_SECRET: Optional[str] = None
+    KAKAO_CLIENT_ID: Optional[str] = None
+    KAKAO_CLIENT_SECRET: Optional[str] = None
 
     # ---------------------------------------------------------
     # 🎯 FEATURE FLAGS (Loose Coupling / Environment Switching)

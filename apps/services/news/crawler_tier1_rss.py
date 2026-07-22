@@ -30,7 +30,26 @@ class NewsTier1Crawler(BaseProviderCrawler):
         logger.info("[Tier 1] Fetching RSS Feeds...")
         raw_articles = []
         
-        for feed_info in self.FEEDS:
+        # Load from DB instead of hardcoded
+        feeds_to_fetch = self.FEEDS
+        from apps.api.core.database import AsyncSessionLocal
+        from sqlalchemy import select
+        from apps.api.models.system_config import CrawlerConfig
+        
+        if AsyncSessionLocal:
+            async with AsyncSessionLocal() as session:
+                result = await session.execute(select(CrawlerConfig).where(CrawlerConfig.name == "tier1_rss"))
+                cfg = result.scalar_one_or_none()
+                if cfg and cfg.is_active and cfg.target_urls:
+                    urls = [u.strip() for u in cfg.target_urls.split(",") if u.strip()]
+                    if urls:
+                        # Override hardcoded feeds
+                        feeds_to_fetch = [{"source": "DB Configured", "url": u} for u in urls]
+                elif cfg and not cfg.is_active:
+                    logger.info("[Tier 1] Crawler is deactivated in DB. Skipping.")
+                    return []
+        
+        for feed_info in feeds_to_fetch:
             # We use asyncio.to_thread because feedparser is blocking
             feed = await asyncio.to_thread(feedparser.parse, feed_info["url"])
             

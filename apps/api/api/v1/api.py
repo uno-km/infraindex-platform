@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from apps.api.api.v1.endpoints import search, history, admin, memory, storage, chat, chart, stream, health, reports, traffic
+from apps.api.api.v1.endpoints import search, history, admin, memory, storage, chat, chart, stream, health, reports, traffic, auth
 
 # Imported from Domain Services
 from apps.services.gpu import router_providers as providers
@@ -22,6 +22,7 @@ api_router.include_router(chart.router, prefix="/chart", tags=["chart"])
 api_router.include_router(stream.router, prefix="/stream", tags=["stream"])
 api_router.include_router(reports.router, prefix="/reports", tags=["reports"])
 api_router.include_router(traffic.router, prefix="/traffic", tags=["traffic"])
+api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
 
 # CPU/Baremetal (formerly resources)
 api_router.include_router(cpu_router, prefix="/cpu", tags=["cpu"])
