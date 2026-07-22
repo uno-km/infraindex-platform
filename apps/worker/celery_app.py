@@ -28,7 +28,7 @@ app.conf.update(
 # orchestrator.py L47: @shared_task(name="orchestrator.tick")
 app.conf.beat_schedule = {
     "orchestrator-tick": {
-        "task": "orchestrator.tick",  # 수정: run_all_collections → tick
-        "schedule": crontab(minute="*/5"),
+        "task": "orchestrator.tick",
+        "schedule": crontab(minute="0", hour="9,13,18"),
     },
 }
