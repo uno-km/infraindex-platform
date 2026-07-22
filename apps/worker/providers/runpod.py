@@ -16,12 +16,19 @@ class RunpodCrawler(BaseProviderCrawler):
         return raw_data.get("data", {}).get("gpuTypes", [])
 
     def normalize_pricing(self, parsed_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        from apps.worker.core.hardware_specs import enrich_hardware_specs
         normalized = []
         for instance in parsed_data:
+            gpu_name = instance.get("id", "Unknown")
+            specs = enrich_hardware_specs(gpu_name)
+            
             normalized.append({
-                "gpu_model": instance.get("id"),
+                "gpu_model": gpu_name,
                 "vram_gb": instance.get("memoryInGb", 0),
                 "price_per_hour": instance.get("securePrice", 0.0),
-                "availability_status": "available"
+                "availability_status": "available",
+                "provider_link": "https://www.runpod.io/console/gpu-cloud",
+                "sys_ram_gb": specs["sys_ram_gb"],
+                "tdp_w": specs["tdp_w"]
             })
         return normalized

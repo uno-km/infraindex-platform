@@ -18,6 +18,9 @@ class PriceHistory(Base, UUIDMixin):
     vram_gb: Mapped[float] = mapped_column(Float)
     price_per_hour: Mapped[float] = mapped_column(Float)
     availability_status: Mapped[str] = mapped_column(String(50))
+    provider_link: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    sys_ram_gb: Mapped[float | None] = mapped_column(Float, nullable=True)
+    tdp_w: Mapped[float | None] = mapped_column(Float, nullable=True)
     timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
 
     __table_args__ = (

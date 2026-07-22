@@ -7,13 +7,35 @@ from apps.api.core.config import settings
 class DataService:
     """
     Data Access Layer that abstracts where data comes from.
-    If USE_REAL_DB is False, it reads from the latest JSON files in data/.
     """
     @staticmethod
     async def get_latest_prices() -> List[Dict[str, Any]]:
         if settings.USE_REAL_DB:
-            # TODO: Implement Postgres reading logic
-            return []
+            from sqlalchemy.ext.asyncio import AsyncSession
+            from apps.api.core.database import SessionLocal
+            from apps.api.models.history import PriceHistory
+            from sqlalchemy import select, desc
+            
+            all_records = []
+            async with SessionLocal() as db:
+                # 간단히 최근 500개 레코드를 가져옵니다. 
+                # (실제로는 provider, gpu별 최신값을 서브쿼리로 가져와야 함)
+                result = await db.execute(
+                    select(PriceHistory).order_by(desc(PriceHistory.timestamp)).limit(500)
+                )
+                rows = result.scalars().all()
+                for r in rows:
+                    all_records.append({
+                        "provider": r.provider_id,
+                        "gpu_model": r.gpu_model,
+                        "vram_gb": r.vram_gb,
+                        "price_per_hour": r.price_per_hour,
+                        "availability_status": r.availability_status,
+                        "provider_link": r.provider_link,
+                        "sys_ram_gb": r.sys_ram_gb,
+                        "tdp_w": r.tdp_w,
+                    })
+            return all_records
             
         # Serverless Mode: Read from JSON
         data_dir = settings.LOCAL_STORAGE_DIR
@@ -24,7 +46,6 @@ class DataService:
         providers = ["vast-ai", "runpod", "aws"]
         
         for provider in providers:
-            # Find the most recent file for the provider
             files = glob.glob(os.path.join(data_dir, f"{provider}_*.json"))
             if not files:
                 continue
@@ -33,6 +54,10 @@ class DataService:
             try:
                 with open(latest_file, "r", encoding="utf-8") as f:
                     records = json.load(f)
+                    # JSON에는 provider 필드가 없을 수 있으므로 주입
+                    for r in records:
+                        if "provider" not in r:
+                            r["provider"] = provider
                     all_records.extend(records)
             except Exception as e:
                 print(f"Error reading {latest_file}: {e}")
@@ -41,8 +66,6 @@ class DataService:
 
     @staticmethod
     def _parse_vram(gpu_name: str) -> int:
-        """Heuristic to extract VRAM from GPU name if possible."""
-        # Simple extraction for UI purposes
         import re
         match = re.search(r'(\d+)GB', gpu_name, re.IGNORECASE)
         if match:
@@ -54,7 +77,6 @@ class DataService:
         """Aggregates raw records into a nice structure for the UI dashboard."""
         records = await DataService.get_latest_prices()
         
-        # Group by GPU Name
         gpu_map = {}
         for r in records:
             gpu_name = r.get("gpu_model") or r.get("gpu_name") or "Unknown GPU"
@@ -72,7 +94,6 @@ class DataService:
                     "offers": []
                 }
             
-            # Availability status could be boolean or string
             avail = r.get("availability_status")
             is_avail = avail if isinstance(avail, bool) else (str(avail).lower() == "available")
             
@@ -80,7 +101,10 @@ class DataService:
                 "provider": r.get("provider", "Unknown"),
                 "price_per_hour": float(r.get("price_per_hour", 0.0)),
                 "is_available": is_avail,
-                "region": r.get("region", "global")
+                "region": r.get("region", "global"),
+                "provider_link": r.get("provider_link"),
+                "sys_ram_gb": r.get("sys_ram_gb"),
+                "tdp_w": r.get("tdp_w"),
             })
             
         return list(gpu_map.values())

@@ -17,16 +17,25 @@ class VastCrawler(BaseProviderCrawler):
         return offers
 
     def normalize_pricing(self, parsed_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        from apps.worker.core.hardware_specs import enrich_hardware_specs
         normalized = []
         for instance in parsed_data:
             gpu_name = instance.get("gpu_name")
             if not gpu_name:
                 continue
                 
+            specs = enrich_hardware_specs(gpu_name)
+            sys_ram_gb = instance.get("cpu_ram", 0) / 1024.0
+            if sys_ram_gb < 1:
+                sys_ram_gb = specs["sys_ram_gb"]
+
             normalized.append({
                 "gpu_model": gpu_name,
                 "vram_gb": instance.get("gpu_ram", 0) / 1024.0,
                 "price_per_hour": instance.get("dph_total", 0.0),
-                "availability_status": "available" if instance.get("rentable") else "unavailable"
+                "availability_status": "available" if instance.get("rentable") else "unavailable",
+                "provider_link": "https://console.vast.ai/console/create/",
+                "sys_ram_gb": round(sys_ram_gb, 1),
+                "tdp_w": specs["tdp_w"]
             })
         return normalized
