@@ -56,6 +56,10 @@ class Settings(BaseSettings):
     # 미설정 시 admin 엔드포인트가 503을 반환하여 무방비 노출 방지
     ADMIN_API_KEY: Optional[str] = None
 
+    # P3-001: LLM API Keys (Chat NLP 엔진)
+    OPENAI_API_KEY: Optional[str] = None   # GPT-4o-mini 사용 시 필요
+    GEMINI_API_KEY: Optional[str] = None   # Gemini Flash 폴백 시 필요
+
     class Config:
         case_sensitive = True
         env_file = ".env"

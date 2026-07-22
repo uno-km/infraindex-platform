@@ -1,0 +1,185 @@
+groups:
+  # ─────────────────────────────────────────────────────────
+  # P3-004: InfraIndex Prometheus Alert Rules
+  # ─────────────────────────────────────────────────────────
+
+  - name: infraindex.api
+    interval: 30s
+    rules:
+
+      # API 가용성
+      - alert: APIDown
+        expr: up{job="infraindex-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "InfraIndex API is DOWN"
+          description: "API pod {{ $labels.instance }} has been unreachable for more than 1 minute."
+          runbook: "https://github.com/your-org/infraindex/wiki/runbooks/api-down"
+
+      # 높은 에러율
+      - alert: APIHighErrorRate
+        expr: |
+          rate(http_requests_total{job="infraindex-api", status=~"5.."}[5m])
+          / rate(http_requests_total{job="infraindex-api"}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "API 5xx error rate > 5%"
+          description: "Error rate is {{ $value | humanizePercentage }} for {{ $labels.instance }}"
+
+      # 높은 레이턴시
+      - alert: APIHighLatency
+        expr: |
+          histogram_quantile(0.95,
+            rate(http_request_duration_seconds_bucket{job="infraindex-api"}[5m])
+          ) > 2.0
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "API p95 latency > 2s"
+          description: "p95 latency is {{ $value }}s on {{ $labels.instance }}"
+
+      # Health check 실패
+      - alert: HealthCheckUnhealthy
+        expr: |
+          infraindex_health_status{dependency="database"} == 0
+          or infraindex_health_status{dependency="redis"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Health check dependency {{ $labels.dependency }} is unhealthy"
+          description: "Dependency {{ $labels.dependency }} has been failing for 2+ minutes."
+
+  - name: infraindex.worker
+    interval: 60s
+    rules:
+
+      # Celery 워커 다운
+      - alert: CeleryWorkerDown
+        expr: up{job="infraindex-worker"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Celery worker is DOWN"
+          description: "Worker {{ $labels.instance }} unreachable for 2 minutes. Crawling will stop."
+
+      # 수집 실패율 높음
+      - alert: CrawlerHighFailureRate
+        expr: |
+          rate(celery_tasks_failed_total{task=~"orchestrator.*"}[30m])
+          / (rate(celery_tasks_succeeded_total{task=~"orchestrator.*"}[30m])
+             + rate(celery_tasks_failed_total{task=~"orchestrator.*"}[30m])) > 0.3
+        for: 10m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Crawler failure rate > 30% (30m window)"
+          description: "Failure rate is {{ $value | humanizePercentage }}. Check provider APIs."
+
+      # Outbox 이벤트 적체
+      - alert: OutboxEventBacklog
+        expr: infraindex_outbox_pending_total > 1000
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Outbox event backlog > 1000"
+          description: "{{ $value }} unprocessed events in outbox. Outbox publisher may be down."
+
+      # Celery Beat 미실행 (수집 일정 누락)
+      - alert: CeleryBeatMissed
+        expr: |
+          time() - celery_beat_last_run_at{task="orchestrator-tick"} > 7200
+        for: 0m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Celery Beat orchestrator-tick not run for 2+ hours"
+          description: "Last run was {{ $value | humanizeDuration }} ago. Data may be stale."
+
+  - name: infraindex.database
+    interval: 60s
+    rules:
+
+      # DB 연결 포화
+      - alert: PostgresConnectionsHigh
+        expr: |
+          pg_stat_activity_count{datname="infraindex"}
+          / pg_settings_max_connections > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "PostgreSQL connection usage > 80%"
+          description: "Connection usage is {{ $value | humanizePercentage }}"
+
+      # price_history 테이블 미업데이트 (데이터 신선도)
+      - alert: PriceDataStale
+        expr: |
+          time() - infraindex_price_history_last_insert_timestamp > 21600
+        for: 0m
+        labels:
+          severity: warning
+          team: data
+        annotations:
+          summary: "price_history table not updated for 6+ hours"
+          description: "Last insert was {{ $value | humanizeDuration }} ago. Check crawlers."
+
+      # Outbox 미처리 이벤트 오래됨
+      - alert: OutboxOldUnprocessedEvents
+        expr: |
+          infraindex_outbox_oldest_unprocessed_age_seconds > 3600
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Oldest unprocessed outbox event is 1+ hour old"
+          description: "Events are not being published. Check outbox publisher Celery task."
+
+  - name: infraindex.security
+    interval: 120s
+    rules:
+
+      # 관리자 API 접근 급증 (브루트포스 탐지)
+      - alert: AdminAPIBruteForce
+        expr: |
+          rate(http_requests_total{
+            job="infraindex-api",
+            handler=~".*/admin/.*",
+            status="403"
+          }[5m]) > 0.5
+        for: 2m
+        labels:
+          severity: critical
+          team: security
+        annotations:
+          summary: "Admin API 403 spike — possible brute force"
+          description: "More than 30 failed admin auth attempts in 5 minutes from {{ $labels.instance }}"
+
+      # Rate limit 발동 급증
+      - alert: RateLimitSpike
+        expr: |
+          rate(http_requests_total{job="infraindex-api", status="429"}[5m]) > 1.0
+        for: 3m
+        labels:
+          severity: warning
+          team: security
+        annotations:
+          summary: "Rate limit (429) spike detected"
+          description: "Rate limit triggered {{ $value | humanize }} times/sec. Possible scraping."
