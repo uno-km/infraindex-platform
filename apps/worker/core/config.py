@@ -1,34 +1,20 @@
+import os
 from pydantic_settings import BaseSettings
 
 class WorkerSettings(BaseSettings):
-    REDIS_URL: str = "redis://localhost:6379/0"
+    # 전역 Feature Flags (Loose Coupling)
+    USE_REAL_DB: bool = os.environ.get("USE_REAL_DB", "False").lower() == "true"
+    USE_CELERY_QUEUE: bool = os.environ.get("USE_CELERY_QUEUE", "False").lower() == "true"
+    ENABLE_ALERTS: bool = os.environ.get("ENABLE_ALERTS", "False").lower() == "true"
+    USE_PROXY: bool = os.environ.get("USE_PROXY", "False").lower() == "true"
     
-    # DB (Same as API, used if workers write directly to DB instead of via API)
-    POSTGRES_SERVER: str = "localhost"
-    POSTGRES_USER: str = "infraindex"
-    POSTGRES_PASSWORD: str = "password"
-    POSTGRES_DB: str = "infraindex"
-    POSTGRES_PORT: str = "5432"
+    # DB / Redis (Only used if flags are True)
+    REDIS_URL: str = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
+    DATABASE_URL: str = os.environ.get("DATABASE_URL", "")
     
-    # ---------------------------------------------------------
-    # 🎯 FEATURE FLAGS (Loose Coupling / Environment Switching)
-    # ---------------------------------------------------------
-    # If False, drops JSON files locally (Zero cost serverless mode). If True, saves to PostgreSQL.
-    USE_REAL_DB: bool = False
-    
-    # If False, runs synchronously like a normal script. If True, dispatches to Redis/Celery queue.
-    USE_CELERY_QUEUE: bool = False
-    
-    # If False, logs to console only. If True, sends Discord/Telegram Webhooks.
-    ENABLE_ALERTS: bool = False
-    
-    # If False, uses local IP. If True, routes traffic through rotating proxy lists.
-    USE_PROXY: bool = False
-    
-    # Circuit Breaker defaults
-    CB_FAILURE_THRESHOLD: int = 5
-    CB_RECOVERY_TIMEOUT: int = 60
-    
+    # Local Storage path (for USE_REAL_DB=False)
+    LOCAL_STORAGE_DIR: str = os.path.join(os.getcwd(), "data")
+
     class Config:
         env_file = ".env"
 

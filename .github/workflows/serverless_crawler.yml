@@ -1,0 +1,38 @@
+name: Serverless Macro Crawler
+
+on:
+  schedule:
+    # 매일 자정(UTC 0시 = 한국 밤 9시)에 실행
+    - cron: '0 0 * * *'
+  workflow_dispatch: # 수동 실행 버튼
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Run Crawler (Zero-Cost Mode)
+        env:
+          USE_REAL_DB: "False"
+          USE_CELERY_QUEUE: "False"
+        run: |
+          python apps/worker/run_local.py
+          
+      - name: Commit and Push JSON Data
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add data/
+          git commit -m "Auto-update: Crawler data [skip ci]" || echo "No changes to commit"
+          git push

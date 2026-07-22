@@ -1,0 +1,39 @@
+services:
+  # 1. FastAPI Web Service
+  - type: web
+    name: infraindex-platform-api
+    env: docker
+    dockerfilePath: apps/api/Dockerfile
+    plan: free
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: BACKEND_CORS_ORIGINS
+        value: '["https://your-vercel-domain.vercel.app", "http://localhost:3000"]'
+
+  # 2. Celery Worker Service
+  - type: worker
+    name: infraindex-platform-worker
+    env: docker
+    dockerfilePath: apps/worker/Dockerfile
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        fromService:
+          type: web
+          name: infraindex-platform-api
+          envVarKey: DATABASE_URL
+      - key: REDIS_URL
+        fromService:
+          type: web
+          name: infraindex-platform-api
+          envVarKey: REDIS_URL
+      - key: USE_CELERY_QUEUE
+        value: "True"
+      - key: USE_REAL_DB
+        value: "True"

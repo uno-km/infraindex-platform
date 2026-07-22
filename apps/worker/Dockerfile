@@ -16,4 +16,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY apps/api /app/apps/api
 COPY apps/worker /app/apps/worker
 
-CMD ["celery", "-A", "apps.worker.celery_app", "worker", "--loglevel=info"]
+# Optimize for 512MB RAM (Free Tier) by restricting concurrency
+CMD ["celery", "-A", "apps.worker.celery_app", "worker", "--loglevel=info", "--concurrency=2", "--max-tasks-per-child=10"]

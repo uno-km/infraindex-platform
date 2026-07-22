@@ -1,31 +1,26 @@
-import sys
+import asyncio
 import logging
-from apps.worker.core.config import settings
 from apps.worker.tasks.orchestrator import execute_extraction
+from apps.worker.core.config import settings
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-logger = logging.getLogger("run_local")
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-def main():
+async def run_all():
     """
-    Entrypoint for serverless/cron environments.
-    Bypasses Celery completely and runs extraction sequentially.
+    Serverless Entrypoint.
+    Runs all crawlers sequentially without Celery or Redis.
     """
-    if settings.USE_CELERY_QUEUE:
-        logger.warning("USE_CELERY_QUEUE is True, but you are running the local script. Are you sure?")
-        
+    logger.info(f"Starting Local Serverless Run (USE_REAL_DB={settings.USE_REAL_DB})")
     providers = ["vast-ai", "runpod", "aws"]
     
-    logger.info("Starting local extraction run for all providers...")
     for provider in providers:
         try:
-            execute_extraction(provider)
+            await execute_extraction(provider)
         except Exception as e:
-            logger.error(f"Failed to extract from {provider}: {e}")
-            # Continue to next provider even if one fails
-            continue
+            logger.error(f"Failed to process {provider}: {e}")
             
-    logger.info("Local extraction run complete!")
+    logger.info("Local run completed.")
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(run_all())
