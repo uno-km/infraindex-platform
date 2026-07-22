@@ -13,7 +13,7 @@ from docx.shared import Pt, RGBColor
 
 from apps.api.core.database import get_db
 from apps.api.core.ai_service import generate_market_analysis
-from apps.api.models.history import PriceHistory
+from apps.services.gpu.models_history import PriceHistory
 
 router = APIRouter()
 

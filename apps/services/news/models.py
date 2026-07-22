@@ -19,6 +19,7 @@ class NewsArticle(Base, UUIDMixin):
     published_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True, nullable=False)
     summary: Mapped[str | None] = mapped_column(Text, nullable=True)
     keywords: Mapped[str | None] = mapped_column(String(500), nullable=True) # 콤마 분리된 키워드 등
+    collection_tier: Mapped[str | None] = mapped_column(String(50), nullable=True, default="tier1_rss") # e.g. "tier1_rss", "tier2_api", "tier3_scraper"
     
     timestamp: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), index=True, nullable=False

@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from celery import shared_task
 from apps.worker.core.config import settings
 from apps.worker.core.storage import get_storage
-from apps.worker.providers.financial import StockMarketCrawler, DramFuturesCrawler
+from apps.services.financial.crawler import StockMarketCrawler, DramFuturesCrawler
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ async def execute_financial_extraction(provider_slug: str):
         # Storage doesn't have an explicit save_financial method yet, we'll update storage.py or just use SQLAlchemy directly for now
         if settings.USE_REAL_DB and settings.DATABASE_URL:
             from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-            from apps.api.models.financial import FinancialMarketHistory
+            from apps.services.financial.models import FinancialMarketHistory
             
             db_url = settings.DATABASE_URL
             if db_url.startswith("postgresql://") and "+asyncpg" not in db_url:

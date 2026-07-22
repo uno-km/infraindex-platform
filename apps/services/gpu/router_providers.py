@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from apps.api.core.database import get_db
-from apps.api.models.provider import Provider
+from apps.services.gpu.models_provider import Provider
 from apps.api.schemas.provider import ProviderResponse, ProviderDetailResponse
 
 router = APIRouter()

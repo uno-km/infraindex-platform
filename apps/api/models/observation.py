@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from apps.api.models.offering import PricingPlan
+    from apps.services.gpu.models_offering import PricingPlan
 
 class PriceObservation(Base, UUIDMixin, TimeStampMixin):
     __tablename__ = "price_observations"

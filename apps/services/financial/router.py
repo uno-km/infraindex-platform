@@ -5,9 +5,9 @@ from typing import List, Dict, Any
 from datetime import datetime, timedelta, timezone
 
 from apps.api.core.database import get_db
-from apps.api.models.financial import FinancialMarketHistory
-from apps.api.models.history import PriceHistory
-from apps.api.models.retail import RetailPriceHistory
+from apps.services.financial.models import FinancialMarketHistory
+from apps.services.gpu.models_history import PriceHistory
+from apps.services.retail.models import RetailPriceHistory
 
 router = APIRouter()
 

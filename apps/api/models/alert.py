@@ -4,7 +4,7 @@ from apps.api.models.base import Base, UUIDMixin, TimeStampMixin
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from apps.api.models.hardware import GpuModel
+    from apps.services.gpu.models_hardware import GpuModel
 
 class PriceAlert(Base, UUIDMixin, TimeStampMixin):
     __tablename__ = "price_alerts"

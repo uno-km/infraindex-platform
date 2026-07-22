@@ -106,7 +106,7 @@ class PostgresStorage(BaseStorage):
             logger.info(f"[{provider_slug}] No data to save.")
             return
 
-        from apps.api.models.history import PriceHistory
+        from apps.services.gpu.models_history import PriceHistory
         from apps.api.models.outbox import OutboxEvent
 
         _, SessionLocal = _ensure_pg_engine()

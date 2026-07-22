@@ -80,3 +80,45 @@ async def get_retail_ohlc(
         })
         
     return chart_data
+
+@router.get("/enterprise")
+async def get_enterprise_hardware(
+    db: AsyncSession = Depends(get_db)
+) -> List[Dict[str, Any]]:
+    """
+    Get the latest prices for Enterprise B2B Hardware (H100, B200, DGX).
+    """
+    stmt = """
+    WITH RankedPrices AS (
+        SELECT 
+            model_name,
+            platform,
+            price,
+            capacity_gb,
+            product_url,
+            is_official,
+            timestamp,
+            ROW_NUMBER() OVER(PARTITION BY model_name, platform ORDER BY timestamp DESC) as rn
+        FROM retail_price_history
+        WHERE hardware_type = 'enterprise_gpu'
+    )
+    SELECT * FROM RankedPrices WHERE rn = 1;
+    """
+    
+    from sqlalchemy import text
+    result = await db.execute(text(stmt))
+    rows = result.fetchall()
+    
+    hardware = []
+    for row in rows:
+        hardware.append({
+            "model_name": row.model_name,
+            "platform": row.platform,
+            "price": float(row.price),
+            "capacity_gb": float(row.capacity_gb) if row.capacity_gb else None,
+            "url": row.product_url,
+            "is_official": row.is_official,
+            "updated_at": row.timestamp.isoformat() if row.timestamp else None
+        })
+        
+    return hardware

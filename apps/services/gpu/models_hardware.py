@@ -4,7 +4,7 @@ from apps.api.models.base import Base, UUIDMixin, TimeStampMixin
 from typing import List, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from apps.api.models.offering import OfferingGpuConfiguration, OfferingCpuConfiguration
+    from apps.services.gpu.models_offering import OfferingGpuConfiguration, OfferingCpuConfiguration
 
 class GpuManufacturer(Base, UUIDMixin, TimeStampMixin):
     __tablename__ = "gpu_manufacturers"

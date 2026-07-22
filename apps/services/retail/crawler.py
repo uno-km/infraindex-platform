@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 import random
 
 from apps.worker.providers.common.base import BaseProviderCrawler
-from apps.api.models.retail import RetailPriceHistory
+from apps.services.retail.models import RetailPriceHistory
 
 class RetailUniversalCrawler(BaseProviderCrawler):
     """

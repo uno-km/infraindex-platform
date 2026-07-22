@@ -5,7 +5,7 @@ from sqlalchemy import desc
 from typing import List, Dict, Any
 
 from apps.api.core.database import get_db
-from apps.api.models.news import NewsArticle
+from apps.services.news.models import NewsArticle
 
 router = APIRouter()
 

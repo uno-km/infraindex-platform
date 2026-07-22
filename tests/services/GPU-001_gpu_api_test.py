@@ -159,7 +159,7 @@ class TestAWSCrawler:
     """P3: AWS Crawler 유닛 테스트"""
 
     def setup_method(self):
-        from apps.worker.providers.aws import AWSCrawler
+        from apps.services.gpu.crawler_aws import AWSCrawler
         self.crawler = AWSCrawler()
 
     def test_fallback_mode_returns_data(self):
@@ -218,14 +218,14 @@ class TestAWSCrawler:
 
 class TestKoreanCrawlers:
     def test_korean_universal_provider_slugs(self):
-        from apps.worker.providers.korean import KoreanUniversalCrawler
+        from apps.services.gpu.crawler_korean import KoreanUniversalCrawler
         for slug in ["gpuaas", "cloudv", "runyourai", "gabia", "ktcloud"]:
             c = KoreanUniversalCrawler(slug)
             assert c.provider_slug == slug
 
     @pytest.mark.asyncio
     async def test_korean_crawler_returns_normalized_data(self):
-        from apps.worker.providers.korean import KoreanUniversalCrawler
+        from apps.services.gpu.crawler_korean import KoreanUniversalCrawler
         crawler = KoreanUniversalCrawler("cloudv")
         result = await crawler.execute_pipeline()
         assert len(result) > 0
@@ -235,7 +235,7 @@ class TestKoreanCrawlers:
 
     @pytest.mark.asyncio
     async def test_vessl_crawler(self):
-        from apps.worker.providers.korean import VesslCrawler
+        from apps.services.gpu.crawler_korean import VesslCrawler
         crawler = VesslCrawler()
         result = await crawler.execute_pipeline()
         assert len(result) > 0
@@ -243,7 +243,7 @@ class TestKoreanCrawlers:
 
     @pytest.mark.asyncio
     async def test_xesktop_crawler(self):
-        from apps.worker.providers.korean import XesktopCrawler
+        from apps.services.gpu.crawler_korean import XesktopCrawler
         crawler = XesktopCrawler()
         result = await crawler.execute_pipeline()
         assert len(result) > 0

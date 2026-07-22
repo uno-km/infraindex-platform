@@ -6,8 +6,8 @@ from sqlalchemy.orm import selectinload
 
 from apps.api.core.limiter import limiter
 from apps.api.core.database import get_db
-from apps.api.models.offering import PricingPlan, InstanceOffering, OfferingGpuConfiguration, OfferingCpuConfiguration
-from apps.api.models.hardware import GpuVariant, GpuModel, CpuVariant, CpuModel
+from apps.services.gpu.models_offering import PricingPlan, InstanceOffering, OfferingGpuConfiguration, OfferingCpuConfiguration
+from apps.services.gpu.models_hardware import GpuVariant, GpuModel, CpuVariant, CpuModel
 from apps.api.schemas.search import SearchResponse
 from apps.api.core.search.normalizer import QueryNormalizer
 from apps.api.core.search.alias_resolver import AliasResolver

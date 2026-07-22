@@ -1,0 +1,94 @@
+{
+  "GPU-001": {
+    "domain": "GPU Cloud API & Models",
+    "description": "GPU Cloud Rental Core & API",
+    "target_files": [
+      "apps/services/gpu/models_hardware.py",
+      "apps/services/gpu/models_offering.py",
+      "apps/services/gpu/router_gpus.py",
+      "apps/services/gpu/router_providers.py"
+    ],
+    "test_files": [
+      "tests/services/GPU-001_gpu_api_test.py"
+    ]
+  },
+  "GPU-002": {
+    "domain": "GPU Crawlers",
+    "description": "Cloud GPU pricing crawlers",
+    "target_files": [
+      "apps/services/gpu/crawler_aws.py",
+      "apps/services/gpu/crawler_runpod.py",
+      "apps/services/gpu/crawler_vast.py",
+      "apps/services/gpu/crawler_korean.py"
+    ],
+    "test_files": [
+      "tests/services/GPU-002_gpu_crawler_test.py"
+    ]
+  },
+  "CPU-001": {
+    "domain": "CPU Cloud",
+    "description": "CPU & Baremetal Cloud APIs & Crawlers",
+    "target_files": [
+      "apps/api/api/v1/endpoints/resources.py"
+    ],
+    "test_files": [
+      "tests/services/CPU-001_cpu_api_test.py",
+      "tests/services/CPU-001_cpu_crawler_test.py"
+    ]
+  },
+  "RTL-001": {
+    "domain": "Retail Market",
+    "description": "Retail e-commerce hardware pricing",
+    "target_files": [
+      "apps/services/retail/models.py",
+      "apps/services/retail/router.py",
+      "apps/services/retail/crawler.py",
+      "apps/services/retail/tasks.py"
+    ],
+    "test_files": [
+      "tests/services/RTL-001_retail_api_test.py",
+      "tests/services/RTL-001_retail_crawler_test.py"
+    ]
+  },
+  "RTL-002": {
+    "domain": "Enterprise AI Hardware",
+    "description": "B2B Ultra-High-End GPU and Servers",
+    "target_files": [
+      "apps/services/retail/crawler_enterprise.py",
+      "apps/services/retail/router.py"
+    ],
+    "test_files": [
+      "tests/services/RTL-002_enterprise_crawler_test.py"
+    ]
+  },
+  "FIN-001": {
+    "domain": "Financial Market",
+    "description": "Semiconductor Stocks and Futures",
+    "target_files": [
+      "apps/services/financial/models.py",
+      "apps/services/financial/router.py",
+      "apps/services/financial/crawler.py",
+      "apps/services/financial/tasks.py"
+    ],
+    "test_files": [
+      "tests/services/FIN-001_insights_api_test.py",
+      "tests/services/FIN-001_financial_crawler_test.py"
+    ]
+  },
+  "NWS-001": {
+    "domain": "Global News",
+    "description": "Global IT/Semiconductor News",
+    "target_files": [
+      "apps/services/news/models.py",
+      "apps/services/news/router.py",
+      "apps/services/news/tasks.py",
+      "apps/services/news/crawler_tier1_rss.py",
+      "apps/services/news/crawler_tier2_api.py",
+      "apps/services/news/crawler_tier3_browser.py"
+    ],
+    "test_files": [
+      "tests/services/NWS-001_news_api_test.py",
+      "tests/services/NWS-001_news_fallback_test.py"
+    ]
+  }
+}

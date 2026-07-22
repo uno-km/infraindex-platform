@@ -4,8 +4,8 @@ from apps.api.models.base import Base, UUIDMixin, TimeStampMixin
 from typing import List, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from apps.api.models.provider import Provider, ProviderRegion
-    from apps.api.models.hardware import GpuVariant, CpuVariant
+    from apps.services.gpu.models_provider import Provider, ProviderRegion
+    from apps.services.gpu.models_hardware import GpuVariant, CpuVariant
 
 class InstanceOffering(Base, UUIDMixin, TimeStampMixin):
     __tablename__ = "instance_offerings"

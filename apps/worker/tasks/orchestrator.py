@@ -8,10 +8,10 @@ from apps.worker.core.alerts import send_critical_alert
 from apps.worker.core.config import settings
 from apps.worker.core.storage import get_storage
 from apps.worker.core.quarantine import QuarantineService  # P1-001: QuarantineService 연결
-from apps.worker.providers.vast import VastCrawler
-from apps.worker.providers.runpod import RunpodCrawler
-from apps.worker.providers.aws import AWSCrawler
-from apps.worker.providers.korean import KoreanUniversalCrawler, VesslCrawler, XesktopCrawler
+from apps.services.gpu.crawler_vast import VastCrawler
+from apps.services.gpu.crawler_runpod import RunpodCrawler
+from apps.services.gpu.crawler_aws import AWSCrawler
+from apps.services.gpu.crawler_korean import KoreanUniversalCrawler, VesslCrawler, XesktopCrawler
 
 logger = logging.getLogger(__name__)
 

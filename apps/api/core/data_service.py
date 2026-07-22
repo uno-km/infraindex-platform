@@ -13,7 +13,7 @@ class DataService:
         if settings.USE_REAL_DB:
             from sqlalchemy.ext.asyncio import AsyncSession
             from apps.api.core.database import SessionLocal
-            from apps.api.models.history import PriceHistory
+            from apps.services.gpu.models_history import PriceHistory
             from sqlalchemy import select, desc
             
             all_records = []

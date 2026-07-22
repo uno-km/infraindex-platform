@@ -5,6 +5,7 @@ import GpuDashboard from "../components/GpuDashboard";
 import { RetailDashboard } from "../components/RetailDashboard";
 import InsightDashboard from "../components/InsightDashboard";
 import NewsDashboard from "../components/NewsDashboard";
+import EnterpriseDashboard from "../components/EnterpriseDashboard";
 import TabButton from "../components/TabButton";
 
 export default function Home() {
@@ -25,6 +26,7 @@ export default function Home() {
             <div className="flex gap-2">
               <TabButton id="storage" active={activeTab} onClick={setActiveTab}>Storage</TabButton>
               <TabButton id="retail" active={activeTab} onClick={setActiveTab}>Retail Market</TabButton>
+              <TabButton id="enterprise" active={activeTab} onClick={setActiveTab}>Enterprise AI</TabButton>
               <TabButton id="insights" active={activeTab} onClick={setActiveTab}>Market Insights</TabButton>
               <TabButton id="news" active={activeTab} onClick={setActiveTab}>Global News</TabButton>
             </div>
@@ -46,6 +48,12 @@ export default function Home() {
         {activeTab === 'retail' && (
           <div className="space-y-6 animate-in fade-in zoom-in duration-500">
             <RetailDashboard />
+          </div>
+        )}
+
+        {activeTab === 'enterprise' && (
+          <div className="space-y-6 animate-in fade-in zoom-in duration-500">
+            <EnterpriseDashboard />
           </div>
         )}
 

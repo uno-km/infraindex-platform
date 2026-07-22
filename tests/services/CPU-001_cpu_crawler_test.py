@@ -7,7 +7,7 @@ from typing import Any
 
 class TestCPUCrawlers:
     def test_korean_universal_cpu_mode(self):
-        from apps.worker.providers.korean import KoreanUniversalCrawler
+        from apps.services.gpu.crawler_korean import KoreanUniversalCrawler
         # Instantiating with CPU hardware type
         c = KoreanUniversalCrawler("cloudv", hardware_type="cpu")
         assert c.hardware_type == "cpu"
@@ -15,7 +15,7 @@ class TestCPUCrawlers:
 
     @pytest.mark.asyncio
     async def test_korean_crawler_cpu_returns_normalized_data(self):
-        from apps.worker.providers.korean import KoreanUniversalCrawler
+        from apps.services.gpu.crawler_korean import KoreanUniversalCrawler
         crawler = KoreanUniversalCrawler("cloudv", hardware_type="cpu")
         result = await crawler.execute_pipeline()
         
@@ -27,7 +27,7 @@ class TestCPUCrawlers:
 
     @pytest.mark.asyncio
     async def test_korean_crawler_gpu_returns_normalized_data(self):
-        from apps.worker.providers.korean import KoreanUniversalCrawler
+        from apps.services.gpu.crawler_korean import KoreanUniversalCrawler
         # Fallback to GPU if omitted
         crawler = KoreanUniversalCrawler("cloudv")
         result = await crawler.execute_pipeline()
@@ -38,7 +38,7 @@ class TestCPUCrawlers:
 
     @pytest.mark.asyncio
     async def test_vessl_crawler_empty_cpu(self):
-        from apps.worker.providers.korean import VesslCrawler
+        from apps.services.gpu.crawler_korean import VesslCrawler
         crawler = VesslCrawler(hardware_type="cpu")
         result = await crawler.execute_pipeline()
         # Vessl currently has no cpu_instances in KOREAN_SITES/VESSL_INSTANCES

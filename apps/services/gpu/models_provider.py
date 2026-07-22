@@ -4,7 +4,7 @@ from apps.api.models.base import Base, UUIDMixin, TimeStampMixin
 from typing import List, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from apps.api.models.offering import InstanceOffering
+    from apps.services.gpu.models_offering import InstanceOffering
 
 class Provider(Base, UUIDMixin, TimeStampMixin):
     __tablename__ = "providers"

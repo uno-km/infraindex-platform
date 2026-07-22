@@ -1,7 +1,7 @@
 import pytest
-from apps.worker.providers.vast import VastCrawler
-from apps.worker.providers.runpod import RunpodCrawler
-from apps.worker.providers.aws import AWSCrawler
+from apps.services.gpu.crawler_vast import VastCrawler
+from apps.services.gpu.crawler_runpod import RunpodCrawler
+from apps.services.gpu.crawler_aws import AWSCrawler
 
 def test_crawler_factory_compliance():
     """

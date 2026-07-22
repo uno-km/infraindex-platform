@@ -22,7 +22,7 @@ import logging
 
 from apps.api.core.database import get_db
 from apps.api.core.config import settings
-from apps.api.models.history import PriceHistory
+from apps.services.gpu.models_history import PriceHistory
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

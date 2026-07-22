@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, cast, Date
 
 from apps.api.core.database import get_db
-from apps.api.models.history import PriceHistory
+from apps.services.gpu.models_history import PriceHistory
 
 from collections import defaultdict
 
