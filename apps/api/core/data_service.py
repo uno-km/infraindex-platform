@@ -75,7 +75,9 @@ class DataService:
     @staticmethod
     async def get_gpus_for_ui() -> List[Dict[str, Any]]:
         """Aggregates raw records into a nice structure for the UI dashboard."""
+        from apps.api.core.traffic_service import traffic_service
         records = await DataService.get_latest_prices()
+        traffic_data = traffic_service.get_all_traffic()
         
         gpu_map = {}
         for r in records:
@@ -91,6 +93,7 @@ class DataService:
                     "id": gpu_name,
                     "name": gpu_name,
                     "vram_gb": vram,
+                    "popularity_score": traffic_data.get(gpu_name, 0),
                     "offers": []
                 }
             
