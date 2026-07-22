@@ -1,0 +1,52 @@
+version: '3.8'
+
+# Staging Environment Compose
+# Note: DB and Redis are omitted here as they are provisioned by Terraform on AWS RDS/ElastiCache.
+# This compose file only spins up the application containers (API, Worker, Web) and connects to AWS.
+
+services:
+  api:
+    image: infraindex-api:staging
+    build:
+      context: ../../
+      dockerfile: apps/api/Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../../.env.staging
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+
+  worker:
+    image: infraindex-worker:staging
+    build:
+      context: ../../
+      dockerfile: apps/worker/Dockerfile
+    env_file:
+      - ../../.env.staging
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+
+  web:
+    image: infraindex-web:staging
+    build:
+      context: ../../apps/web
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - ../../.env.staging
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
