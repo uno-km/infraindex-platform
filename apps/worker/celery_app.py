@@ -2,14 +2,16 @@ from celery import Celery
 from celery.schedules import crontab
 import os
 
-# We would normally use config.py but setting it directly here for simplicity
 redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
 app = Celery(
     "infraindex_worker",
     broker=redis_url,
     backend=redis_url,
-    include=["apps.worker.tasks.orchestrator"]
+    include=[
+        "apps.worker.tasks.orchestrator",
+        "apps.worker.tasks.outbox_publisher",  # P2-002: Outbox Publisher 등록
+    ]
 )
 
 app.conf.update(
@@ -18,17 +20,21 @@ app.conf.update(
     result_serializer="json",
     timezone="UTC",
     enable_utc=True,
-    # Worker 안전성 설정
     task_acks_late=True,
     task_reject_on_worker_lost=True,
     worker_prefetch_multiplier=1,
 )
 
-# FIX-04: task명을 실제 @shared_task(name=...) 선언과 일치시킴
-# orchestrator.py L47: @shared_task(name="orchestrator.tick")
 app.conf.beat_schedule = {
+    # FIX-04: task명 수정 완료 (orchestrator.tick)
+    # 수집 스케줄: 하루 3회 (09:00, 13:00, 18:00 UTC)
     "orchestrator-tick": {
         "task": "orchestrator.tick",
         "schedule": crontab(minute="0", hour="9,13,18"),
+    },
+    # P2-002: Outbox Publisher — 30초마다 미처리 이벤트 발행
+    "outbox-publisher": {
+        "task": "outbox.publish_pending",
+        "schedule": 30.0,  # seconds
     },
 }
