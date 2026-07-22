@@ -83,7 +83,7 @@ export default function ResourceCard({ item, exchangeMultiplier, currencySymbol,
               className={`border text-sm font-bold px-5 py-2.5 rounded-xl transition-all duration-200 flex items-center ${isChartOpen ? 'bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-200' : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50 shadow-sm'}`}
             >
               <Activity size={16} className={`mr-2 ${isChartOpen ? 'text-indigo-200' : 'text-indigo-500'}`} /> 
-              {isChartOpen ? '차트 닫기' : '시세 차트 분석'}
+              {isChartOpen ? '차트 닫기' : '시세 변동표'}
             </button>
             
             <button 
@@ -184,7 +184,7 @@ export default function ResourceCard({ item, exchangeMultiplier, currencySymbol,
       {isChartOpen && lowestOffer && (
         <div className="mt-6 pt-6 border-t border-slate-100 animate-in slide-in-from-top-4 fade-in duration-300">
           <div className="flex justify-between items-center mb-2">
-            <div className="text-sm font-bold text-slate-700">고급 차트 분석 (이동평균선 포함)</div>
+            <div className="text-sm font-bold text-slate-700">시세 변동표</div>
             <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200/50">
               <button onClick={() => setChartPeriod("DAY")} className={`px-4 py-1 text-xs font-bold rounded-md transition-all ${chartPeriod === "DAY" ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-800'}`}>일봉</button>
               <button onClick={() => setChartPeriod("WEEK")} className={`px-4 py-1 text-xs font-bold rounded-md transition-all ${chartPeriod === "WEEK" ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-800'}`}>주봉</button>

@@ -1,0 +1,7 @@
+# UI Skeleton Lock
+
+The current UI skeleton (layout) of the InfraIndex platform MUST be strictly preserved.
+- **Allowed Changes**: Minor stylistic adjustments (e.g., color tweaks, border-radius changes, minor spacing).
+- **Forbidden Changes**: Do NOT change the overall layout structure (e.g., Sidebar on left, Resource cards in center, Pricing intel on right). Do not drastically alter the grid or flexbox structure. Do not remove the SPA component architecture.
+
+Maintain the "Premium B2B SaaS" aesthetics with glassmorphism, rounded corners, and soft shadows as established in Phase 25.

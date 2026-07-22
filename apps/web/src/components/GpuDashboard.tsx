@@ -85,8 +85,8 @@ export default function GpuDashboard() {
   const formatPrice = (price: number) => {
     const val = price * exchangeMultiplier;
     return currency === "KRW" 
-      ? `₩${val.toLocaleString(undefined, { maximumFractionDigits: 0 })}` 
-      : `$${val.toFixed(3)}`;
+      ? `₩${val.toLocaleString(undefined, { maximumFractionDigits: 0 })} / 1시간(hr)` 
+      : `$${val.toFixed(3)} / 1시간(hr)`;
   };
 
   const seriesOptions = useMemo(() => {

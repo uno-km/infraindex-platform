@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
@@ -14,33 +14,40 @@ interface ChartWidgetProps {
 }
 
 export default function ChartWidget({ gpuName, basePrice, exchangeRate, providers, period }: ChartWidgetProps) {
-  const chartData = useMemo(() => {
-    const rawData = [];
-    let currentPrice = basePrice;
-    const now = new Date();
-    
-    for (let i = 90; i >= 0; i--) {
-      const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-      const volatility = currentPrice * 0.05; 
-      const open = currentPrice + (Math.random() - 0.5) * volatility;
-      const close = open + (Math.random() - 0.5) * volatility;
-      const high = Math.max(open, close) + Math.random() * volatility;
-      const low = Math.min(open, close) - Math.random() * volatility;
-      
-      rawData.push({ date, open, high, low, close });
-      currentPrice = close;
-    }
+  const [realData, setRealData] = useState<any[]>([]);
 
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const res = await fetch(`${apiUrl}/api/v1/chart/candlestick?gpu_model_id=${encodeURIComponent(gpuName)}&days=90`);
+        if (res.ok) {
+          const data = await res.json();
+          setRealData(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch candlestick data", err);
+      }
+    }
+    fetchData();
+  }, [gpuName]);
+
+  const chartData = useMemo(() => {
+    if (realData.length === 0) return [];
     const aggregated = [];
     let chunkSize = period === "DAY" ? 1 : period === "WEEK" ? 7 : 30;
     
-    for (let i = 0; i < rawData.length; i += chunkSize) {
-      const chunk = rawData.slice(i, i + chunkSize);
-      const date = chunk[chunk.length - 1].date;
-      const open = chunk[0].open;
-      const close = chunk[chunk.length - 1].close;
-      const high = Math.max(...chunk.map(d => d.high));
-      const low = Math.min(...chunk.map(d => d.low));
+    for (let i = 0; i < realData.length; i += chunkSize) {
+      const chunk = realData.slice(i, i + chunkSize);
+      const date = chunk[chunk.length - 1].x;
+      const open = chunk[0].y[0];
+      const close = chunk[chunk.length - 1].y[3];
+      const high = Math.max(...chunk.map(d => d.y[1]));
+      const low = Math.min(...chunk.map(d => d.y[2]));
+      
+      const highPoint = chunk.find(d => d.y[1] === high) || chunk[0];
+      const lowPoint = chunk.find(d => d.y[2] === low) || chunk[0];
+      const avg = chunk.reduce((acc, curr) => acc + curr.avg, 0) / chunk.length;
       
       aggregated.push({
         x: date,
@@ -50,8 +57,9 @@ export default function ChartWidget({ gpuName, basePrice, exchangeRate, provider
           parseFloat((low * exchangeRate).toFixed(exchangeRate === 1 ? 3 : 0)),
           parseFloat((close * exchangeRate).toFixed(exchangeRate === 1 ? 3 : 0))
         ],
-        highProvider: providers[Math.floor(Math.random() * providers.length)] || "Unknown",
-        lowProvider: providers[Math.floor(Math.random() * providers.length)] || "Unknown"
+        highProvider: highPoint.highProvider,
+        lowProvider: lowPoint.lowProvider,
+        avg: parseFloat((avg * exchangeRate).toFixed(exchangeRate === 1 ? 3 : 0))
       });
     }
 
@@ -72,7 +80,7 @@ export default function ChartWidget({ gpuName, basePrice, exchangeRate, provider
       { name: '시세', type: 'candlestick', data: finalData },
       { name: '5일 추세선', type: 'line', data: smaData }
     ];
-  }, [basePrice, exchangeRate, period, providers]);
+  }, [exchangeRate, period, realData]);
 
   const currencySymbol = exchangeRate === 1 ? "$" : "₩";
 
@@ -113,7 +121,8 @@ export default function ChartWidget({ gpuName, basePrice, exchangeRate, provider
               <span class="truncate capitalize max-w-[80px]" title="최저가: ${data.lowProvider}">저가 (${data.lowProvider}):</span> 
               <strong>${currencySymbol}${l}</strong>
             </div>
-            <div class="mt-1 flex justify-between gap-4 pt-1 border-t border-slate-100"><span>종가 (Close):</span> <strong>${currencySymbol}${c}</strong></div>
+            <div class="mt-1 flex justify-between gap-4 pt-1 border-t border-slate-100"><span>평균 (Avg):</span> <strong>${currencySymbol}${data.avg}</strong></div>
+            <div class="mt-1 flex justify-between gap-4"><span>종가 (Close):</span> <strong>${currencySymbol}${c}</strong></div>
             ${lineData.y ? `<div class="mt-1 flex justify-between gap-4 text-purple-600"><span>추세선 (SMA 5):</span> <strong>${currencySymbol}${lineData.y}</strong></div>` : ''}
           </div>
         `;

@@ -8,8 +8,17 @@ from sqlalchemy import select, func, cast, Date
 from apps.api.core.database import get_db
 from apps.api.models.history import PriceHistory
 
+from collections import defaultdict
+
 router = APIRouter()
 
+
+class CandlestickDataPoint(BaseModel):
+    x: str
+    y: List[float]  # [open, high, low, close]
+    highProvider: str
+    lowProvider: str
+    avg: float
 
 class ChartDataPoint(BaseModel):
     timestamp: str
@@ -24,6 +33,76 @@ class ChartSeriesResponse(BaseModel):
     provider: str
     data: List[ChartDataPoint]
 
+
+@router.get("/candlestick", response_model=List[CandlestickDataPoint])
+async def get_candlestick(
+    gpu_model_id: str = Query(..., description="GPU model name"),
+    days: int = Query(90, description="Number of days"),
+    db: AsyncSession = Depends(get_db),
+):
+    since = datetime.now(timezone.utc) - timedelta(days=days)
+    
+    query = (
+        select(PriceHistory)
+        .where(PriceHistory.gpu_model.ilike(f"%{gpu_model_id}%"))
+        .where(PriceHistory.timestamp >= since)
+        .order_by(PriceHistory.timestamp.asc())
+    )
+    result = await db.execute(query)
+    rows = result.scalars().all()
+    
+    if not rows:
+        # Fallback to local JSON files if DB is empty
+        from apps.api.core.data_service import DataService
+        records = await DataService.get_latest_prices()
+        filtered = [r for r in records if gpu_model_id.lower() in r.get("gpu_model", "").lower()]
+        
+        if not filtered:
+            return []
+            
+        open_price = sum(r["price_per_hour"] for r in filtered) / len(filtered)
+        close_price = sum(r["price_per_hour"] for r in filtered) / len(filtered)
+        
+        sorted_by_price = sorted(filtered, key=lambda r: r["price_per_hour"])
+        low_record = sorted_by_price[0]
+        high_record = sorted_by_price[-1]
+        avg_price = sum(r["price_per_hour"] for r in filtered) / len(filtered)
+        
+        return [CandlestickDataPoint(
+            x=datetime.now(timezone.utc).strftime("%Y-%m-%d") + "T00:00:00Z",
+            y=[round(open_price, 4), round(high_record["price_per_hour"], 4), round(low_record["price_per_hour"], 4), round(close_price, 4)],
+            highProvider=high_record["provider"],
+            lowProvider=low_record["provider"],
+            avg=round(avg_price, 4)
+        )]
+        
+    # Group by day
+    daily_groups = defaultdict(list)
+    for row in rows:
+        day_str = row.timestamp.strftime("%Y-%m-%d")
+        daily_groups[day_str].append(row)
+        
+    candlesticks = []
+    for day_str, records in daily_groups.items():
+        records.sort(key=lambda r: r.timestamp)
+        open_price = sum(r.price_per_hour for r in records[:max(1, len(records)//3)]) / max(1, len(records[:max(1, len(records)//3)]))
+        close_price = sum(r.price_per_hour for r in records[-max(1, len(records)//3):]) / max(1, len(records[-max(1, len(records)//3):]))
+        
+        sorted_by_price = sorted(records, key=lambda r: r.price_per_hour)
+        low_record = sorted_by_price[0]
+        high_record = sorted_by_price[-1]
+        
+        avg_price = sum(r.price_per_hour for r in records) / len(records)
+        
+        candlesticks.append(CandlestickDataPoint(
+            x=day_str + "T00:00:00Z",
+            y=[round(open_price, 4), round(high_record.price_per_hour, 4), round(low_record.price_per_hour, 4), round(close_price, 4)],
+            highProvider=high_record.provider_id,
+            lowProvider=low_record.provider_id,
+            avg=round(avg_price, 4)
+        ))
+        
+    return candlesticks
 
 @router.get("/price-series", response_model=List[ChartSeriesResponse])
 async def get_price_series(
