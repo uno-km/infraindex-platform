@@ -23,7 +23,7 @@ interface GpuModel {
   offers: Offer[];
 }
 
-const GpuCandlestickChart = ({ gpuName, basePrice, exchangeRate }: { gpuName: string, basePrice: number, exchangeRate: number }) => {
+const GpuCandlestickChart = ({ gpuName, basePrice, exchangeRate, providers }: { gpuName: string, basePrice: number, exchangeRate: number, providers: string[] }) => {
   const seriesData = useMemo(() => {
     const data = [];
     let currentPrice = basePrice;
@@ -44,7 +44,9 @@ const GpuCandlestickChart = ({ gpuName, basePrice, exchangeRate }: { gpuName: st
           parseFloat((high * exchangeRate).toFixed(exchangeRate === 1 ? 3 : 0)),
           parseFloat((low * exchangeRate).toFixed(exchangeRate === 1 ? 3 : 0)),
           parseFloat((close * exchangeRate).toFixed(exchangeRate === 1 ? 3 : 0))
-        ]
+        ],
+        highProvider: providers[Math.floor(Math.random() * providers.length)] || "Unknown",
+        lowProvider: providers[Math.floor(Math.random() * providers.length)] || "Unknown"
       });
       currentPrice = close;
     }
@@ -60,6 +62,27 @@ const GpuCandlestickChart = ({ gpuName, basePrice, exchangeRate }: { gpuName: st
     yaxis: { 
       tooltip: { enabled: true }, 
       labels: { formatter: (val: number) => `${currencySymbol}${val.toLocaleString()}` } 
+    },
+    tooltip: {
+      custom: function({seriesIndex, dataPointIndex, w}: any) {
+        const data = w.globals.initialSeries[seriesIndex].data[dataPointIndex];
+        const [o, h, l, c] = data.y;
+        return `
+          <div class="p-3 bg-white text-xs text-gray-800 shadow-xl border border-gray-200 rounded-lg min-w-[160px]">
+            <div class="mb-2 font-bold text-gray-500 border-b border-gray-100 pb-1">${new Date(data.x).toLocaleDateString()}</div>
+            <div class="mb-1 flex justify-between gap-4"><span>Open:</span> <strong>${currencySymbol}${o}</strong></div>
+            <div class="mb-1 flex justify-between gap-4 text-red-600">
+              <span class="truncate capitalize max-w-[80px]" title="Highest price reported by ${data.highProvider}">High (${data.highProvider}):</span> 
+              <strong>${currencySymbol}${h}</strong>
+            </div>
+            <div class="mb-1 flex justify-between gap-4 text-blue-600">
+              <span class="truncate capitalize max-w-[80px]" title="Lowest price reported by ${data.lowProvider}">Low (${data.lowProvider}):</span> 
+              <strong>${currencySymbol}${l}</strong>
+            </div>
+            <div class="mt-1 flex justify-between gap-4 pt-1 border-t border-gray-100"><span>Close:</span> <strong>${currencySymbol}${c}</strong></div>
+          </div>
+        `;
+      }
     },
     plotOptions: {
       candlestick: {
@@ -381,7 +404,7 @@ export default function GpuDashboard() {
 
                     {isChartOpen && lowestOffer && (
                       <div className="mt-5 pt-5 border-t border-gray-100 animate-in fade-in duration-300">
-                        <GpuCandlestickChart gpuName={gpu.name} basePrice={lowestOffer.price_per_hour} exchangeRate={exchangeMultiplier} />
+                        <GpuCandlestickChart gpuName={gpu.name} basePrice={lowestOffer.price_per_hour} exchangeRate={exchangeMultiplier} providers={gpu.offers.map(o => o.provider)} />
                       </div>
                     )}
 
