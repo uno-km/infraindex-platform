@@ -27,8 +27,11 @@ async def health_check(response: Response, db: AsyncSession = Depends(get_db)) -
 
     # Check Database
     try:
-        await db.execute(text("SELECT 1"))
-        health_status["dependencies"]["database"] = "ok"
+        if db is None:
+            health_status["dependencies"]["database"] = "disabled (USE_REAL_DB=False)"
+        else:
+            await db.execute(text("SELECT 1"))
+            health_status["dependencies"]["database"] = "ok"
     except Exception as e:
         health_status["dependencies"]["database"] = f"unhealthy: {str(e)}"
         health_status["status"] = "unhealthy"

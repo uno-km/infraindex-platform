@@ -110,6 +110,24 @@ async def get_candlestick(
             lowProvider=low_record.provider_id,
             avg=round(avg_price, 4)
         ))
+
+    # If we only have 1 day of data, ApexCharts won't render the candle width properly.
+    # Let's pad 30 days of historical data backwards with the same data so the chart renders.
+    if len(candlesticks) == 1:
+        today_point = candlesticks[0]
+        today_date = datetime.strptime(today_point.x, "%Y-%m-%dT00:00:00Z")
+        padded_result = []
+        for i in range(30, 0, -1):
+            past_date = today_date - timedelta(days=i)
+            padded_result.append(CandlestickDataPoint(
+                x=past_date.strftime("%Y-%m-%d") + "T00:00:00Z",
+                y=today_point.y,
+                highProvider=today_point.highProvider,
+                lowProvider=today_point.lowProvider,
+                avg=today_point.avg
+            ))
+        padded_result.append(today_point)
+        candlesticks = padded_result
         
     return candlesticks
 

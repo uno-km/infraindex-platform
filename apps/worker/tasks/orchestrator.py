@@ -11,7 +11,7 @@ from apps.worker.core.quarantine import QuarantineService  # P1-001: QuarantineS
 from apps.worker.providers.vast import VastCrawler
 from apps.worker.providers.runpod import RunpodCrawler
 from apps.worker.providers.aws import AWSCrawler
-from apps.worker.providers.korean import KoreanUniversalCrawler
+from apps.worker.providers.korean import KoreanUniversalCrawler, VesslCrawler, XesktopCrawler
 
 logger = logging.getLogger(__name__)
 
@@ -172,9 +172,16 @@ def tick():
         return
 
     logger.info("Tick: Dispatching factory crawlers...")
+    # 글로벌 공급자
     run_provider_collection.delay("vast-ai")
     run_provider_collection.delay("runpod")
     run_provider_collection.delay("aws")
+    # 특화 공급자
+    run_provider_collection.delay("vessl")
+    run_provider_collection.delay("xesktop")
+    # 한국 공급자
+    for slug in ["gpuaas", "cloudv", "runyourai", "gabia", "ktcloud"]:
+        run_provider_collection.delay(slug)
 
 
 @shared_task(
