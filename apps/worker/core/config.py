@@ -17,5 +17,6 @@ class WorkerSettings(BaseSettings):
 
     class Config:
         env_file = ".env"
+        extra = "ignore"
 
 settings = WorkerSettings()
