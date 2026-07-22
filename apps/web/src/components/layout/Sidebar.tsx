@@ -1,46 +1,43 @@
-import { Cpu, Database, HardDrive, Server, Shield, Activity } from "lucide-react";
+"use client";
+
+import { Menu, ChevronRight, Server, Cpu, HardDrive, Cloud } from "lucide-react";
 
 interface SidebarProps {
   selectedCategory: string;
-  setSelectedCategory: (category: string) => void;
+  setSelectedCategory: (val: string) => void;
 }
 
 export default function Sidebar({ selectedCategory, setSelectedCategory }: SidebarProps) {
-  const menuItems = [
-    { id: "gpu", label: "GPU 인스턴스", icon: <Cpu size={18} /> },
-    { id: "cpu", label: "CPU 인스턴스", icon: <Server size={18} /> },
-    { id: "memory", label: "메모리 (RAM)", icon: <Database size={18} /> },
-    { id: "storage", label: "스토리지 (NVMe)", icon: <HardDrive size={18} /> },
-    { id: "baremetal", label: "베어메탈", icon: <Shield size={18} /> },
-    { id: "api", label: "API 시세연동", icon: <Activity size={18} /> },
+  const categories = [
+    { id: "gpu", icon: <Server size={18}/>, name: "GPU 인스턴스" },
+    { id: "cpu", icon: <Cpu size={18}/>, name: "CPU 컴퓨팅" },
+    { id: "storage", icon: <HardDrive size={18}/>, name: "스토리지 & 블록" },
+    { id: "baremetal", icon: <Cloud size={18}/>, name: "베어메탈 서버" },
   ];
 
   return (
-    <aside className="w-64 shrink-0 hidden lg:block">
-      <div className="bg-white border border-slate-200/60 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden sticky top-24">
-        <div className="p-5 border-b border-slate-100 bg-slate-50/50">
-          <h2 className="font-extrabold text-slate-800 text-sm tracking-wide">카테고리</h2>
-        </div>
-        <nav className="p-3 flex flex-col gap-1">
-          {menuItems.map((item) => {
-            const isSelected = selectedCategory === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => setSelectedCategory(item.id)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 text-sm font-bold ${
-                  isSelected 
-                    ? "bg-brand-blue text-white shadow-md shadow-brand-blue/20 translate-x-1" 
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                }`}
-              >
-                <span className={isSelected ? "text-white" : "text-slate-400"}>{item.icon}</span>
-                {item.label}
-              </button>
-            );
-          })}
-        </nav>
+    <aside className="w-64 flex-shrink-0 bg-white border border-slate-200/60 rounded-3xl overflow-hidden sticky top-[100px] shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+      <div className="bg-white text-slate-800 py-5 px-6 flex items-center font-extrabold text-sm tracking-wide border-b border-slate-100">
+        <Menu className="mr-3 text-slate-400" size={18} /> 리소스 카테고리
       </div>
+      <ul className="py-2">
+        {categories.map((cat) => {
+          const active = selectedCategory === cat.id;
+          return (
+            <li 
+              key={cat.id} 
+              onClick={() => setSelectedCategory(cat.id)}
+              className={`px-6 py-3.5 text-sm font-semibold border-b border-slate-50 last:border-0 cursor-pointer flex justify-between items-center transition-all duration-200 ${active ? 'bg-indigo-50/50 text-indigo-700 border-l-4 border-indigo-600 pl-5' : 'text-slate-500 hover:bg-slate-50 hover:text-indigo-600'}`}
+            >
+              <span className="flex items-center gap-3">
+                <span className={`${active ? 'text-indigo-500' : 'text-slate-400'}`}>{cat.icon}</span>
+                {cat.name}
+              </span>
+              {active && <ChevronRight size={16} className="text-indigo-400" />}
+            </li>
+          );
+        })}
+      </ul>
     </aside>
   );
 }
