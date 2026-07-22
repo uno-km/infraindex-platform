@@ -111,15 +111,28 @@ class DataService:
             avail = r.get("availability_status")
             is_avail = avail if isinstance(avail, bool) else (str(avail).lower() == "available")
             
-            gpu_map[gpu_name]["offers"].append({
-                "provider": r.get("provider", "Unknown"),
-                "price_per_hour": float(r.get("price_per_hour", 0.0)),
-                "is_available": is_avail,
-                "region": r.get("region", "global"),
-                "provider_link": r.get("provider_link"),
-                "sys_ram_gb": r.get("sys_ram_gb"),
-                "tdp_w": r.get("tdp_w"),
-            })
+            provider_name = r.get("provider", "Unknown")
+            price = float(r.get("price_per_hour", 0.0))
+            
+            # Check if this provider already has an offer for this GPU
+            existing_offer = next((o for o in gpu_map[gpu_name]["offers"] if o["provider"] == provider_name), None)
+            
+            if existing_offer:
+                # Keep the lowest price
+                if price < existing_offer["price_per_hour"]:
+                    existing_offer["price_per_hour"] = price
+                    existing_offer["region"] = r.get("region", "global")
+                    existing_offer["provider_link"] = r.get("provider_link")
+            else:
+                gpu_map[gpu_name]["offers"].append({
+                    "provider": provider_name,
+                    "price_per_hour": price,
+                    "is_available": is_avail,
+                    "region": r.get("region", "global"),
+                    "provider_link": r.get("provider_link"),
+                    "sys_ram_gb": r.get("sys_ram_gb"),
+                    "tdp_w": r.get("tdp_w"),
+                })
             
         return list(gpu_map.values())
 
