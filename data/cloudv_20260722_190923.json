@@ -1,0 +1,38 @@
+[
+  {
+    "gpu_model": "A100 40GB",
+    "vram_gb": 40,
+    "price_per_hour": 0.35,
+    "availability_status": "available",
+    "provider_link": "https://cloudv.kr/server/gpu.html",
+    "sys_ram_gb": 128,
+    "tdp_w": 400
+  },
+  {
+    "gpu_model": "A100 80GB",
+    "vram_gb": 80,
+    "price_per_hour": 0.42,
+    "availability_status": "available",
+    "provider_link": "https://cloudv.kr/server/gpu.html",
+    "sys_ram_gb": 128,
+    "tdp_w": 400
+  },
+  {
+    "gpu_model": "RTX 4090",
+    "vram_gb": 24,
+    "price_per_hour": 0.15,
+    "availability_status": "available",
+    "provider_link": "https://cloudv.kr/server/gpu.html",
+    "sys_ram_gb": 64,
+    "tdp_w": 450
+  },
+  {
+    "gpu_model": "RTX 3090",
+    "vram_gb": 24,
+    "price_per_hour": 0.1,
+    "availability_status": "available",
+    "provider_link": "https://cloudv.kr/server/gpu.html",
+    "sys_ram_gb": 48,
+    "tdp_w": 350
+  }
+]

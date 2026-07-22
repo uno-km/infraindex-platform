@@ -21,6 +21,7 @@ class AWSCrawler(BaseProviderCrawler):
                 "gpu_model": instance.get("attributes", {}).get("gpu"),
                 "vram_gb": 320, # Simplified
                 "price_per_hour": 32.77,
-                "availability_status": "available"
+                "availability_status": "available",
+                "provider_link": "https://aws.amazon.com/ec2/instance-types/p4/"
             })
         return normalized
