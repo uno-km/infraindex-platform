@@ -30,6 +30,7 @@ class VastCrawler(BaseProviderCrawler):
                 sys_ram_gb = specs["sys_ram_gb"]
 
             normalized.append({
+                "provider": self.provider_slug,
                 "gpu_model": gpu_name,
                 "vram_gb": instance.get("gpu_ram", 0) / 1024.0,
                 "price_per_hour": instance.get("dph_total", 0.0),

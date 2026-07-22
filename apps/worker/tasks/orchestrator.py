@@ -112,7 +112,11 @@ async def execute_extraction(provider_slug: str):
         crawler = RunpodCrawler()
     elif provider_slug == "aws":
         crawler = AWSCrawler()
-    elif provider_slug in ["vessl", "gpuaas", "cloudv", "runyourai", "gabia", "ktcloud"]:
+    elif provider_slug == "vessl":
+        crawler = VesslCrawler()
+    elif provider_slug == "xesktop":
+        crawler = XesktopCrawler()
+    elif provider_slug in ["gpuaas", "cloudv", "runyourai", "gabia", "ktcloud"]:
         crawler = KoreanUniversalCrawler(provider_slug)
     else:
         logger.error(f"Unknown provider: {provider_slug}")

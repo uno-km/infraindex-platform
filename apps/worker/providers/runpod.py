@@ -23,6 +23,7 @@ class RunpodCrawler(BaseProviderCrawler):
             specs = enrich_hardware_specs(gpu_name)
             
             normalized.append({
+                "provider": self.provider_slug,
                 "gpu_model": gpu_name,
                 "vram_gb": instance.get("memoryInGb", 0),
                 "price_per_hour": instance.get("securePrice", 0.0),

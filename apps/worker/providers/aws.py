@@ -18,6 +18,7 @@ class AWSCrawler(BaseProviderCrawler):
         normalized = []
         for instance in parsed_data:
             normalized.append({
+                "provider": self.provider_slug,
                 "gpu_model": instance.get("attributes", {}).get("gpu"),
                 "vram_gb": 320, # Simplified
                 "price_per_hour": 32.77,
