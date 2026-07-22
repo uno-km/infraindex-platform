@@ -2,19 +2,25 @@ from typing import Any
 from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
-import redis.asyncio as redis
+import redis.asyncio as aioredis
 
 from apps.api.core.database import get_db
 from apps.api.core.config import settings
+from apps.api.core.redis_client import get_redis
 
 router = APIRouter()
 
 
 @router.get("/")
-async def health_check(response: Response, db: AsyncSession = Depends(get_db)) -> Any:
+async def health_check(
+    response: Response,
+    db: AsyncSession = Depends(get_db),
+    redis_client: aioredis.Redis = Depends(get_redis),
+) -> Any:
     """
     Dependency-Aware Health Check.
-    Verifies that Postgres and Redis are actually alive and reachable.
+    - DB: AsyncSession ping (SELECT 1)
+    - Redis: pool에서 획득한 클라이언트로 ping (새 연결 생성 X)
     Returns HTTP 200 if healthy, HTTP 503 if any dependency is down.
     """
     health_status = {
@@ -36,11 +42,9 @@ async def health_check(response: Response, db: AsyncSession = Depends(get_db)) -
         health_status["dependencies"]["database"] = f"unhealthy: {str(e)}"
         health_status["status"] = "unhealthy"
 
-    # FIX-05: CELERY_BROKER_URL → REDIS_URL (settings에 정의된 올바른 필드명 사용)
+    # Check Redis (전역 pool에서 획득한 클라이언트 사용)
     try:
-        redis_client = redis.from_url(settings.REDIS_URL)
         await redis_client.ping()
-        await redis_client.aclose()
         health_status["dependencies"]["redis"] = "ok"
     except Exception as e:
         health_status["dependencies"]["redis"] = f"unhealthy: {str(e)}"

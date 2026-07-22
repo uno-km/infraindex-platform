@@ -1,0 +1,22 @@
+[
+  {
+    "provider": "ncloud",
+    "gpu_model": "V100",
+    "vram_gb": 32,
+    "price_per_hour": 2.1,
+    "availability_status": "available",
+    "provider_link": "https://www.ncloud.com/product/compute/gpuServer",
+    "sys_ram_gb": 64,
+    "tdp_w": 300
+  },
+  {
+    "provider": "ncloud",
+    "gpu_model": "T4",
+    "vram_gb": 16,
+    "price_per_hour": 0.8,
+    "availability_status": "available",
+    "provider_link": "https://www.ncloud.com/product/compute/gpuServer",
+    "sys_ram_gb": 32,
+    "tdp_w": 250
+  }
+]

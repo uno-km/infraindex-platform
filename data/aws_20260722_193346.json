@@ -1,0 +1,10 @@
+[
+  {
+    "provider": "aws",
+    "gpu_model": "A100",
+    "vram_gb": 320,
+    "price_per_hour": 32.77,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/p4/"
+  }
+]

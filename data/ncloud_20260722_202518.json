@@ -1,0 +1,32 @@
+[
+  {
+    "provider": "ncloud",
+    "gpu_model": "Tesla V100 (1x)",
+    "vram_gb": 32,
+    "price_per_hour": 1.85,
+    "availability_status": "available",
+    "provider_link": "https://www.ncloud.com/product/compute/gpuServer",
+    "sys_ram_gb": 64,
+    "tdp_w": 300
+  },
+  {
+    "provider": "ncloud",
+    "gpu_model": "Tesla T4 (1x)",
+    "vram_gb": 16,
+    "price_per_hour": 0.6,
+    "availability_status": "available",
+    "provider_link": "https://www.ncloud.com/product/compute/gpuServer",
+    "sys_ram_gb": 32,
+    "tdp_w": 250
+  },
+  {
+    "provider": "ncloud",
+    "gpu_model": "A100 (베어메탈)",
+    "vram_gb": 40,
+    "price_per_hour": 2.2,
+    "availability_status": "available",
+    "provider_link": "https://www.ncloud.com/product/compute/gpuServer",
+    "sys_ram_gb": 128,
+    "tdp_w": 400
+  }
+]

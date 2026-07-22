@@ -5,3 +5,7 @@ The current UI skeleton (layout) of the InfraIndex platform MUST be strictly pre
 - **Forbidden Changes**: Do NOT change the overall layout structure (e.g., Sidebar on left, Resource cards in center, Pricing intel on right). Do not drastically alter the grid or flexbox structure. Do not remove the SPA component architecture.
 
 Maintain the "Premium B2B SaaS" aesthetics with glassmorphism, rounded corners, and soft shadows as established in Phase 25.
+
+# Test-Driven Development (TDD) Rule
+- All new features or components MUST have corresponding test cases implemented and placed within the `tests/` directory (categorized into unit, integration, or regression).
+- Every test execution must be logged, and test coverage/pass rates must be scored and documented. Do not deploy or merge untested code.

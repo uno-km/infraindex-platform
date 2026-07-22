@@ -92,27 +92,44 @@ export default function GpuDashboard() {
   const seriesOptions = useMemo(() => {
     const seriesSet = new Set<string>();
     resources.forEach(r => {
-      if (r.name.includes("RTX")) seriesSet.add("RTX 시리즈");
-      else if (r.name.includes("A100") || r.name.includes("A10") || r.name.includes("A6000")) seriesSet.add("A 시리즈");
-      else if (r.name.includes("H100")) seriesSet.add("H 시리즈");
-      else if (r.name.includes("L40") || r.name.includes("L4")) seriesSet.add("L 시리즈");
-      else if (r.name.includes("V100")) seriesSet.add("V 시리즈");
-      else seriesSet.add("기타");
+      if (selectedCategory === "gpu") {
+        if (r.name.includes("RTX")) seriesSet.add("RTX 시리즈");
+        else if (r.name.includes("A100") || r.name.includes("A10") || r.name.includes("A6000")) seriesSet.add("A 시리즈");
+        else if (r.name.includes("H100")) seriesSet.add("H 시리즈");
+        else if (r.name.includes("L40") || r.name.includes("L4")) seriesSet.add("L 시리즈");
+        else if (r.name.includes("V100")) seriesSet.add("V 시리즈");
+        else seriesSet.add("기타");
+      } else if (selectedCategory === "cpu") {
+        if (r.name.includes("Xeon")) seriesSet.add("Intel Xeon");
+        else if (r.name.includes("EPYC")) seriesSet.add("AMD EPYC");
+        else if (r.name.includes("Core") || r.name.includes("i9") || r.name.includes("i7")) seriesSet.add("Intel Core");
+        else if (r.name.includes("Ryzen")) seriesSet.add("AMD Ryzen");
+        else seriesSet.add("기타");
+      }
     });
     return ["전체보기", ...Array.from(seriesSet)];
-  }, [resources]);
+  }, [resources, selectedCategory]);
 
   const filteredAndSortedResources = useMemo(() => {
     let result = resources.filter(r => r.name.toLowerCase().includes(searchQuery.toLowerCase()));
     
     if (selectedSeries !== "전체보기") {
       result = result.filter(r => {
-        if (selectedSeries === "RTX 시리즈") return r.name.includes("RTX");
-        if (selectedSeries === "A 시리즈") return r.name.includes("A100") || r.name.includes("A10") || r.name.includes("A6000");
-        if (selectedSeries === "H 시리즈") return r.name.includes("H100");
-        if (selectedSeries === "L 시리즈") return r.name.includes("L40") || r.name.includes("L4");
-        if (selectedSeries === "V 시리즈") return r.name.includes("V100");
-        return !r.name.includes("RTX") && !r.name.includes("A100") && !r.name.includes("H100") && !r.name.includes("L40") && !r.name.includes("V100");
+        if (selectedCategory === "gpu") {
+          if (selectedSeries === "RTX 시리즈") return r.name.includes("RTX");
+          if (selectedSeries === "A 시리즈") return r.name.includes("A100") || r.name.includes("A10") || r.name.includes("A6000");
+          if (selectedSeries === "H 시리즈") return r.name.includes("H100");
+          if (selectedSeries === "L 시리즈") return r.name.includes("L40") || r.name.includes("L4");
+          if (selectedSeries === "V 시리즈") return r.name.includes("V100");
+          return !r.name.includes("RTX") && !r.name.includes("A100") && !r.name.includes("H100") && !r.name.includes("L40") && !r.name.includes("V100");
+        } else if (selectedCategory === "cpu") {
+          if (selectedSeries === "Intel Xeon") return r.name.includes("Xeon");
+          if (selectedSeries === "AMD EPYC") return r.name.includes("EPYC");
+          if (selectedSeries === "Intel Core") return r.name.includes("Core") || r.name.includes("i9") || r.name.includes("i7");
+          if (selectedSeries === "AMD Ryzen") return r.name.includes("Ryzen");
+          return !r.name.includes("Xeon") && !r.name.includes("EPYC") && !r.name.includes("Core") && !r.name.includes("Ryzen") && !r.name.includes("i9") && !r.name.includes("i7");
+        }
+        return true;
       });
     }
 
@@ -176,7 +193,7 @@ export default function GpuDashboard() {
                >
                  <option value="PROVIDERS_DESC">🔥 판매처 많은 순 정렬</option>
                  <option value="PRICE_ASC">최저가 순 정렬</option>
-                 <option value="VRAM_DESC">VRAM 높은 순 정렬</option>
+                 <option value="VRAM_DESC">{selectedCategory === "cpu" ? "RAM 높은 순 정렬" : "VRAM 높은 순 정렬"}</option>
                </select>
             </div>
           </div>
@@ -206,6 +223,7 @@ export default function GpuDashboard() {
                 <ResourceCard 
                   key={resource.id} 
                   item={resource} 
+                  selectedCategory={selectedCategory}
                   exchangeMultiplier={exchangeMultiplier} 
                   currencySymbol={currencySymbol} 
                   formatPrice={formatPrice} 

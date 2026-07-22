@@ -27,9 +27,10 @@ interface ResourceCardProps {
   exchangeMultiplier: number;
   currencySymbol: string;
   formatPrice: (price: number) => string;
+  selectedCategory?: string;
 }
 
-export default function ResourceCard({ item, exchangeMultiplier, currencySymbol, formatPrice }: ResourceCardProps) {
+export default function ResourceCard({ item, exchangeMultiplier, currencySymbol, formatPrice, selectedCategory }: ResourceCardProps) {
   const [isChartOpen, setIsChartOpen] = useState(false);
   const [isProvidersExpanded, setIsProvidersExpanded] = useState(false);
   const [chartPeriod, setChartPeriod] = useState<"DAY" | "WEEK" | "MONTH">("DAY");
@@ -68,7 +69,7 @@ export default function ResourceCard({ item, exchangeMultiplier, currencySymbol,
             )}
           </div>
           <h4 className="text-2xl font-black text-slate-900 leading-tight mb-2 tracking-tight">
-            {item.name} {item.vram_gb ? <span className="text-slate-400 font-semibold text-lg ml-1 font-mono">({item.vram_gb}GB VRAM)</span> : null}
+            {item.name} {item.vram_gb ? <span className="text-slate-400 font-semibold text-lg ml-1 font-mono">({item.vram_gb}GB {selectedCategory === "cpu" ? "RAM" : "VRAM"})</span> : null}
           </h4>
           
           <div className="text-sm text-slate-500 leading-relaxed mb-6 flex flex-wrap gap-x-5 gap-y-2 font-medium">

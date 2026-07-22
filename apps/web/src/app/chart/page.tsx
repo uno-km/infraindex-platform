@@ -7,7 +7,7 @@ export default function ChartIndex() {
     <div className="min-h-screen bg-gray-50/50 dark:bg-[#0a0a0a] text-gray-900 dark:text-gray-100">
       <Navbar />
       <div className="container mx-auto flex">
-        <Sidebar />
+        <Sidebar selectedCategory="all" setSelectedCategory={() => {}} />
         <main className="flex-1 p-6">
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2">Price Charts</h1>

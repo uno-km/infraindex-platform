@@ -6,8 +6,8 @@ from sqlalchemy.orm import selectinload
 
 from apps.api.core.limiter import limiter
 from apps.api.core.database import get_db
-from apps.api.models.offering import PricingPlan, InstanceOffering, OfferingGpuConfiguration
-from apps.api.models.hardware import GpuVariant, GpuModel
+from apps.api.models.offering import PricingPlan, InstanceOffering, OfferingGpuConfiguration, OfferingCpuConfiguration
+from apps.api.models.hardware import GpuVariant, GpuModel, CpuVariant, CpuModel
 from apps.api.schemas.search import SearchResponse
 from apps.api.core.search.normalizer import QueryNormalizer
 from apps.api.core.search.alias_resolver import AliasResolver
@@ -101,6 +101,52 @@ async def search_gpus(
                 f"[Search] Quarantine filter removed {filtered_count}/{original_count} "
                 f"plans for query='{q}'"
             )
+
+    return SearchResponse(
+        results=plans,
+        total=len(plans),
+        page=1,
+        size=len(plans),
+    )
+
+@router.get("/cpus")
+@limiter.limit("5/minute")
+async def search_cpus(
+    request: Request,
+    q: str = Query(..., description="The search query (e.g. 'EPYC', 'Xeon')"),
+    include_quarantined: bool = Query(False, description="격리된 항목도 포함 (관리자용)"),
+    db: AsyncSession = Depends(get_db),
+) -> Any:
+    """
+    Search for CPU rental offers.
+    """
+    norm_q = QueryNormalizer.normalize(q) if q else ""
+    resolved_q = AliasResolver.resolve(norm_q)
+
+    stmt = select(PricingPlan).options(
+        selectinload(PricingPlan.offering).selectinload(InstanceOffering.provider),
+        selectinload(PricingPlan.offering).selectinload(InstanceOffering.region),
+        selectinload(PricingPlan.offering).selectinload(
+            InstanceOffering.cpu_configuration
+        ).selectinload(OfferingCpuConfiguration.variant).selectinload(CpuVariant.model),
+        selectinload(PricingPlan.observations),
+    ).join(PricingPlan.offering).join(
+        InstanceOffering.cpu_configuration
+    ).join(OfferingCpuConfiguration.variant).join(CpuVariant.model)
+
+    if resolved_q:
+        stmt = stmt.where(
+            or_(
+                CpuModel.name.ilike(f"%{resolved_q}%"),
+                CpuVariant.name.ilike(f"%{resolved_q}%"),
+            )
+        )
+
+    result = await db.execute(stmt)
+    plans = result.scalars().all()
+
+    if not include_quarantined:
+        plans = [p for p in plans if not _is_quarantined(p)]
 
     return SearchResponse(
         results=plans,

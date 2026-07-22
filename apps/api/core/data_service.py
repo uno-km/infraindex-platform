@@ -9,7 +9,7 @@ class DataService:
     Data Access Layer that abstracts where data comes from.
     """
     @staticmethod
-    async def get_latest_prices() -> List[Dict[str, Any]]:
+    async def get_latest_prices(hardware_type: str = "gpu") -> List[Dict[str, Any]]:
         if settings.USE_REAL_DB:
             from sqlalchemy.ext.asyncio import AsyncSession
             from apps.api.core.database import SessionLocal
@@ -21,14 +21,19 @@ class DataService:
                 # 간단히 최근 500개 레코드를 가져옵니다. 
                 # (실제로는 provider, gpu별 최신값을 서브쿼리로 가져와야 함)
                 result = await db.execute(
-                    select(PriceHistory).order_by(desc(PriceHistory.timestamp)).limit(500)
+                    select(PriceHistory)
+                    .where(PriceHistory.hardware_type == hardware_type)
+                    .order_by(desc(PriceHistory.timestamp))
+                    .limit(500)
                 )
                 rows = result.scalars().all()
                 for r in rows:
                     all_records.append({
                         "provider": r.provider_id,
                         "gpu_model": r.gpu_model,
+                        "cpu_model": r.cpu_model,
                         "vram_gb": r.vram_gb,
+                        "cores": r.cores,
                         "price_per_hour": r.price_per_hour,
                         "availability_status": r.availability_status,
                         "provider_link": r.provider_link,
@@ -114,16 +119,69 @@ class DataService:
             provider_name = r.get("provider", "Unknown")
             price = float(r.get("price_per_hour", 0.0))
             
-            gpu_map[gpu_name]["offers"].append({
-                "provider": provider_name,
-                "price_per_hour": price,
-                "is_available": is_avail,
-                "region": r.get("region", "global"),
-                "provider_link": r.get("provider_link"),
-                "sys_ram_gb": r.get("sys_ram_gb"),
-                "tdp_w": r.get("tdp_w"),
-            })
+            existing_offer = next((o for o in gpu_map[gpu_name]["offers"] if o["provider"] == provider_name), None)
+            
+            if existing_offer:
+                if price < existing_offer["price_per_hour"]:
+                    existing_offer["price_per_hour"] = price
+                    existing_offer["region"] = r.get("region", "global")
+                    existing_offer["provider_link"] = r.get("provider_link")
+            else:
+                gpu_map[gpu_name]["offers"].append({
+                    "provider": provider_name,
+                    "price_per_hour": price,
+                    "is_available": is_avail,
+                    "region": r.get("region", "global"),
+                    "provider_link": r.get("provider_link"),
+                    "sys_ram_gb": r.get("sys_ram_gb"),
+                    "tdp_w": r.get("tdp_w"),
+                })
             
         return list(gpu_map.values())
+        
+    @staticmethod
+    async def get_cpus_for_ui() -> List[Dict[str, Any]]:
+        """Aggregates raw records into a nice structure for the CPU UI dashboard."""
+        records = await DataService.get_latest_prices(hardware_type="cpu")
+        
+        cpu_map = {}
+        for r in records:
+            cpu_name = r.get("cpu_model") or "Unknown CPU"
+            cores = r.get("cores", 0)
+                
+            if cpu_name not in cpu_map:
+                cpu_map[cpu_name] = {
+                    "id": cpu_name,
+                    "name": cpu_name,
+                    "vram_gb": r.get("sys_ram_gb") or 0, # reusing vram_gb field in UI for RAM for now
+                    "popularity_score": 0,
+                    "offers": []
+                }
+            
+            avail = r.get("availability_status")
+            is_avail = avail if isinstance(avail, bool) else (str(avail).lower() == "available")
+            
+            provider_name = r.get("provider", "Unknown")
+            price = float(r.get("price_per_hour", 0.0))
+            
+            existing_offer = next((o for o in cpu_map[cpu_name]["offers"] if o["provider"] == provider_name), None)
+            
+            if existing_offer:
+                if price < existing_offer["price_per_hour"]:
+                    existing_offer["price_per_hour"] = price
+                    existing_offer["region"] = r.get("region", "global")
+                    existing_offer["provider_link"] = r.get("provider_link")
+            else:
+                cpu_map[cpu_name]["offers"].append({
+                    "provider": provider_name,
+                    "price_per_hour": price,
+                    "is_available": is_avail,
+                    "region": r.get("region", "global"),
+                    "provider_link": r.get("provider_link"),
+                    "sys_ram_gb": r.get("sys_ram_gb"),
+                    "tdp_w": r.get("tdp_w"),
+                })
+            
+        return list(cpu_map.values())
 
 data_service = DataService()

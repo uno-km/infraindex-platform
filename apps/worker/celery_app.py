@@ -11,6 +11,9 @@ app = Celery(
     include=[
         "apps.worker.tasks.orchestrator",
         "apps.worker.tasks.outbox_publisher",  # P2-002: Outbox Publisher 등록
+        "apps.worker.tasks.retail", # Retail price crawler
+        "apps.worker.tasks.financial", # Financial market crawler
+        "apps.worker.tasks.news", # News crawler
     ]
 )
 
@@ -36,5 +39,17 @@ app.conf.beat_schedule = {
     "outbox-publisher": {
         "task": "outbox.publish_pending",
         "schedule": 30.0,  # seconds
+    },
+    "retail_tick_hourly": {
+        "task": "retail.tick",
+        "schedule": crontab(minute="0"),
+    },
+    "market.tick": {
+        "task": "market.tick",
+        "schedule": crontab(minute="0"), # 매 시간 정각
+    },
+    "news.tick": {
+        "task": "news.tick",
+        "schedule": crontab(minute="0"), # 매 시간 정각에 뉴스 크롤링
     },
 }

@@ -1,0 +1,32 @@
+[
+  {
+    "provider": "sugarcube",
+    "gpu_model": "A100 PCIe 80GB (서버형)",
+    "vram_gb": 80,
+    "price_per_hour": 1.95,
+    "availability_status": "available",
+    "provider_link": "https://sugarcube.co.kr",
+    "sys_ram_gb": 128,
+    "tdp_w": 400
+  },
+  {
+    "provider": "sugarcube",
+    "gpu_model": "RTX 4090 24GB (워크스테이션)",
+    "vram_gb": 24,
+    "price_per_hour": 0.42,
+    "availability_status": "available",
+    "provider_link": "https://sugarcube.co.kr",
+    "sys_ram_gb": 64,
+    "tdp_w": 450
+  },
+  {
+    "provider": "sugarcube",
+    "gpu_model": "RTX 3090 24GB (워크스테이션)",
+    "vram_gb": 24,
+    "price_per_hour": 0.28,
+    "availability_status": "available",
+    "provider_link": "https://sugarcube.co.kr",
+    "sys_ram_gb": 48,
+    "tdp_w": 350
+  }
+]

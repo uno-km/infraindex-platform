@@ -45,11 +45,7 @@ async def get_price_summary(
     days: int = Query(30, ge=1, le=365),
     db: AsyncSession = Depends(get_db),
 ) -> Any:
-    """
-    P1-005: GPU 가격 요약 통계 (offering_id = provider_slug:gpu_model 형식).
-    예: /api/v1/history/summary/vast-ai:H100?days=7
-    """
-    provider, gpu_model = _parse_offering_id(offering_id)
+    provider, model_name, hw_type = _parse_offering_id(offering_id)
     since = datetime.now(timezone.utc) - timedelta(days=days)
 
     result = await db.execute(
@@ -59,15 +55,14 @@ async def get_price_summary(
             func.avg(PriceHistory.price_per_hour).label("avg_price"),
             func.count(PriceHistory.id).label("cnt"),
         )
-        .where(_build_filter(PriceHistory, provider, gpu_model))
+        .where(_build_filter(PriceHistory, provider, model_name, hw_type))
         .where(PriceHistory.timestamp >= since)
     )
     row = result.one_or_none()
 
-    # 가장 최근 가격
     latest_result = await db.execute(
         select(PriceHistory.price_per_hour)
-        .where(_build_filter(PriceHistory, provider, gpu_model))
+        .where(_build_filter(PriceHistory, provider, model_name, hw_type))
         .order_by(desc(PriceHistory.timestamp))
         .limit(1)
     )
@@ -76,7 +71,7 @@ async def get_price_summary(
     return PriceSummaryResponse(
         offering_id=offering_id,
         provider=provider or "all",
-        gpu_model=gpu_model,
+        gpu_model=model_name, # schema field is gpu_model, we reuse it
         period_days=days,
         min_price=round(float(row.min_price), 4) if row and row.min_price is not None else None,
         max_price=round(float(row.max_price), 4) if row and row.max_price is not None else None,
@@ -93,20 +88,12 @@ async def get_price_history(
     limit: int = Query(500, ge=1, le=2000, description="최대 반환 데이터 포인트 수"),
     db: AsyncSession = Depends(get_db),
 ) -> Any:
-    """
-    P1-005: GET /api/v1/history/{offering_id}
-    offering_id 형식: <provider_slug>:<gpu_model>
-    예: vast-ai:H100, runpod:RTX%204090
-
-    price_history 테이블에서 실제 데이터를 반환.
-    데이터 없으면 빈 history 반환 (가짜 데이터 없음).
-    """
-    provider, gpu_model = _parse_offering_id(offering_id)
+    provider, model_name, hw_type = _parse_offering_id(offering_id)
     since = datetime.now(timezone.utc) - timedelta(days=days)
 
     query = (
         select(PriceHistory)
-        .where(_build_filter(PriceHistory, provider, gpu_model))
+        .where(_build_filter(PriceHistory, provider, model_name, hw_type))
         .where(PriceHistory.timestamp >= since)
         .order_by(PriceHistory.timestamp.asc())
         .limit(limit)
@@ -119,7 +106,7 @@ async def get_price_history(
         return PriceHistoryResponse(
             offering_id=offering_id,
             provider=provider or "all",
-            gpu_model=gpu_model,
+            gpu_model=model_name,
             vram_gb=0.0,
             days_requested=days,
             data_points=0,
@@ -129,8 +116,8 @@ async def get_price_history(
     return PriceHistoryResponse(
         offering_id=offering_id,
         provider=rows[0].provider_id,
-        gpu_model=rows[0].gpu_model,
-        vram_gb=rows[0].vram_gb,
+        gpu_model=rows[0].cpu_model if hw_type == "cpu" else rows[0].gpu_model,
+        vram_gb=rows[0].vram_gb or 0.0,
         days_requested=days,
         data_points=len(rows),
         history=[
@@ -146,19 +133,31 @@ async def get_price_history(
 
 def _parse_offering_id(offering_id: str):
     """
-    'vast-ai:H100' → ('vast-ai', 'H100')
-    'H100'          → (None, 'H100')  — provider 미지정 = 전체 공급자
+    'vast-ai:H100' → ('vast-ai', 'H100', 'gpu')
+    'cpu:vast-ai:EPYC' → ('vast-ai', 'EPYC', 'cpu')
     """
+    hw_type = "gpu"
+    if offering_id.startswith("cpu:"):
+        hw_type = "cpu"
+        offering_id = offering_id[4:]
+    elif offering_id.startswith("gpu:"):
+        hw_type = "gpu"
+        offering_id = offering_id[4:]
+        
     if ":" in offering_id:
         parts = offering_id.split(":", 1)
-        return parts[0].strip(), parts[1].strip()
-    return None, offering_id.strip()
+        return parts[0].strip(), parts[1].strip(), hw_type
+    return None, offering_id.strip(), hw_type
 
 
-def _build_filter(model, provider: Optional[str], gpu_model: str):
-    """공급자 + GPU 모델 필터 조건 생성."""
+def _build_filter(model, provider: Optional[str], target_model: str, hw_type: str = "gpu"):
+    """공급자 + 모델 필터 조건 생성."""
     from sqlalchemy import and_
-    conditions = [model.gpu_model.ilike(f"%{gpu_model}%")]
+    if hw_type == "cpu":
+        conditions = [model.cpu_model.ilike(f"%{target_model}%")]
+    else:
+        conditions = [model.gpu_model.ilike(f"%{target_model}%")]
+        
     if provider:
         conditions.append(model.provider_id == provider)
     return and_(*conditions)

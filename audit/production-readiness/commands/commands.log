@@ -1,0 +1,15 @@
+2026-07-22T17:20:07+09:00 | AMEVA-Memory-Price-Check/ | powershell -Command [env info] | Environment enumeration | exit:0
+2026-07-22T17:20:11+09:00 | AMEVA-Memory-Price-Check/ | git log --oneline -10 | Git history | exit:0
+2026-07-22T17:20:13+09:00 | AMEVA-Memory-Price-Check/ | git status --porcelain | Git status | exit:0 (clean)
+2026-07-22T17:20:18+09:00 | AMEVA-Memory-Price-Check/ | git rev-parse HEAD | HEAD SHA | exit:0 | 858d3cc65ac28ef3a7f5036c354730a041c07f3a
+2026-07-22T17:20:21+09:00 | AMEVA-Memory-Price-Check/ | git branch --show-current; git remote -v | Branch/remote | exit:0 | main, origin github.com
+2026-07-22T17:20:25+09:00 | AMEVA-Memory-Price-Check/ | node --version; python --version | Tool versions | exit:1 (pip not found)
+2026-07-22T17:20:26+09:00 | AMEVA-Memory-Price-Check/ | docker --version; docker compose version | Docker versions | exit:0 | 29.5.2 / v5.1.4
+2026-07-22T17:20:32+09:00 | AMEVA-Memory-Price-Check/ | .venv\Scripts\python.exe --version | Python venv | exit:0 | Python 3.12.0
+2026-07-22T17:20:32+09:00 | AMEVA-Memory-Price-Check/ | pnpm --version | pnpm | exit:0 | 9.0.0
+2026-07-22T17:20:34+09:00 | AMEVA-Memory-Price-Check/ | terraform --version | terraform | exit:1 (not installed)
+2026-07-22T17:20:40+09:00 | AMEVA-Memory-Price-Check/ | mkdir -Force audit dirs | Create audit dirs | exit:0
+2026-07-22T17:22:27+09:00 | AMEVA-Memory-Price-Check/ | git ls-files | All tracked files | exit:0 | 130 files
+2026-07-22T17:22:42+09:00 | AMEVA-Memory-Price-Check/ | [.env.staging key scan REDACTED] | Secret audit | exit:0
+2026-07-22T17:22:47+09:00 | AMEVA-Memory-Price-Check/ | git show HEAD:.env.staging | Check git tracking | exit:128 (not in git)
+Static file reads: All .py, .ts, .tsx, .yml, .yaml, .json, .sh, .tf files read and analyzed

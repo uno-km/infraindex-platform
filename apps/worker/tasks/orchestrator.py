@@ -59,35 +59,112 @@ async def _save_collection_run(
     status: str,
     items_collected: int,
     started_at: datetime,
+    error_message: str | None = None,
 ) -> None:
     """
-    P1-003: CollectionRun 레코드를 price_history 테이블에 기록.
-    collection_runs 테이블은 providers.id FK가 필요하므로,
-    provider_id를 slug로 직접 저장하는 PriceHistory 기반 로그를 사용.
+    CollectionRun 레코드를 collection_runs 테이블에 실제 INSERT.
+    provider_id는 slug(문자열) 기반 — providers FK 없이도 기록 가능.
     """
     if not settings.USE_REAL_DB or not settings.DATABASE_URL:
+        # 로컬 모드: 로그만 기록
+        elapsed = (datetime.now(timezone.utc) - started_at).total_seconds()
+        logger.info(
+            f"[{provider_slug}] CollectionRun (local) | status={status} "
+            f"items={items_collected} elapsed={elapsed:.1f}s"
+        )
         return
 
     try:
         from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-        from apps.api.models.history import PriceHistory
+        from apps.api.models.quality import CollectionRun
 
         db_url = settings.DATABASE_URL
         if db_url.startswith("postgresql://") and "+asyncpg" not in db_url:
             db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
 
-        engine = create_async_engine(db_url, echo=False, future=True, pool_size=2, max_overflow=5)
+        engine = create_async_engine(db_url, echo=False, future=True, pool_size=2, max_overflow=3)
         SessionLocal = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
 
-        elapsed = (datetime.now(timezone.utc) - started_at).total_seconds()
+        completed_at = datetime.now(timezone.utc)
+        elapsed = (completed_at - started_at).total_seconds()
+
+        run = CollectionRun(
+            provider_id=provider_slug,
+            started_at=started_at,
+            completed_at=completed_at,
+            status=status,
+            items_collected=items_collected,
+            error_message=error_message,
+        )
+
+        async with SessionLocal() as db:
+            async with db.begin():
+                db.add(run)
+
+        await engine.dispose()
         logger.info(
-            f"[{provider_slug}] CollectionRun 완료 | status={status} "
+            f"[{provider_slug}] CollectionRun INSERT 완료 | status={status} "
             f"items={items_collected} elapsed={elapsed:.1f}s"
         )
-        await engine.dispose()
 
     except Exception as e:
         logger.warning(f"[{provider_slug}] CollectionRun 기록 실패 (non-critical): {e}")
+
+
+async def _save_quarantine_issues(
+    provider_slug: str,
+    quarantined: list,
+    run_id: str | None = None,
+) -> None:
+    """
+    DataQualityIssue 배치 INSERT.
+    quarantined 아이템마다 issue_type, severity, description, raw_data_snapshot을 기록.
+    """
+    if not quarantined:
+        return
+    if not settings.USE_REAL_DB or not settings.DATABASE_URL:
+        return
+
+    try:
+        from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+        from apps.api.models.quality import DataQualityIssue
+        import json
+
+        db_url = settings.DATABASE_URL
+        if db_url.startswith("postgresql://") and "+asyncpg" not in db_url:
+            db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+        engine = create_async_engine(db_url, echo=False, future=True, pool_size=2, max_overflow=3)
+        SessionLocal = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
+
+        issues_to_insert = []
+        for q in quarantined:
+            raw_data = q.get("data", {})
+            issue_types = q.get("issues", ["unknown_issue"])
+            description = f"[{provider_slug}] Quarantined: {', '.join(issue_types)}"
+            try:
+                raw_snapshot = json.dumps(raw_data, ensure_ascii=False)[:2000]
+            except Exception:
+                raw_snapshot = str(raw_data)[:2000]
+
+            for issue_type in issue_types:
+                issues_to_insert.append(DataQualityIssue(
+                    run_id=run_id,
+                    issue_type=issue_type,
+                    severity="quarantine",
+                    description=description,
+                    raw_data_snapshot=raw_snapshot,
+                ))
+
+        async with SessionLocal() as db:
+            async with db.begin():
+                db.add_all(issues_to_insert)
+
+        await engine.dispose()
+        logger.info(f"[{provider_slug}] DataQualityIssue INSERT: {len(issues_to_insert)} rows")
+
+    except Exception as e:
+        logger.warning(f"[{provider_slug}] DataQualityIssue 기록 실패 (non-critical): {e}")
 
 
 async def execute_extraction(provider_slug: str):
@@ -116,7 +193,7 @@ async def execute_extraction(provider_slug: str):
         crawler = VesslCrawler()
     elif provider_slug == "xesktop":
         crawler = XesktopCrawler()
-    elif provider_slug in ["gpuaas", "cloudv", "runyourai", "gabia", "ktcloud"]:
+    elif provider_slug in ["gpuaas", "cloudv", "runyourai", "gabia", "ktcloud", "sugarcube", "appleplaza", "ncloud", "rebellion"]:
         crawler = KoreanUniversalCrawler(provider_slug)
     else:
         logger.error(f"Unknown provider: {provider_slug}")
@@ -125,11 +202,13 @@ async def execute_extraction(provider_slug: str):
     status = "failed"
     items_collected = 0
 
+    last_error: str | None = None
+
     try:
         raw_normalized = await crawler.execute_pipeline()
         logger.info(f"[{provider_slug}] Pipeline extracted {len(raw_normalized)} raw records.")
 
-        # P1-001: QuarantineService — 품질 필터링
+        # QuarantineService — 품질 필터링
         quality_result = QuarantineService.inspect(raw_normalized)
         passed_data = quality_result["passed"]
         quarantined = quality_result["quarantined"]
@@ -142,9 +221,13 @@ async def execute_extraction(provider_slug: str):
 
         logger.info(f"[{provider_slug}] Quality gate: {len(passed_data)} passed, {len(quarantined)} quarantined.")
 
-        # 품질 통과 데이터만 저장
+        # 품질 통과 데이터만 저장 (PriceHistory + OutboxEvent 동일 트랜잭션)
         storage = get_storage()
         await storage.save(provider_slug, passed_data)
+
+        # DataQualityIssue 배치 INSERT (quarantine 아이템 기록)
+        if quarantined:
+            await _save_quarantine_issues(provider_slug, quarantined)
 
         items_collected = len(passed_data)
         status = "success"
@@ -152,14 +235,18 @@ async def execute_extraction(provider_slug: str):
 
     except Exception as e:
         status = "failed"
+        last_error = str(e)
         if settings.ENABLE_ALERTS:
             await send_critical_alert("Crawler Failed", str(e), provider_slug)
         logger.error(f"[{provider_slug}] Extraction failed: {str(e)}", exc_info=True)
         raise e
 
     finally:
-        # P1-003: CollectionRun 기록 (항상 실행)
-        await _save_collection_run(provider_slug, status, items_collected, started_at)
+        # CollectionRun 기록 (항상 실행 — 성공/실패 모두)
+        await _save_collection_run(
+            provider_slug, status, items_collected, started_at,
+            error_message=last_error
+        )
 
 
 # ----------------- Celery Tasks ----------------- #
@@ -180,7 +267,7 @@ def tick():
     run_provider_collection.delay("vessl")
     run_provider_collection.delay("xesktop")
     # 한국 공급자
-    for slug in ["gpuaas", "cloudv", "runyourai", "gabia", "ktcloud"]:
+    for slug in ["gpuaas", "cloudv", "runyourai", "gabia", "ktcloud", "sugarcube", "appleplaza", "ncloud", "rebellion"]:
         run_provider_collection.delay(slug)
 
 

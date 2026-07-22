@@ -1,6 +1,5 @@
 from fastapi import APIRouter
-from apps.api.api.v1.endpoints import providers, gpus, search, history, admin, memory, storage, chat, chart, stream, health, reports, traffic, resources
-
+from apps.api.api.v1.endpoints import providers, gpus, search, history, admin, memory, storage, chat, chart, stream, health, reports, traffic, resources, retail_charts, insights, news
 api_router = APIRouter()
 api_router.include_router(health.router, prefix="/health", tags=["health"])
 api_router.include_router(providers.router, prefix="/providers", tags=["providers"])
@@ -17,3 +16,6 @@ api_router.include_router(traffic.router, prefix="/traffic", tags=["traffic"])
 api_router.include_router(resources.router, prefix="/cpu", tags=["cpu"])
 api_router.include_router(resources.router, prefix="/storage", tags=["storage"])
 api_router.include_router(resources.router, prefix="/baremetal", tags=["baremetal"])
+api_router.include_router(retail_charts.router, prefix="/retail", tags=["retail"])
+api_router.include_router(insights.router, prefix="/insights", tags=["insights"])
+api_router.include_router(news.router, prefix="/news", tags=["news"])

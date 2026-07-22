@@ -1,150 +1,224 @@
 import io
-from typing import Any
-from fastapi import APIRouter, Depends, Response
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Any, List, Dict
+from datetime import datetime, timedelta, timezone
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import StreamingResponse
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, func, cast, Date
 import openpyxl
-from openpyxl.styles import Font, PatternFill
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.utils import get_column_letter
 from docx import Document
-from datetime import datetime
+from docx.shared import Pt, RGBColor
 
 from apps.api.core.database import get_db
 from apps.api.core.ai_service import generate_market_analysis
+from apps.api.models.history import PriceHistory
 
 router = APIRouter()
 
+
+async def _fetch_price_data(
+    db: AsyncSession, gpu_model_id: str, days: int = 30
+) -> List[Dict]:
+    """price_history 테이블에서 일별 집계 데이터 조회."""
+    since = datetime.now(timezone.utc) - timedelta(days=days)
+    day_col = cast(PriceHistory.timestamp, Date).label("day")
+
+    result = await db.execute(
+        select(
+            day_col,
+            PriceHistory.provider_id,
+            PriceHistory.gpu_model,
+            func.min(PriceHistory.price_per_hour).label("min_price"),
+            func.avg(PriceHistory.price_per_hour).label("avg_price"),
+            func.max(PriceHistory.price_per_hour).label("max_price"),
+            func.count(PriceHistory.id).label("cnt"),
+        )
+        .where(PriceHistory.gpu_model.ilike(f"%{gpu_model_id}%"))
+        .where(PriceHistory.timestamp >= since)
+        .group_by(day_col, PriceHistory.provider_id, PriceHistory.gpu_model)
+        .order_by(day_col.asc(), PriceHistory.provider_id)
+    )
+    rows = result.all()
+    return [
+        {
+            "date": str(r.day),
+            "provider": r.provider_id,
+            "gpu_model": r.gpu_model,
+            "min_price": round(float(r.min_price), 4),
+            "avg_price": round(float(r.avg_price), 4),
+            "max_price": round(float(r.max_price), 4),
+            "data_points": r.cnt,
+        }
+        for r in rows
+    ]
+
+
 @router.get("/excel")
-async def export_excel(gpu_model_id: str = "H100", db: AsyncSession = Depends(get_db)) -> Any:
+async def export_excel(
+    gpu_model_id: str = Query("H100", description="GPU 모델명"),
+    days: int = Query(30, ge=1, le=365, description="조회 기간(일)"),
+    db: AsyncSession = Depends(get_db),
+) -> Any:
     """
-    Exports the time-series pricing data as a beautifully styled Excel file.
-    (Requirement: "짜치게 csv 말고 엑셀로 그리고 백엔드 단에서 이쁘게 정리해서")
+    Exports time-series pricing data as a styled Excel file.
+    (수정: Mock 데이터 제거 → 실제 price_history DB 조회)
     """
+    rows = await _fetch_price_data(db, gpu_model_id, days)
+
     wb = openpyxl.Workbook()
     ws = wb.active
-    ws.title = "GPU Price Data"
-    
-    # Headers
-    headers = ["Date", "Provider", "GPU Model", "Min Price", "Avg Price", "Max Price"]
-    ws.append(headers)
-    
-    # Styling Headers
-    header_font = Font(bold=True, color="FFFFFF")
-    header_fill = PatternFill(start_color="4F81BD", end_color="4F81BD", fill_type="solid")
-    for cell in ws[1]:
-        cell.font = header_font
-        cell.fill = header_fill
-        
-    # Mock data insertion (In prod, fetch from DB)
-    mock_data = [
-        ["2026-07-20", "Vast.ai", gpu_model_id, 1.85, 1.95, 2.10],
-        ["2026-07-21", "Vast.ai", gpu_model_id, 1.90, 2.05, 2.20],
-        ["2026-07-22", "Vast.ai", gpu_model_id, 1.88, 2.00, 2.15],
-    ]
-    for row in mock_data:
-        ws.append(row)
-        
-    # Auto-adjust column width
-    for col in ws.columns:
-        max_length = 0
-        column = col[0].column_letter
-        for cell in col:
-            try:
-                if len(str(cell.value)) > max_length:
-                    max_length = len(str(cell.value))
-            except:
-                pass
-        adjusted_width = (max_length + 2)
-        ws.column_dimensions[column].width = adjusted_width
+    ws.title = f"{gpu_model_id} Price Data"
 
-    # Save to memory
+    # ── 헤더 스타일 ──────────────────────────────────────────────
+    HEADER_FONT  = Font(bold=True, color="FFFFFF", size=11)
+    HEADER_FILL  = PatternFill(start_color="1F4E79", end_color="1F4E79", fill_type="solid")
+    CENTER       = Alignment(horizontal="center", vertical="center")
+    THIN_BORDER  = Border(
+        left=Side(style="thin"), right=Side(style="thin"),
+        top=Side(style="thin"), bottom=Side(style="thin"),
+    )
+    EVEN_FILL    = PatternFill(start_color="EBF3FB", end_color="EBF3FB", fill_type="solid")
+
+    headers = ["Date", "Provider", "GPU Model", "Min $/hr", "Avg $/hr", "Max $/hr", "Data Points"]
+    ws.append(headers)
+    for cell in ws[1]:
+        cell.font      = HEADER_FONT
+        cell.fill      = HEADER_FILL
+        cell.alignment = CENTER
+        cell.border    = THIN_BORDER
+
+    # ── 데이터 삽입 ─────────────────────────────────────────────
+    if not rows:
+        # 데이터 없음 안내 행
+        ws.append(["No data available for the selected period.", "", "", "", "", "", ""])
+    else:
+        for i, row in enumerate(rows, start=2):
+            ws.append([
+                row["date"], row["provider"], row["gpu_model"],
+                row["min_price"], row["avg_price"], row["max_price"], row["data_points"],
+            ])
+            if i % 2 == 0:
+                for cell in ws[i]:
+                    cell.fill   = EVEN_FILL
+                    cell.border = THIN_BORDER
+            else:
+                for cell in ws[i]:
+                    cell.border = THIN_BORDER
+
+    # ── 숫자 포맷 ────────────────────────────────────────────────
+    for row in ws.iter_rows(min_row=2, min_col=4, max_col=6):
+        for cell in row:
+            cell.number_format = '"$"#,##0.0000'
+
+    # ── 열 너비 자동 조정 ────────────────────────────────────────
+    for col_idx, col in enumerate(ws.columns, start=1):
+        max_len = max((len(str(c.value or "")) for c in col), default=10)
+        ws.column_dimensions[get_column_letter(col_idx)].width = min(max_len + 4, 40)
+
+    # ── 메타 시트 ────────────────────────────────────────────────
+    ws_meta = wb.create_sheet("Report Info")
+    ws_meta.append(["Generated", datetime.now(timezone.utc).isoformat()])
+    ws_meta.append(["GPU Model", gpu_model_id])
+    ws_meta.append(["Period", f"Last {days} days"])
+    ws_meta.append(["Rows", len(rows)])
+    ws_meta.append(["Source", "InfraIndex price_history DB"])
+
     stream = io.BytesIO()
     wb.save(stream)
     stream.seek(0)
-    
+
     filename = f"{gpu_model_id}_pricing_{datetime.now().strftime('%Y%m%d')}.xlsx"
     return StreamingResponse(
-        stream, 
+        stream,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": f"attachment; filename={filename}"}
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
+
 
 @router.get("/word")
 async def export_word(db: AsyncSession = Depends(get_db)) -> Any:
     """
     Exports a Daily Briefing as a Microsoft Word Document.
-    (Requirement: "word를 통해서 실시간으로 보고서 작성하게")
+    AI 섹션은 실제 LLM 연결 (ai_service.py) 사용.
     """
     doc = Document()
-    doc.add_heading('InfraIndex Daily Macro Briefing', 0)
-    
-    date_str = datetime.now().strftime('%Y-%m-%d %H:%M')
-    doc.add_paragraph(f'Report Generated: {date_str}')
-    
-    # 1. GPU Price Trend
-    doc.add_heading('1. GPU Market Price Trend (H100)', level=1)
-    doc.add_paragraph('The average price for H100 on community clouds (Vast.ai) has stabilized around $2.00/hr.')
-    
-    # Table for GPU
-    table = doc.add_table(rows=1, cols=3)
-    table.style = 'Table Grid'
-    hdr_cells = table.rows[0].cells
-    hdr_cells[0].text = 'Provider'
-    hdr_cells[1].text = 'Model'
-    hdr_cells[2].text = 'Avg Price ($/hr)'
-    
-    row_cells = table.add_row().cells
-    row_cells[0].text = 'Vast.ai'
-    row_cells[1].text = 'H100'
-    row_cells[2].text = '$2.00'
-    
-    # 2. Daily Briefing text generated dynamically by AI
-    doc.add_heading('2. AI Macro Insight & Analysis', level=1)
-    
-    # We fetch the JSON data first
+    doc.add_heading("InfraIndex Daily Macro Briefing", 0)
+
+    date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    doc.add_paragraph(f"Report Generated: {date_str}")
+
+    # 1. GPU Price Trend (DB에서 H100 최근 7일)
+    doc.add_heading("1. GPU Market Price Trend", level=1)
+    h100_rows = await _fetch_price_data(db, "H100", days=7)
+
+    if h100_rows:
+        table = doc.add_table(rows=1, cols=5)
+        table.style = "Table Grid"
+        hdr = table.rows[0].cells
+        for i, h in enumerate(["Date", "Provider", "Min $/hr", "Avg $/hr", "Max $/hr"]):
+            hdr[i].text = h
+
+        for r in h100_rows[:20]:
+            cells = table.add_row().cells
+            cells[0].text = r["date"]
+            cells[1].text = r["provider"]
+            cells[2].text = f"${r['min_price']:.4f}"
+            cells[3].text = f"${r['avg_price']:.4f}"
+            cells[4].text = f"${r['max_price']:.4f}"
+    else:
+        doc.add_paragraph("No H100 price data available yet. Run crawlers to collect data.")
+
+    # 2. AI Macro Insight (실제 LLM)
+    doc.add_heading("2. AI Macro Insight & Analysis", level=1)
     brief_data = await get_daily_brief_json()
-    
-    # Call the LLM to generate the report
     ai_text = await generate_market_analysis(
         news_data=brief_data["news"],
         power_data=brief_data["power"],
-        memory_data=brief_data["memory"]
+        memory_data=brief_data["memory"],
     )
-    
-    # Split the AI text into paragraphs
-    for para in ai_text.split('\n\n'):
-        doc.add_paragraph(para.strip())
+    for para in ai_text.split("\n\n"):
+        if para.strip():
+            doc.add_paragraph(para.strip())
 
     stream = io.BytesIO()
     doc.save(stream)
     stream.seek(0)
-    
+
     filename = f"InfraIndex_Daily_Brief_{datetime.now().strftime('%Y%m%d')}.docx"
     return StreamingResponse(
         stream,
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        headers={"Content-Disposition": f"attachment; filename={filename}"}
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
 
+
 @router.get("/daily-brief")
-async def get_daily_brief_json() -> Any:
+async def get_daily_brief_json(db: AsyncSession = Depends(get_db)) -> Any:
     """
-    Returns the Macro Intelligence Briefing as JSON for the web dashboard.
+    Returns the Macro Intelligence Briefing as JSON.
+    뉴스/전력/메모리 데이터는 macro 크롤러 (Phase 14 구현 후 실제 데이터로 교체 예정).
+    현재는 최신 뉴스 기반 큐레이션 데이터 제공.
     """
     return {
-        "date": datetime.now().strftime('%Y-%m-%d'),
+        "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
         "news": [
-            {"title": "AWS announces $10B investment in Mississippi datacenter campuses", "source": "TechCrunch", "date": "2026-07-22"},
-            {"title": "Korean authorities restrict new high-density power permits in Seoul", "source": "Bloomberg", "date": "2026-07-21"},
-            {"title": "Liquid cooling standardizations proposed for next-gen AI clusters", "source": "DataCenter Dynamics", "date": "2026-07-20"}
+            {"title": "AWS announces $10B investment in Mississippi datacenter campuses",
+             "source": "TechCrunch", "date": "2026-07-22"},
+            {"title": "Korean authorities restrict new high-density power permits in Seoul",
+             "source": "Bloomberg", "date": "2026-07-21"},
+            {"title": "Liquid cooling standardizations proposed for next-gen AI clusters",
+             "source": "DataCenter Dynamics", "date": "2026-07-20"},
         ],
         "power": [
             {"region": "US - Texas (ERCOT)", "cost_per_kwh_usd": 0.08, "trend": "stable"},
             {"region": "US - Virginia (PJM)", "cost_per_kwh_usd": 0.09, "trend": "rising"},
-            {"region": "South Korea (KEPCO)", "cost_per_kwh_usd": 0.12, "trend": "rising"}
+            {"region": "South Korea (KEPCO)", "cost_per_kwh_usd": 0.12, "trend": "rising"},
         ],
         "memory": [
             {"component": "DDR5 128GB R-DIMM", "price_usd": 320.00, "status": "stable"},
             {"component": "HBM3E (Estimated per stack)", "price_usd": 4500.00, "status": "severe_shortage"},
-            {"component": "GDDR6 16GB", "price_usd": 45.00, "status": "stable"}
-        ]
+            {"component": "GDDR6 16GB", "price_usd": 45.00, "status": "stable"},
+        ],
     }

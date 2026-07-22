@@ -29,7 +29,7 @@ class ChartDataPoint(BaseModel):
 
 
 class ChartSeriesResponse(BaseModel):
-    gpu_model: str
+    model_name: str
     provider: str
     data: List[ChartDataPoint]
 
@@ -48,8 +48,11 @@ async def get_candlestick(
         .where(PriceHistory.timestamp >= since)
         .order_by(PriceHistory.timestamp.asc())
     )
-    result = await db.execute(query)
-    rows = result.scalars().all()
+    if db is not None:
+        result = await db.execute(query)
+        rows = result.scalars().all()
+    else:
+        rows = []
     
     if not rows:
         # Fallback to local JSON files if DB is empty
@@ -172,8 +175,11 @@ async def get_price_series(
     if provider:
         query = query.where(PriceHistory.provider_id == provider)
 
-    result = await db.execute(query)
-    rows = result.all()
+    if db is not None:
+        result = await db.execute(query)
+        rows = result.all()
+    else:
+        rows = []
 
     if not rows:
         return []
@@ -196,9 +202,73 @@ async def get_price_series(
 
     return [
         ChartSeriesResponse(
-            gpu_model=gpu,
+            model_name=gpu,
             provider=prov,
             data=points,
         )
         for (gpu, prov), points in series_map.items()
+    ]
+
+
+@router.get("/cpu-price-series", response_model=List[ChartSeriesResponse])
+async def get_cpu_price_series(
+    cpu_model_id: str = Query(..., description="CPU model name (e.g. 'EPYC', 'Xeon')"),
+    provider: Optional[str] = Query(None, description="Filter by provider slug"),
+    days: int = Query(30, ge=1, le=365),
+    db: AsyncSession = Depends(get_db),
+) -> Any:
+    since = datetime.now(timezone.utc) - timedelta(days=days)
+
+    day_col = cast(PriceHistory.timestamp, Date).label("day")
+    query = (
+        select(
+            PriceHistory.cpu_model,
+            PriceHistory.provider_id,
+            day_col,
+            func.min(PriceHistory.price_per_hour).label("min_price"),
+            func.max(PriceHistory.price_per_hour).label("max_price"),
+            func.avg(PriceHistory.price_per_hour).label("avg_price"),
+            func.count(PriceHistory.id).label("cnt"),
+        )
+        .where(PriceHistory.hardware_type == "cpu")
+        .where(PriceHistory.cpu_model.ilike(f"%{cpu_model_id}%"))
+        .where(PriceHistory.timestamp >= since)
+        .group_by(PriceHistory.cpu_model, PriceHistory.provider_id, day_col)
+        .order_by(PriceHistory.provider_id, day_col)
+    )
+
+    if provider:
+        query = query.where(PriceHistory.provider_id == provider)
+
+    if db is not None:
+        result = await db.execute(query)
+        rows = result.all()
+    else:
+        rows = []
+
+    if not rows:
+        return []
+
+    series_map: dict = {}
+    for row in rows:
+        key = (row.cpu_model, row.provider_id)
+        if key not in series_map:
+            series_map[key] = []
+        series_map[key].append(
+            ChartDataPoint(
+                timestamp=row.day.isoformat() + "T00:00:00Z",
+                min_price=round(float(row.min_price), 4),
+                max_price=round(float(row.max_price), 4),
+                avg_price=round(float(row.avg_price), 4),
+                data_point_count=row.cnt,
+            )
+        )
+
+    return [
+        ChartSeriesResponse(
+            model_name=cpu or "Unknown",
+            provider=prov,
+            data=points,
+        )
+        for (cpu, prov), points in series_map.items()
     ]

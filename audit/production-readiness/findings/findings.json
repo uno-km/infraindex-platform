@@ -1,0 +1,335 @@
+{
+  "audit_metadata": {
+    "project": "AMEVA-Memory-Price-Check (InfraIndex Platform)",
+    "audit_date": "2026-07-22",
+    "head_commit": "858d3cc65ac28ef3a7f5036c354730a041c07f3a",
+    "branch": "main",
+    "auditor": "Independent Production Readiness Audit Team",
+    "final_verdict": "NO-GO",
+    "confidence": "Medium"
+  },
+  "findings": [
+    {
+      "id": "AMEVA-CRIT-001",
+      "title": "Admin API has zero authentication",
+      "severity": "CRITICAL",
+      "status": "FAIL",
+      "affected_component": "apps/api/api/v1/endpoints/admin.py",
+      "claim_contradicted": "Admin only endpoint with access control",
+      "description": "GET /api/v1/admin/quarantine and POST /api/v1/admin/quarantine/{id}/approve have no authentication dependency. Anyone on the internet can access these endpoints.",
+      "evidence": "admin.py L9-41: No Depends(verify_admin) or any auth middleware",
+      "user_impact": "Critical - any actor can view quarantine list and release quarantined data",
+      "security_impact": "Critical - unauthenticated administrative action",
+      "release_blocker": true,
+      "estimated_effort": "1 day"
+    },
+    {
+      "id": "AMEVA-CRIT-002",
+      "title": "Chart API returns hardcoded Mock data",
+      "severity": "CRITICAL",
+      "status": "FAIL",
+      "affected_component": "apps/api/api/v1/endpoints/chart.py",
+      "claim_contradicted": "Time-Series API using actual PriceHistory from DB",
+      "description": "chart.py returns hardcoded 3 data points for H100 Vast.ai regardless of query params. No DB query whatsoever.",
+      "evidence": "chart.py L33-43: ChartDataPoint hardcoded dates 2026-07-20 to 2026-07-22 with fixed prices",
+      "user_impact": "Critical - users see fake price chart data, never updated",
+      "data_integrity_impact": "Critical - fake data presented as real market data",
+      "release_blocker": true,
+      "estimated_effort": "5-10 days"
+    },
+    {
+      "id": "AMEVA-CRIT-003",
+      "title": "PostgresStorage.save() is not implemented — only logs",
+      "severity": "CRITICAL",
+      "status": "FAIL",
+      "affected_component": "apps/worker/core/storage.py",
+      "claim_contradicted": "Data persisted to PostgreSQL database",
+      "description": "PostgresStorage.save() contains only a logger.info() call. No SQLAlchemy session, no INSERT statement. When USE_REAL_DB=True, collected data is silently discarded.",
+      "evidence": "storage.py L28-32: logger.info() is the entire implementation",
+      "user_impact": "Critical - all collected data lost when USE_REAL_DB=True",
+      "release_blocker": true,
+      "estimated_effort": "3-5 days"
+    },
+    {
+      "id": "AMEVA-CRIT-004",
+      "title": "AWS Crawler returns hardcoded Mock data",
+      "severity": "CRITICAL",
+      "status": "FAIL",
+      "affected_component": "apps/worker/providers/aws.py",
+      "claim_contradicted": "AWS EC2/Spot API crawler collecting real data",
+      "description": "fetch_raw_data() returns a hardcoded dict with one SKU. Always produces price_per_hour=32.77 regardless of actual AWS prices.",
+      "evidence": "aws.py L9-12: 'Scaffold for Phase 15' comment, return hardcoded product dict",
+      "release_blocker": true,
+      "estimated_effort": "5-10 days"
+    },
+    {
+      "id": "AMEVA-CRIT-005",
+      "title": "Outbox Publisher/Consumer completely absent",
+      "severity": "CRITICAL",
+      "status": "FAIL",
+      "affected_component": "apps/api/core/events/bus.py, apps/worker/",
+      "claim_contradicted": "Transactional Outbox Pattern - zero data loss",
+      "description": "PostgresOutboxEventBus class exists but is never called during PriceObservation save. No publisher worker exists to consume outbox_events and publish to message broker.",
+      "evidence": "No code in orchestrator.py or any save path calls event_bus.publish(). No worker process reads outbox_events.",
+      "release_blocker": true,
+      "estimated_effort": "10-15 days"
+    },
+    {
+      "id": "AMEVA-CRIT-006",
+      "title": "Celery Beat task name mismatch — scheduler broken",
+      "severity": "CRITICAL",
+      "status": "FAIL",
+      "affected_component": "apps/worker/celery_app.py:27 vs apps/worker/tasks/orchestrator.py:47",
+      "claim_contradicted": "5-minute Celery Beat scheduler running collections",
+      "description": "celery_app.py registers task 'orchestrator.run_all_collections' in beat_schedule. Actual task is named 'orchestrator.tick'. Celery Beat will fail with NotRegistered exception on every tick.",
+      "evidence": "celery_app.py L27: 'orchestrator.run_all_collections'. orchestrator.py L47: @shared_task(name='orchestrator.tick')",
+      "release_blocker": true,
+      "estimated_effort": "30 minutes - 1 day (fix name, then test)"
+    },
+    {
+      "id": "AMEVA-CRIT-007",
+      "title": "History API always returns empty array",
+      "severity": "CRITICAL",
+      "status": "FAIL",
+      "affected_component": "apps/api/api/v1/endpoints/history.py",
+      "claim_contradicted": "Price history lookup API",
+      "description": "GET /api/v1/history/{offering_id} always returns {\"history\": []}. TODO comment, no DB query.",
+      "evidence": "history.py L18-19: # TODO: Implement history logic → return {\"offering_id\": offering_id, \"history\": []}",
+      "release_blocker": true,
+      "estimated_effort": "3-5 days"
+    },
+    {
+      "id": "AMEVA-CRIT-008",
+      "title": "Chat API is Mock Scaffold",
+      "severity": "CRITICAL",
+      "status": "FAIL",
+      "affected_component": "apps/api/api/v1/endpoints/chat.py",
+      "claim_contradicted": "NLP Query Engine",
+      "description": "Always returns 'This NLP feature is currently in scaffolding phase' regardless of input.",
+      "evidence": "chat.py L27-33: TODO comment and mock ChatResponse",
+      "release_blocker": false,
+      "estimated_effort": "15-30 days"
+    },
+    {
+      "id": "AMEVA-CRIT-009",
+      "title": "Wildcard CORS is production default",
+      "severity": "CRITICAL",
+      "status": "FAIL",
+      "affected_component": "apps/api/core/config.py:9",
+      "claim_contradicted": "CORS safely configured",
+      "description": "BACKEND_CORS_ORIGINS defaults to [\"*\"]. If production deploys without explicit env override, any origin can make credentialed requests.",
+      "evidence": "config.py L9: BACKEND_CORS_ORIGINS: list[str] = [\"*\"]",
+      "security_impact": "High - CSRF if cookies used, cross-origin API abuse",
+      "release_blocker": true,
+      "estimated_effort": "1 hour"
+    },
+    {
+      "id": "AMEVA-CRIT-010",
+      "title": "Hardcoded default DB password 'password'",
+      "severity": "CRITICAL",
+      "status": "FAIL",
+      "affected_component": "apps/api/core/config.py:14",
+      "claim_contradicted": "Secure credential management",
+      "description": "POSTGRES_PASSWORD defaults to literal string 'password'. Docker Compose also uses 'password'. Production deployment without env override will use insecure password.",
+      "evidence": "config.py L14: POSTGRES_PASSWORD: str = \"password\". docker-compose.yml L8: POSTGRES_PASSWORD: password",
+      "security_impact": "Critical - trivially guessable DB password",
+      "release_blocker": true,
+      "estimated_effort": "1 hour"
+    },
+    {
+      "id": "AMEVA-HIGH-001",
+      "title": "QuarantineService disconnected from pipeline",
+      "severity": "HIGH",
+      "status": "FAIL",
+      "affected_component": "apps/worker/core/quarantine.py",
+      "claim_contradicted": "Data quality isolation with quarantine severity",
+      "description": "QuarantineService.inspect() exists but is never called in orchestrator.py or any collection pipeline. Negative prices and extreme prices flow through unchecked.",
+      "additional_bug": "QuarantineService checks 'hourly_price' key but crawlers produce 'price_per_hour' — key mismatch means quarantine would always pass even if connected",
+      "release_blocker": true
+    },
+    {
+      "id": "AMEVA-HIGH-002",
+      "title": "IdempotencyKey never used in actual tasks",
+      "severity": "HIGH",
+      "status": "FAIL",
+      "affected_component": "apps/worker/core/idempotency.py",
+      "claim_contradicted": "Duplicate execution prevention via IdempotencyKey",
+      "description": "acquire_lock() function implemented but never imported or called in orchestrator.py. Same job can run multiple times without prevention.",
+      "release_blocker": true
+    },
+    {
+      "id": "AMEVA-HIGH-003",
+      "title": "CircuitBreaker not connected to crawlers",
+      "severity": "HIGH",
+      "status": "FAIL",
+      "affected_component": "apps/worker/core/circuit_breaker.py",
+      "claim_contradicted": "Circuit breaker for provider fault isolation",
+      "description": "CircuitBreaker class exists but no crawler imports or uses it. Provider failures will not be isolated. Also: in-memory state reset on restart.",
+      "release_blocker": false
+    },
+    {
+      "id": "AMEVA-HIGH-004",
+      "title": "Rate Limiter is in-memory — ineffective in distributed deployment",
+      "severity": "HIGH",
+      "status": "FAIL",
+      "affected_component": "apps/api/core/limiter.py",
+      "description": "slowapi with get_remote_address uses in-memory storage by default. Multiple API pods will each have independent rate limit counters. A user can exceed the per-minute limit N times (once per pod).",
+      "remediation": "Pass storage=RedisStorage(redis_client) to Limiter()",
+      "release_blocker": true
+    },
+    {
+      "id": "AMEVA-HIGH-005",
+      "title": "Health Check references undefined CELERY_BROKER_URL",
+      "severity": "HIGH",
+      "status": "FAIL",
+      "affected_component": "apps/api/api/v1/endpoints/health.py:37",
+      "description": "health.py uses settings.CELERY_BROKER_URL but config.py only defines REDIS_URL. AttributeError will crash health endpoint.",
+      "evidence": "health.py L37: redis.from_url(settings.CELERY_BROKER_URL). config.py has no CELERY_BROKER_URL field.",
+      "release_blocker": true
+    },
+    {
+      "id": "AMEVA-HIGH-006",
+      "title": "Terraform: RDS lacks subnet group, deletion protection, encryption",
+      "severity": "HIGH",
+      "status": "FAIL",
+      "affected_component": "infrastructure/terraform/main.tf",
+      "description": "RDS instance has skip_final_snapshot=true, no deletion_protection, no db_subnet_group_name (will use default public VPC), no storage_encrypted. Data at risk.",
+      "release_blocker": true
+    },
+    {
+      "id": "AMEVA-HIGH-007",
+      "title": "Render Blueprint missing Celery Beat scheduler service",
+      "severity": "HIGH",
+      "status": "FAIL",
+      "affected_component": "render.yaml",
+      "description": "render.yaml defines web and worker services but no Celery Beat scheduler. Without Beat, no periodic task dispatching occurs. All collection is manual-only.",
+      "release_blocker": true
+    },
+    {
+      "id": "AMEVA-HIGH-008",
+      "title": "Render Blueprint on free plan — production unacceptable",
+      "severity": "HIGH",
+      "status": "FAIL",
+      "affected_component": "render.yaml L7, L24",
+      "description": "Both web and worker services use 'plan: free'. Render free tier spins down after inactivity, inadequate for production data collection.",
+      "release_blocker": true
+    },
+    {
+      "id": "AMEVA-HIGH-009",
+      "title": "Search does not exclude quarantined prices",
+      "severity": "HIGH",
+      "status": "FAIL",
+      "affected_component": "apps/api/api/v1/endpoints/search.py",
+      "description": "Search query joins PricingPlan → PriceObservation but does not filter by quality status. Quarantined observations can appear in search results.",
+      "release_blocker": false
+    },
+    {
+      "id": "AMEVA-HIGH-010",
+      "title": "price_history uses Float for price — floating point precision risk",
+      "severity": "HIGH",
+      "status": "FAIL",
+      "affected_component": "apps/api/models/history.py:19",
+      "description": "price_per_hour: Mapped[float] = mapped_column(Float) — financial data should use Numeric/Decimal. Float can cause $0.00000001 precision errors in aggregations.",
+      "release_blocker": false
+    },
+    {
+      "id": "AMEVA-HIGH-011",
+      "title": "USE_REAL_DB defaults to False — silent data loss risk in production",
+      "severity": "HIGH",
+      "status": "FAIL",
+      "affected_component": "apps/worker/core/config.py:6, apps/api/core/config.py:29",
+      "description": "Feature flag defaults to False, meaning all collected data goes to local JSON files even if a production DB is configured. A deployment without explicit USE_REAL_DB=True env var silently loses all data.",
+      "release_blocker": true
+    },
+    {
+      "id": "AMEVA-HIGH-012",
+      "title": "PriceHistory table has no writer",
+      "severity": "HIGH",
+      "status": "FAIL",
+      "affected_component": "apps/api/models/history.py",
+      "description": "PriceHistory model and migration exist. No code anywhere inserts into this table. Chart and historical analysis will always show empty data.",
+      "release_blocker": true
+    },
+    {
+      "id": "AMEVA-HIGH-013",
+      "title": "CollectionRun records never created",
+      "severity": "HIGH",
+      "status": "FAIL",
+      "affected_component": "apps/api/models/quality.py - CollectionRun",
+      "description": "orchestrator.py never creates a CollectionRun record. DataQualityIssue FK to collection_runs.id will fail if quarantine service was connected.",
+      "release_blocker": false
+    },
+    {
+      "id": "AMEVA-MED-001",
+      "title": "ScheduleConfig table never read by scheduler",
+      "severity": "MEDIUM",
+      "status": "FAIL",
+      "affected_component": "apps/api/models/scheduler.py - ScheduleConfig",
+      "description": "ScheduleConfig model and DB table exist. celery_app.py uses hardcoded crontab, never reads this table for dynamic scheduling.",
+      "release_blocker": false
+    },
+    {
+      "id": "AMEVA-MED-002",
+      "title": "QuarantineService key mismatch with actual data schema",
+      "severity": "MEDIUM",
+      "status": "FAIL",
+      "affected_component": "apps/worker/core/quarantine.py:20",
+      "description": "QuarantineService checks item.get('hourly_price') but VastCrawler produces 'price_per_hour'. Even if connected, quarantine rules would never trigger.",
+      "release_blocker": false
+    },
+    {
+      "id": "AMEVA-MED-003",
+      "title": "SSE: one DB session per long-lived SSE connection — potential leak",
+      "severity": "MEDIUM",
+      "status": "FAIL",
+      "affected_component": "apps/api/api/v1/endpoints/stream.py",
+      "description": "event_generator() holds AsyncSession for the duration of the SSE connection. 100 concurrent SSE connections = 100 DB sessions held open indefinitely.",
+      "release_blocker": false
+    },
+    {
+      "id": "AMEVA-MED-004",
+      "title": "backup_db.sh S3 upload commented out — no offsite backup",
+      "severity": "MEDIUM",
+      "status": "FAIL",
+      "affected_component": "scripts/backup_db.sh:20",
+      "description": "S3 upload is commented: '# aws s3 cp ...'. Local-only backup provides no disaster recovery if the DB server fails.",
+      "release_blocker": false
+    },
+    {
+      "id": "AMEVA-MED-005",
+      "title": "Vast.ai API endpoint without authentication — may violate ToS",
+      "severity": "MEDIUM",
+      "status": "REQUIRES_LEGAL_REVIEW",
+      "affected_component": "apps/worker/providers/vast.py:12",
+      "description": "Crawling https://console.vast.ai/api/v0/bundles/ without authentication. Vast.ai ToS and data redistribution terms need legal review before public display.",
+      "release_blocker": false
+    },
+    {
+      "id": "AMEVA-LOW-001",
+      "title": "BaseProviderAdapter dead code — never used",
+      "severity": "LOW",
+      "status": "FAIL",
+      "affected_component": "apps/worker/core/base_adapter.py",
+      "description": "Two abstract base classes exist (BaseProviderCrawler and BaseProviderAdapter). Only BaseProviderCrawler is used. base_adapter.py is dead code.",
+      "release_blocker": false
+    },
+    {
+      "id": "AMEVA-LOW-002",
+      "title": "Test coverage: only 3 test files, trivial assertions",
+      "severity": "LOW",
+      "status": "FAIL",
+      "affected_component": "tests/",
+      "description": "test_api.py: asserts status_code in [200, 429] (allows any response including 500). test_crawlers.py: only checks hasattr (existence, not behavior). No integration tests, no migration tests, no E2E tests.",
+      "release_blocker": false
+    }
+  ],
+  "summary": {
+    "total_findings": 30,
+    "critical": 10,
+    "high": 13,
+    "medium": 5,
+    "low": 2,
+    "release_blockers": 18,
+    "verdict": "NO-GO"
+  }
+}

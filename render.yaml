@@ -1,17 +1,93 @@
 services:
-  # 1. FastAPI Web Service
+  # ── 1. FastAPI API 서버 ──────────────────────────────────────────────────
   - type: web
-    name: infraindex-platform-api
+    name: infraindex-api
     env: docker
     dockerfilePath: apps/api/Dockerfile
-    plan: free
+    # starter: 512MB RAM, 0.5 vCPU — 최소 유료 플랜 (free는 sleep 있음)
+    plan: starter
+    # DB 마이그레이션 후 서버 기동
+    startCommand: |
+      alembic -c alembic.ini upgrade head &&
+      uvicorn apps.api.main:app --host 0.0.0.0 --port 10000 --workers 2
     healthCheckPath: /api/v1/health
+    autoDeploy: true
+    envVars:
+      # ── 필수 시크릿 (Render Dashboard에서 설정) ──────────────────────────
+      - key: POSTGRES_PASSWORD
+        sync: false            # Render에서 직접 주입 (코드에 절대 노출 X)
+      - key: ADMIN_API_KEY
+        sync: false
+      # ── DB 접속 ─────────────────────────────────────────────────────────
+      - key: POSTGRES_SERVER
+        sync: false
+      - key: POSTGRES_USER
+        value: infraindex
+      - key: POSTGRES_DB
+        value: infraindex
+      - key: POSTGRES_PORT
+        value: "5432"
+      # ── Redis ───────────────────────────────────────────────────────────
+      - key: REDIS_URL
+        sync: false
+      - key: REDIS_MAX_CONNECTIONS
+        value: "30"            # starter plan 기준 적절한 pool 크기
+      # ── DB Pool 튜닝 (Render starter 0.5 vCPU) ──────────────────────────
+      - key: DB_POOL_SIZE
+        value: "3"
+      - key: DB_MAX_OVERFLOW
+        value: "7"
+      - key: DB_POOL_RECYCLE
+        value: "1800"
+      # ── CORS & 보안 ─────────────────────────────────────────────────────
+      - key: BACKEND_CORS_ORIGINS
+        value: '["https://your-frontend.vercel.app"]'  # 실제 도메인으로 변경
+      - key: TRUSTED_HOSTS
+        value: '["infraindex-api.onrender.com", "your-frontend.vercel.app"]'
+      # ── 기능 플래그 ─────────────────────────────────────────────────────
+      - key: USE_REAL_DB
+        value: "True"
+      - key: ENABLE_ALERTS
+        value: "False"
+      # ── LLM (선택적) ────────────────────────────────────────────────────
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+
+  # ── 2. Celery Worker (수집 태스크 실행) ────────────────────────────────
+  - type: worker
+    name: infraindex-celery-worker
+    env: docker
+    dockerfilePath: apps/worker/Dockerfile
+    plan: starter
+    startCommand: celery -A apps.worker.celery_app worker --loglevel=info --concurrency=2
+    envVars:
+      - key: DATABASE_URL
+        sync: false            # postgresql+asyncpg://user:pass@host/db
+      - key: REDIS_URL
+        sync: false
+      - key: USE_REAL_DB
+        value: "True"
+      - key: USE_CELERY_QUEUE
+        value: "True"
+      - key: ENABLE_ALERTS
+        value: "False"
+
+  # ── 3. Celery Beat (스케줄러) ────────────────────────────────────────────
+  - type: worker
+    name: infraindex-celery-beat
+    env: docker
+    dockerfilePath: apps/worker/Dockerfile
+    plan: starter
+    # Beat는 단 하나만 실행해야 함 (중복 스케줄 방지)
+    startCommand: celery -A apps.worker.celery_app beat --loglevel=info --schedule=/tmp/celerybeat-schedule
     envVars:
       - key: DATABASE_URL
         sync: false
       - key: REDIS_URL
         sync: false
-      - key: OPENAI_API_KEY
-        sync: false
-      - key: BACKEND_CORS_ORIGINS
-        value: '["https://your-vercel-domain.vercel.app", "http://localhost:3000"]'
+      - key: USE_REAL_DB
+        value: "True"
+      - key: USE_CELERY_QUEUE
+        value: "True"

@@ -5,7 +5,7 @@ from typing import List, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from apps.api.models.provider import Provider, ProviderRegion
-    from apps.api.models.hardware import GpuVariant
+    from apps.api.models.hardware import GpuVariant, CpuVariant
 
 class InstanceOffering(Base, UUIDMixin, TimeStampMixin):
     __tablename__ = "instance_offerings"
@@ -22,6 +22,7 @@ class InstanceOffering(Base, UUIDMixin, TimeStampMixin):
     provider: Mapped["Provider"] = relationship("Provider", back_populates="offerings")
     region: Mapped["ProviderRegion | None"] = relationship("ProviderRegion", back_populates="offerings")
     gpu_configuration: Mapped[List["OfferingGpuConfiguration"]] = relationship("OfferingGpuConfiguration", back_populates="offering")
+    cpu_configuration: Mapped[List["OfferingCpuConfiguration"]] = relationship("OfferingCpuConfiguration", back_populates="offering")
     pricing_plans: Mapped[List["PricingPlan"]] = relationship("PricingPlan", back_populates="offering")
 
 class OfferingGpuConfiguration(Base, UUIDMixin, TimeStampMixin):
@@ -33,6 +34,16 @@ class OfferingGpuConfiguration(Base, UUIDMixin, TimeStampMixin):
     
     offering: Mapped["InstanceOffering"] = relationship("InstanceOffering", back_populates="gpu_configuration")
     variant: Mapped["GpuVariant"] = relationship("GpuVariant", back_populates="configurations")
+
+class OfferingCpuConfiguration(Base, UUIDMixin, TimeStampMixin):
+    __tablename__ = "offering_cpu_configurations"
+    
+    offering_id: Mapped[str] = mapped_column(ForeignKey("instance_offerings.id"), index=True)
+    cpu_variant_id: Mapped[str] = mapped_column(ForeignKey("cpu_variants.id"), index=True)
+    count: Mapped[int] = mapped_column(Integer, default=1)
+    
+    offering: Mapped["InstanceOffering"] = relationship("InstanceOffering", back_populates="cpu_configuration")
+    variant: Mapped["CpuVariant"] = relationship("CpuVariant", back_populates="configurations")
 
 class PricingPlan(Base, UUIDMixin, TimeStampMixin):
     __tablename__ = "pricing_plans"

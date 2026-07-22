@@ -9,7 +9,8 @@ class BaseProviderCrawler(ABC):
     Forces a strict contract for all data extraction modules.
     """
     
-    def __init__(self):
+    def __init__(self, hardware_type: str = "gpu"):
+        self.hardware_type = hardware_type
         self.logger = logging.getLogger(f"{__name__}.{self.provider_slug}")
         self.http = StealthHttpClient()
 

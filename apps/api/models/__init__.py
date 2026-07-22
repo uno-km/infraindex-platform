@@ -11,3 +11,8 @@ from apps.api.models.storage import StorageProvider, StorageTier
 from apps.api.models.scheduler import ScheduleConfig, IdempotencyKey
 from apps.api.models.outbox import OutboxEvent
 from apps.api.models.history import PriceHistory
+from apps.api.models.retail import RetailPriceHistory
+from apps.api.models.financial import FinancialMarketHistory
+from apps.api.models.news import NewsArticle
+
+__all__ = ["Base", "PriceHistory", "CollectionRun", "DataQualityIssue", "APIKey", "RateLimitLog", "RetailPriceHistory", "FinancialMarketHistory", "NewsArticle"]

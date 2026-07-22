@@ -51,6 +51,34 @@ class Settings(BaseSettings):
 
     # Redis (For Caching / Worker / Rate Limiting)
     REDIS_URL: str = "redis://localhost:6379/0"
+    REDIS_MAX_CONNECTIONS: int = 50  # 전역 ConnectionPool 최대 연결 수
+
+    # DB Connection Pool 튜닝
+    # Render starter: CPU 0.5코어 → pool_size=5 권장
+    # 자체 서버 배포: pool_size=10~20 권장
+    DB_POOL_SIZE: int = 5
+    DB_MAX_OVERFLOW: int = 10
+    DB_POOL_RECYCLE: int = 1800  # 30분마다 커넥션 갱신
+
+    # 보안: Trusted Hosts (TrustedHostMiddleware)
+    # 쉼표 구분 또는 JSON 배열로 주입
+    # 예: TRUSTED_HOSTS='["myapp.onrender.com", "localhost"]'
+    # 빈 리스트 = TrustedHostMiddleware 비활성화 (개발 편의)
+    TRUSTED_HOSTS: list[str] = []
+
+    @field_validator("TRUSTED_HOSTS", mode="before")
+    @classmethod
+    def parse_trusted_hosts(cls, v):
+        if isinstance(v, str):
+            import json
+            try:
+                parsed = json.loads(v)
+                if isinstance(parsed, list):
+                    return parsed
+            except Exception:
+                pass
+            return [h.strip() for h in v.split(",") if h.strip()]
+        return v
 
     # FIX-01: Admin API 인증용 API Key
     # 미설정 시 admin 엔드포인트가 503을 반환하여 무방비 노출 방지

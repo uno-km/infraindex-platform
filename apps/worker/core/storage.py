@@ -1,13 +1,75 @@
+"""
+스토리지 레이어 — PostgreSQL / JSON 파일 이중화.
+
+주요 변경 사항:
+  1. PostgresStorage 엔진 싱글턴:
+     - 기존: save() 호출마다 create_async_engine() 생성 → 연결 폭발
+     - 수정: 모듈 레벨 singleton으로 한 번만 생성
+  2. Outbox 패턴 완성:
+     - PriceHistory INSERT와 OutboxEvent INSERT를 동일 트랜잭션에서 실행
+     - 한쪽만 커밋되는 dual-write 버그 방지
+"""
+
 import os
 import json
 from datetime import datetime, timezone
-from typing import Any, List, Dict
+from typing import Any, List, Dict, Optional
 from abc import ABC, abstractmethod
 import logging
 
 from apps.worker.core.config import settings
 
 logger = logging.getLogger(__name__)
+
+# ── PostgreSQL 싱글턴 엔진 ────────────────────────────────────────────────
+_pg_engine = None
+_pg_session_factory = None
+
+
+def _ensure_pg_engine():
+    """
+    모듈 레벨 싱글턴 엔진 + 세션 팩토리.
+    첫 호출 시 생성, 이후 재사용.
+    """
+    global _pg_engine, _pg_session_factory
+    if _pg_engine is not None:
+        return _pg_engine, _pg_session_factory
+
+    from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+
+    db_url = settings.DATABASE_URL
+    if not db_url:
+        raise RuntimeError(
+            "DATABASE_URL 환경변수가 설정되지 않았습니다. "
+            "USE_REAL_DB=True 사용 시 DATABASE_URL 필수."
+        )
+    if db_url.startswith("postgresql://") and "+asyncpg" not in db_url:
+        db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+    _pg_engine = create_async_engine(
+        db_url,
+        echo=False,
+        future=True,
+        pool_size=3,           # worker는 소수 동시 실행
+        max_overflow=5,
+        pool_pre_ping=True,    # 스테일 커넥션 감지
+        pool_recycle=1800,     # 30분마다 갱신
+        connect_args={
+            "server_settings": {
+                "jit": "off",
+                "statement_timeout": "15000",  # 15초 — 배치 INSERT용 여유
+            }
+        },
+    )
+    _pg_session_factory = async_sessionmaker(
+        bind=_pg_engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+        autocommit=False,
+        autoflush=False,
+    )
+    logger.info(f"[PostgresStorage] Engine singleton created → {db_url.split('@')[-1]}")
+    return _pg_engine, _pg_session_factory
 
 
 class BaseStorage(ABC):
@@ -32,11 +94,11 @@ class JsonFileStorage(BaseStorage):
 
 class PostgresStorage(BaseStorage):
     """
-    FIX-06 & FIX-07: 실제 PostgreSQL 저장 구현.
+    실제 PostgreSQL 저장 구현.
 
-    수집된 정규화 데이터를 price_history 테이블에 INSERT.
-    각 수집 실행마다 새 row를 추가하여 시계열 이력을 보존.
-    동일한 가격이라도 다른 시각의 관측은 별도 row로 저장됨.
+    트랜잭션 보장:
+      - PriceHistory INSERT + OutboxEvent INSERT를 동일 트랜잭션에서 실행.
+      - 하나라도 실패하면 전체 롤백 → dual-write 버그 방지.
     """
 
     async def save(self, provider_slug: str, data: List[Dict[str, Any]]) -> None:
@@ -44,24 +106,10 @@ class PostgresStorage(BaseStorage):
             logger.info(f"[{provider_slug}] No data to save.")
             return
 
-        # 지연 임포트: worker가 항상 API 모델에 의존하지 않도록
-        from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
         from apps.api.models.history import PriceHistory
+        from apps.api.models.outbox import OutboxEvent
 
-        engine = create_async_engine(
-            self._get_db_url(),
-            echo=False,
-            future=True,
-            pool_size=5,
-            max_overflow=10,
-        )
-        SessionLocal = async_sessionmaker(
-            bind=engine,
-            class_=AsyncSession,
-            expire_on_commit=False,
-            autocommit=False,
-            autoflush=False,
-        )
+        _, SessionLocal = _ensure_pg_engine()
 
         now = datetime.now(timezone.utc)
         saved_count = 0
@@ -75,6 +123,7 @@ class PostgresStorage(BaseStorage):
                         vram_gb_raw = item.get("vram_gb", 0)
                         price_raw = item.get("price_per_hour") or item.get("hourly_price") or 0.0
 
+                        # ── PriceHistory INSERT ────────────────────────────
                         record = PriceHistory(
                             provider_id=provider_slug,
                             gpu_model=str(gpu_model)[:100],
@@ -84,31 +133,35 @@ class PostgresStorage(BaseStorage):
                             timestamp=now,
                         )
                         session.add(record)
-                        saved_count += 1
-                    except Exception as e:
-                        logger.error(f"[{provider_slug}] Failed to prepare record: {e} | data: {item}")
-                        error_count += 1
 
-        await engine.dispose()
+                        # ── OutboxEvent INSERT (동일 트랜잭션) ────────────
+                        # Outbox Publisher가 이 이벤트를 Redis Pub/Sub으로 전달
+                        outbox_event = OutboxEvent(
+                            topic="price_updates",
+                            event_type="price.collected",
+                            payload={
+                                "provider_id": provider_slug,
+                                "gpu_model": str(gpu_model)[:100],
+                                "price_per_hour": float(price_raw),
+                                "vram_gb": float(vram_gb_raw) if vram_gb_raw else 0.0,
+                                "availability_status": str(item.get("availability_status", "unknown")),
+                                "timestamp": now.isoformat(),
+                            },
+                        )
+                        session.add(outbox_event)
+
+                        saved_count += 1
+
+                    except Exception as e:
+                        logger.error(
+                            f"[{provider_slug}] Failed to prepare record: {e} | data: {item}"
+                        )
+                        error_count += 1
 
         logger.info(
             f"[{provider_slug}] PostgreSQL 저장 완료: "
-            f"{saved_count} rows inserted, {error_count} errors | timestamp={now.isoformat()}"
-        )
-
-    @staticmethod
-    def _get_db_url() -> str:
-        """DATABASE_URL 환경변수 우선, 없으면 개별 변수 조합"""
-        url = settings.DATABASE_URL
-        if url:
-            # asyncpg 드라이버 보장
-            if url.startswith("postgresql://") and "+asyncpg" not in url:
-                url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
-            return url
-        # Fallback: 개별 환경변수
-        raise RuntimeError(
-            "DATABASE_URL 환경변수가 설정되지 않았습니다. "
-            "USE_REAL_DB=True 사용 시 DATABASE_URL 필수."
+            f"{saved_count} rows inserted (PriceHistory + OutboxEvent), "
+            f"{error_count} errors | timestamp={now.isoformat()}"
         )
 
 
@@ -116,3 +169,5 @@ def get_storage() -> BaseStorage:
     if settings.USE_REAL_DB:
         return PostgresStorage()
     return JsonFileStorage()
+
+
