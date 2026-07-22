@@ -12,7 +12,7 @@ async def run_all():
     Runs all crawlers sequentially without Celery or Redis.
     """
     logger.info(f"Starting Local Serverless Run (USE_REAL_DB={settings.USE_REAL_DB})")
-    providers = ["vast-ai", "runpod", "aws"]
+    providers = ["vast-ai", "runpod", "aws", "vessl", "gpuaas", "cloudv", "runyourai", "gabia", "ktcloud"]
     
     for provider in providers:
         try:

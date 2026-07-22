@@ -1,0 +1,29 @@
+[
+  {
+    "gpu_model": "H100",
+    "vram_gb": 80,
+    "price_per_hour": 2.4,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "sys_ram_gb": 256,
+    "tdp_w": 700
+  },
+  {
+    "gpu_model": "A100",
+    "vram_gb": 80,
+    "price_per_hour": 1.6,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "sys_ram_gb": 128,
+    "tdp_w": 400
+  },
+  {
+    "gpu_model": "RTX 4090",
+    "vram_gb": 24,
+    "price_per_hour": 0.35,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "sys_ram_gb": 64,
+    "tdp_w": 450
+  }
+]

@@ -43,7 +43,7 @@ class DataService:
             return []
 
         all_records = []
-        providers = ["vast-ai", "runpod", "aws"]
+        providers = ["vast-ai", "runpod", "aws", "vessl", "gpuaas", "cloudv", "runyourai", "gabia", "ktcloud"]
         
         for provider in providers:
             files = glob.glob(os.path.join(data_dir, f"{provider}_*.json"))

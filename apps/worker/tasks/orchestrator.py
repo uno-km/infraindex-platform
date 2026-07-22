@@ -11,6 +11,7 @@ from apps.worker.core.quarantine import QuarantineService  # P1-001: QuarantineS
 from apps.worker.providers.vast import VastCrawler
 from apps.worker.providers.runpod import RunpodCrawler
 from apps.worker.providers.aws import AWSCrawler
+from apps.worker.providers.korean import KoreanUniversalCrawler
 
 logger = logging.getLogger(__name__)
 
@@ -111,6 +112,8 @@ async def execute_extraction(provider_slug: str):
         crawler = RunpodCrawler()
     elif provider_slug == "aws":
         crawler = AWSCrawler()
+    elif provider_slug in ["vessl", "gpuaas", "cloudv", "runyourai", "gabia", "ktcloud"]:
+        crawler = KoreanUniversalCrawler(provider_slug)
     else:
         logger.error(f"Unknown provider: {provider_slug}")
         return
