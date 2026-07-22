@@ -1,0 +1,578 @@
+[
+  {
+    "gpu_model": "RTX 5090",
+    "vram_gb": 31.8427734375,
+    "price_per_hour": 0.05777777777777778,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 62.8,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX 5090",
+    "vram_gb": 31.8427734375,
+    "price_per_hour": 0.11111111111111112,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 125.6,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "Tesla V100",
+    "vram_gb": 32.0,
+    "price_per_hour": 0.15155555555555555,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 251.1,
+    "tdp_w": 300
+  },
+  {
+    "gpu_model": "Tesla V100",
+    "vram_gb": 32.0,
+    "price_per_hour": 0.0768888888888889,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 125.5,
+    "tdp_w": 300
+  },
+  {
+    "gpu_model": "Tesla V100",
+    "vram_gb": 32.0,
+    "price_per_hour": 0.042222222222222223,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 62.8,
+    "tdp_w": 300
+  },
+  {
+    "gpu_model": "Tesla V100",
+    "vram_gb": 32.0,
+    "price_per_hour": 0.02088888888888889,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 31.4,
+    "tdp_w": 300
+  },
+  {
+    "gpu_model": "RTX 5090",
+    "vram_gb": 31.8427734375,
+    "price_per_hour": 0.2948148148148148,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 63.0,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX PRO 6000 WS",
+    "vram_gb": 95.5927734375,
+    "price_per_hour": 0.8022222222222222,
+    "availability_status": "available",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 125.4,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "H100 NVL",
+    "vram_gb": 93.583984375,
+    "price_per_hour": 1.3348148148148147,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 314.7,
+    "tdp_w": 700
+  },
+  {
+    "gpu_model": "RTX 5090",
+    "vram_gb": 31.8427734375,
+    "price_per_hour": 0.4701250091245585,
+    "availability_status": "available",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 55.1,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX PRO 6000 S",
+    "vram_gb": 95.5927734375,
+    "price_per_hour": 1.002962962962963,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 123.4,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX 5070 Ti",
+    "vram_gb": 15.9208984375,
+    "price_per_hour": 0.18888888888888888,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 125.6,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX PRO 6000 WS",
+    "vram_gb": 95.5927734375,
+    "price_per_hour": 1.0022222222222221,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 167.9,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX 4070S Ti",
+    "vram_gb": 15.9921875,
+    "price_per_hour": 0.0802962962962963,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 62.7,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX 4070S Ti",
+    "vram_gb": 15.9921875,
+    "price_per_hour": 0.0802962962962963,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 62.6,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX PRO 6000 WS",
+    "vram_gb": 95.5927734375,
+    "price_per_hour": 2.0037037037037035,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 335.9,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX 4090",
+    "vram_gb": 23.98828125,
+    "price_per_hour": 0.2688888888888889,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 62.9,
+    "tdp_w": 450
+  },
+  {
+    "gpu_model": "RTX 4090",
+    "vram_gb": 23.98828125,
+    "price_per_hour": 0.13555555555555554,
+    "availability_status": "available",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 31.4,
+    "tdp_w": 450
+  },
+  {
+    "gpu_model": "RTX 4090",
+    "vram_gb": 22.48828125,
+    "price_per_hour": 0.16888888888888887,
+    "availability_status": "available",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 125.9,
+    "tdp_w": 450
+  },
+  {
+    "gpu_model": "RTX 5070 Ti",
+    "vram_gb": 15.9208984375,
+    "price_per_hour": 0.12222222222222223,
+    "availability_status": "available",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 62.5,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX 5090",
+    "vram_gb": 31.8427734375,
+    "price_per_hour": 0.7488888888888889,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 125.6,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX 5090",
+    "vram_gb": 31.8427734375,
+    "price_per_hour": 0.4037037037037037,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 30.5,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX 5090",
+    "vram_gb": 31.8427734375,
+    "price_per_hour": 1.337037037037037,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 212.4,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX 4080S",
+    "vram_gb": 15.9921875,
+    "price_per_hour": 0.09822222222222221,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 62.6,
+    "tdp_w": 320
+  },
+  {
+    "gpu_model": "RTX 3090",
+    "vram_gb": 24.0,
+    "price_per_hour": 0.06962962962962962,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 62.7,
+    "tdp_w": 350
+  },
+  {
+    "gpu_model": "RTX 4080S",
+    "vram_gb": 15.9921875,
+    "price_per_hour": 0.09822222222222221,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 62.6,
+    "tdp_w": 320
+  },
+  {
+    "gpu_model": "RTX 5070",
+    "vram_gb": 11.9404296875,
+    "price_per_hour": 0.2177777777777778,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 62.9,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX 5070",
+    "vram_gb": 11.9404296875,
+    "price_per_hour": 0.11111111111111112,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 31.4,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX PRO 4500",
+    "vram_gb": 31.8583984375,
+    "price_per_hour": 0.33555555555555555,
+    "availability_status": "available",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 188.6,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX PRO 5000",
+    "vram_gb": 47.7880859375,
+    "price_per_hour": 1.2800740740740741,
+    "availability_status": "available",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 125.8,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX PRO 6000 WS",
+    "vram_gb": 95.5927734375,
+    "price_per_hour": 2.65437037037037,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 251.8,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX 4090",
+    "vram_gb": 23.98828125,
+    "price_per_hour": 0.5355555555555556,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 125.7,
+    "tdp_w": 450
+  },
+  {
+    "gpu_model": "RTX 5090",
+    "vram_gb": 31.8427734375,
+    "price_per_hour": 2.2414814814814816,
+    "availability_status": "available",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 503.5,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX 5070 Ti",
+    "vram_gb": 15.9208984375,
+    "price_per_hour": 0.13555555555555554,
+    "availability_status": "available",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 31.3,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX 5090",
+    "vram_gb": 31.8427734375,
+    "price_per_hour": 0.9387685367676356,
+    "availability_status": "available",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 110.2,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "H100 SXM",
+    "vram_gb": 79.6474609375,
+    "price_per_hour": 2.9355555555555557,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 431.9,
+    "tdp_w": 700
+  },
+  {
+    "gpu_model": "RTX 5070",
+    "vram_gb": 11.9404296875,
+    "price_per_hour": 0.08044444444444444,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 30.8,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX 5090",
+    "vram_gb": 31.8427734375,
+    "price_per_hour": 0.4703703703703703,
+    "availability_status": "available",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 30.5,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX 4090",
+    "vram_gb": 47.98828125,
+    "price_per_hour": 0.9355555555555555,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 251.4,
+    "tdp_w": 450
+  },
+  {
+    "gpu_model": "RTX 5080",
+    "vram_gb": 15.9208984375,
+    "price_per_hour": 0.18962962962962965,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 50.3,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX 5090",
+    "vram_gb": 31.8427734375,
+    "price_per_hour": 3.6311111111111103,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 566.5,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX 4090",
+    "vram_gb": 47.98828125,
+    "price_per_hour": 0.46888888888888886,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 125.7,
+    "tdp_w": 450
+  },
+  {
+    "gpu_model": "RTX PRO 6000 S",
+    "vram_gb": 95.5927734375,
+    "price_per_hour": 2.402222222222222,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 251.9,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX 5080",
+    "vram_gb": 15.9208984375,
+    "price_per_hour": 0.7488888888888889,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 62.2,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX 5090",
+    "vram_gb": 31.8427734375,
+    "price_per_hour": 0.5614814814814816,
+    "availability_status": "available",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 125.9,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX PRO 6000 S",
+    "vram_gb": 95.5927734375,
+    "price_per_hour": 1.7362962962962964,
+    "availability_status": "available",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 125.9,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX PRO 6000 WS",
+    "vram_gb": 95.5927734375,
+    "price_per_hour": 1.3385185185185184,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 94.4,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX 5090",
+    "vram_gb": 31.8427734375,
+    "price_per_hour": 1.3343703703703704,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 188.8,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX 5090",
+    "vram_gb": 31.8427734375,
+    "price_per_hour": 0.21288888888888888,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 62.6,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX PRO 4500",
+    "vram_gb": 31.8583984375,
+    "price_per_hour": 0.6688888888888889,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 377.3,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX 5090",
+    "vram_gb": 31.8427734375,
+    "price_per_hour": 0.4681481481481481,
+    "availability_status": "available",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 62.8,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "H200 NVL",
+    "vram_gb": 140.4013671875,
+    "price_per_hour": 2.610222222222222,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 354.2,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX 5080",
+    "vram_gb": 15.9208984375,
+    "price_per_hour": 0.18888888888888888,
+    "availability_status": "available",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 30.2,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX 5070 Ti",
+    "vram_gb": 15.9208984375,
+    "price_per_hour": 0.537037037037037,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 125.7,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX PRO 6000 S",
+    "vram_gb": 95.5927734375,
+    "price_per_hour": 3.4696296296296296,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 251.9,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX 5060 Ti",
+    "vram_gb": 15.9287109375,
+    "price_per_hour": 0.08222222222222222,
+    "availability_status": "available",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 15.6,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "H200 NVL",
+    "vram_gb": 140.4013671875,
+    "price_per_hour": 3.2848888888888887,
+    "availability_status": "available",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 251.9,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX 3080 Ti",
+    "vram_gb": 12.0,
+    "price_per_hour": 0.06222222222222223,
+    "availability_status": "available",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 15.6,
+    "tdp_w": 320
+  },
+  {
+    "gpu_model": "RTX 4090",
+    "vram_gb": 23.98828125,
+    "price_per_hour": 0.36444444444444446,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 100.8,
+    "tdp_w": 450
+  },
+  {
+    "gpu_model": "RTX PRO 4500",
+    "vram_gb": 31.8583984375,
+    "price_per_hour": 0.21555555555555556,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 503.8,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX PRO 6000 WS",
+    "vram_gb": 95.5927734375,
+    "price_per_hour": 5.305037037037037,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 503.7,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX 4090",
+    "vram_gb": 47.98828125,
+    "price_per_hour": 0.5644444444444445,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 94.4,
+    "tdp_w": 450
+  },
+  {
+    "gpu_model": "RTX 5080",
+    "vram_gb": 15.9208984375,
+    "price_per_hour": 0.3244444444444444,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 62.9,
+    "tdp_w": 250
+  },
+  {
+    "gpu_model": "RTX 4090D",
+    "vram_gb": 23.98828125,
+    "price_per_hour": 0.7748148148148148,
+    "availability_status": "unavailable",
+    "provider_link": "https://console.vast.ai/console/create/",
+    "sys_ram_gb": 251.8,
+    "tdp_w": 450
+  }
+]

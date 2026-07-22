@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search } from "lucide-react";
+import { Zap } from "lucide-react";
 
 interface Offer {
   provider: string;
@@ -24,7 +24,10 @@ export default function GpuDashboard() {
   const [gpus, setGpus] = useState<GpuModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
+
+  // UI States
+  const [planType, setPlanType] = useState("ondemand"); // ondemand, spot, reserved
+  const [timeUnit, setTimeUnit] = useState("hourly"); // hourly, daily, monthly
 
   useEffect(() => {
     async function fetchGpus() {
@@ -55,88 +58,138 @@ export default function GpuDashboard() {
     return (
       <div className="p-10 text-center text-red-600 bg-red-50 border border-red-200 mt-10 rounded">
         <h3 className="font-bold text-lg mb-2">서버 연결 오류</h3>
-        <p>API 서버({process.env.NEXT_PUBLIC_API_URL || "localhost:8000"})에 연결할 수 없습니다.</p>
+        <p>API 서버에 연결할 수 없습니다. 크롤링 서버가 실행 중인지 확인하세요.</p>
       </div>
     );
   }
 
-  // 검색 필터링
-  const filteredGpus = gpus.filter(g => 
-    g.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    g.offers.some(o => o.provider.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
-
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      {/* Header Section */}
-      <div className="mb-6 pb-4 border-b-2 border-gray-800 flex justify-between items-end">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">실시간 GPU 클라우드 가격비교</h1>
-          <p className="text-sm text-gray-500 mt-1">글로벌 공급자(Vast.ai, RunPod 등)의 최저가를 확인하세요.</p>
+    <div className="max-w-6xl mx-auto px-4 py-12 font-sans">
+      {/* Title */}
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">GPU 요금</h1>
+
+      {/* Toggle Controls */}
+      <div className="flex justify-between items-center mb-8">
+        {/* Left Toggles */}
+        <div className="inline-flex bg-white border border-gray-200 rounded-lg p-1 shadow-sm">
+          <button 
+            className={`px-4 py-2 text-sm font-semibold rounded-md transition-colors ${planType === 'ondemand' ? 'bg-white shadow border border-gray-200 text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+            onClick={() => setPlanType('ondemand')}
+          >
+            온디맨드
+          </button>
+          <button 
+            className={`px-4 py-2 text-sm font-semibold rounded-md transition-colors text-gray-400 cursor-not-allowed`}
+            disabled
+          >
+            스팟 (출시 예정)
+          </button>
+          <button 
+            className={`px-4 py-2 text-sm font-semibold rounded-md transition-colors ${planType === 'reserved' ? 'bg-white shadow border border-gray-200 text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+            onClick={() => setPlanType('reserved')}
+          >
+            예약 인스턴스
+          </button>
         </div>
-        
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-          <input 
-            type="text" 
-            placeholder="GPU 모델명 검색 (예: 4090)" 
-            className="border border-gray-300 rounded px-3 py-1.5 pl-9 text-sm focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue w-64"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+
+        {/* Right Toggles */}
+        <div className="inline-flex bg-white border border-gray-200 rounded-lg p-1 shadow-sm">
+          <button 
+            className={`px-4 py-2 text-sm font-semibold rounded-md transition-colors ${timeUnit === 'hourly' ? 'bg-white shadow border border-gray-200 text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+            onClick={() => setTimeUnit('hourly')}
+          >
+            시간당
+          </button>
+          <button 
+            className={`px-4 py-2 text-sm font-semibold rounded-md transition-colors ${timeUnit === 'daily' ? 'bg-white shadow border border-gray-200 text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+            onClick={() => setTimeUnit('daily')}
+          >
+            일간
+          </button>
+          <button 
+            className={`px-4 py-2 text-sm font-semibold rounded-md transition-colors ${timeUnit === 'monthly' ? 'bg-white shadow border border-gray-200 text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+            onClick={() => setTimeUnit('monthly')}
+          >
+            월간
+          </button>
         </div>
       </div>
 
+      {/* Status Text */}
+      <div className="flex items-center text-[#00b050] font-bold text-sm mb-3">
+        <Zap size={16} className="mr-1 fill-[#00b050]" />
+        즉시 사용 가능
+      </div>
+
       {/* Main Table */}
-      <div className="bg-white border border-gray-200 shadow-sm">
-        <table className="data-table">
+      <div className="bg-white border border-green-200 rounded-2xl overflow-hidden shadow-sm">
+        <table className="w-full text-left border-collapse">
           <thead>
-            <tr>
-              <th className="w-32">공급사</th>
-              <th className="text-left w-64">GPU 모델명</th>
-              <th>VRAM</th>
-              <th>시스템 RAM</th>
-              <th>소비전력(TDP)</th>
-              <th className="text-right">시간당 단가</th>
-              <th className="w-32">구매/대여</th>
+            <tr className="border-b border-gray-100 bg-gray-50/50">
+              <th className="p-5 text-sm font-bold text-gray-700 w-1/4">공급사</th>
+              <th className="p-5 text-sm font-bold text-gray-700 w-1/4">GPU 모델</th>
+              <th className="p-5 text-sm font-bold text-gray-700 w-1/6">VRAM</th>
+              <th className="p-5 text-sm font-bold text-gray-700 w-1/6">온디맨드 가격</th>
+              <th className="p-5 w-1/6"></th>
             </tr>
           </thead>
-          <tbody>
-            {filteredGpus.flatMap(gpu => {
-              // Sort offers by price ascending
+          <tbody className="divide-y divide-gray-100">
+            {gpus.flatMap(gpu => {
               const sortedOffers = [...gpu.offers].sort((a, b) => a.price_per_hour - b.price_per_hour);
               
-              return sortedOffers.map((offer, idx) => (
-                <tr key={`${gpu.id}-${offer.provider}-${idx}`}>
-                  <td className="font-bold text-brand-blue capitalize">{offer.provider}</td>
-                  <td className="text-left font-semibold text-gray-800">{gpu.name}</td>
-                  <td className="text-gray-600">{gpu.vram_gb} GB</td>
-                  <td className="text-gray-600">{offer.sys_ram_gb ? `${offer.sys_ram_gb} GB` : '-'}</td>
-                  <td className="text-gray-600">{offer.tdp_w ? `${offer.tdp_w} W` : '-'}</td>
-                  <td className="text-right font-bold text-brand-red text-base">
-                    ${offer.price_per_hour.toFixed(3)}
-                  </td>
-                  <td>
-                    {offer.is_available ? (
-                      <a 
-                        href={offer.provider_link || "#"} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="btn-rent"
-                      >
-                        대여하기 &gt;
-                      </a>
-                    ) : (
-                      <span className="text-gray-400 text-xs font-bold bg-gray-100 px-2 py-1 rounded">품절</span>
-                    )}
-                  </td>
-                </tr>
-              ));
+              return sortedOffers.map((offer, idx) => {
+                // Calculate price based on time unit
+                let displayPrice = offer.price_per_hour;
+                let unitSuffix = "/hr";
+                
+                if (timeUnit === 'daily') {
+                  displayPrice = offer.price_per_hour * 24;
+                  unitSuffix = "/day";
+                } else if (timeUnit === 'monthly') {
+                  displayPrice = offer.price_per_hour * 24 * 30;
+                  unitSuffix = "/mo";
+                }
+
+                return (
+                  <tr key={`${gpu.id}-${offer.provider}-${idx}`} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="p-5">
+                      <div className="font-bold text-gray-900 capitalize text-sm">{offer.provider}</div>
+                      <div className="text-xs text-gray-400 mt-1">
+                        {offer.sys_ram_gb ? `RAM ${offer.sys_ram_gb}GB` : ''} 
+                        {offer.tdp_w ? ` · ${offer.tdp_w}W` : ''}
+                      </div>
+                    </td>
+                    <td className="p-5 font-semibold text-gray-800 text-sm">{gpu.name}</td>
+                    <td className="p-5 text-gray-600 text-sm font-medium">{gpu.vram_gb}GB</td>
+                    <td className="p-5 font-semibold text-gray-900 text-sm">
+                      ${displayPrice.toFixed(3)}{unitSuffix}
+                    </td>
+                    <td className="p-5 text-right">
+                      {offer.is_available ? (
+                        <a 
+                          href={offer.provider_link || "#"} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="inline-block bg-gray-900 hover:bg-black text-white text-sm font-bold px-6 py-2.5 rounded-full transition-colors"
+                        >
+                          시작하기
+                        </a>
+                      ) : (
+                        <span className="inline-block bg-gray-100 text-gray-400 text-sm font-bold px-6 py-2.5 rounded-full">
+                          품절
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              });
             })}
             
-            {filteredGpus.length === 0 && (
+            {gpus.length === 0 && (
               <tr>
-                <td colSpan={7} className="py-10 text-gray-500">검색 결과가 없습니다.</td>
+                <td colSpan={5} className="py-10 text-center text-gray-500">
+                  데이터가 없습니다.
+                </td>
               </tr>
             )}
           </tbody>
