@@ -98,9 +98,12 @@ export default function ResourceCard({ item, exchangeMultiplier, currencySymbol,
 
         {/* Pricing Intel Column */}
         <div className="w-[280px] bg-slate-50 rounded-2xl p-5 border border-slate-100 group-hover:border-slate-200 transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.01)] relative">
-          <div className="text-xs font-black text-slate-400 tracking-widest mb-4 flex items-center">
-            <div className="h-1 w-1 rounded-full bg-slate-300 mr-2"></div>
-            실시간 가격 동향
+          <div className="text-xs font-black text-slate-400 tracking-widest mb-4 flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="h-1 w-1 rounded-full bg-slate-300 mr-2"></div>
+              실시간 가격 동향
+            </div>
+            <span className="text-[10px] bg-white border border-slate-200 px-1.5 py-0.5 rounded text-slate-400 font-bold tracking-normal">(단위: 1시간)</span>
           </div>
           
           <div className="space-y-4">
@@ -154,7 +157,7 @@ export default function ResourceCard({ item, exchangeMultiplier, currencySymbol,
                 <tr>
                   <th className="py-3 px-4">제공사 (Provider)</th>
                   <th className="py-3 px-4">리전 (Region)</th>
-                  <th className="py-3 px-4">시간당 단가</th>
+                  <th className="py-3 px-4">단가 (1시간 기준)</th>
                   <th className="py-3 px-4 text-right">바로가기</th>
                 </tr>
               </thead>

@@ -73,6 +73,16 @@ class DataService:
         return 0
 
     @staticmethod
+    def _normalize_gpu_name(name: str) -> str:
+        name = name.upper()
+        name = name.replace("NVIDIA ", "").replace("GEFORCE ", "").replace("TESLA ", "")
+        name = name.replace("-PCIE", "").replace("-SXM4", "").replace("-SXM2", "").replace(" PCIE", "")
+        import re
+        name = re.sub(r'-\d+GB', '', name)
+        name = re.sub(r' \d+GB', '', name)
+        return name.strip()
+
+    @staticmethod
     async def get_gpus_for_ui() -> List[Dict[str, Any]]:
         """Aggregates raw records into a nice structure for the UI dashboard."""
         from apps.api.core.traffic_service import traffic_service
@@ -81,7 +91,8 @@ class DataService:
         
         gpu_map = {}
         for r in records:
-            gpu_name = r.get("gpu_model") or r.get("gpu_name") or "Unknown GPU"
+            raw_name = r.get("gpu_model") or r.get("gpu_name") or "Unknown GPU"
+            gpu_name = DataService._normalize_gpu_name(raw_name)
             vram = r.get("vram_gb")
             if vram:
                 vram = round(float(vram))

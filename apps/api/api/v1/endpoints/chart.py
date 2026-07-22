@@ -55,7 +55,16 @@ async def get_candlestick(
         # Fallback to local JSON files if DB is empty
         from apps.api.core.data_service import DataService
         records = await DataService.get_latest_prices()
-        filtered = [r for r in records if gpu_model_id.lower() in r.get("gpu_model", "").lower()]
+        
+        # We need to apply the same normalization
+        target = DataService._normalize_gpu_name(gpu_model_id).lower()
+        
+        filtered = []
+        for r in records:
+            raw_name = r.get("gpu_model") or r.get("gpu_name") or ""
+            norm_name = DataService._normalize_gpu_name(raw_name).lower()
+            if target in norm_name or norm_name in target:
+                filtered.append(r)
         
         if not filtered:
             return []

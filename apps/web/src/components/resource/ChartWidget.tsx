@@ -33,7 +33,12 @@ export default function ChartWidget({ gpuName, basePrice, exchangeRate, provider
   }, [gpuName]);
 
   const chartData = useMemo(() => {
-    if (realData.length === 0) return [];
+    if (realData.length === 0) {
+      return [
+        { name: '시세', type: 'candlestick', data: [] },
+        { name: '5일 추세선', type: 'line', data: [] }
+      ];
+    }
     const aggregated = [];
     let chunkSize = period === "DAY" ? 1 : period === "WEEK" ? 7 : 30;
     
