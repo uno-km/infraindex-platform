@@ -5,6 +5,9 @@ import { Newspaper, Search, ExternalLink, Filter, TrendingUp, Clock, Tag } from 
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
+import ReactMarkdown from 'react-markdown';
+import { format } from 'date-fns';
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:8000/api/v1';
 
 interface NewsItem {
@@ -19,23 +22,41 @@ interface NewsItem {
   content_type: string;
 }
 
+interface Briefing {
+  id: string;
+  date: string;
+  category: string;
+  content: string;
+  model_used: string;
+}
+
 export default function NewsPage() {
   const [news, setNews] = useState<NewsItem[]>([]);
+  const [briefing, setBriefing] = useState<Briefing | null>(null);
   const [loading, setLoading] = useState(true);
+  const [briefingLoading, setBriefingLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<string>("All");
 
-  const loadNews = async () => {
+  const loadData = async () => {
     setLoading(true);
     try {
+      // 1. Fetch News
       const qs = new URLSearchParams();
       if (search) qs.append('query', search);
       if (filter !== "All") qs.append('category', filter);
       
-      const res = await fetch(`${API_BASE}/news?${qs.toString()}`);
-      if (res.ok) {
-        const data = await res.json();
+      const resNews = await fetch(`${API_BASE}/news?${qs.toString()}`);
+      if (resNews.ok) {
+        const data = await resNews.json();
         setNews(data.items || []);
+      }
+
+      // 2. Fetch latest Briefing
+      const resBriefing = await fetch(`${API_BASE}/news/briefing`);
+      if (resBriefing.ok) {
+        const data = await resBriefing.json();
+        if (data.length > 0) setBriefing(data[0]);
       }
     } catch (e) {
       console.error(e);
@@ -44,9 +65,31 @@ export default function NewsPage() {
     }
   };
 
+  const generateBriefing = async () => {
+    setBriefingLoading(true);
+    const today = format(new Date(), 'yyyy-MM-dd');
+    try {
+      const res = await fetch(`${API_BASE}/news/briefing/generate?date=${today}`, { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        setBriefing({
+          id: 'new',
+          date: today,
+          category: '전체',
+          content: data.briefing,
+          model_used: 'llm'
+        });
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setBriefingLoading(false);
+    }
+  };
+
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
-      loadNews();
+      loadData();
     }, 500);
     return () => clearTimeout(delayDebounce);
   }, [search, filter]);
@@ -64,19 +107,46 @@ export default function NewsPage() {
             <p className="text-neutral-400 text-lg">Real-time IT & Semiconductor intelligence feed</p>
           </div>
           
-          <div className="relative w-full md:w-96">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Search className="w-5 h-5 text-neutral-500" />
+          <div className="relative w-full md:w-96 flex gap-3">
+            <div className="relative w-full">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <Search className="w-5 h-5 text-neutral-500" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search intelligence..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full bg-neutral-900/50 border border-neutral-800 focus:border-emerald-500/50 rounded-2xl py-3 pl-12 pr-4 text-neutral-200 placeholder:text-neutral-600 outline-none transition-all duration-300 backdrop-blur-xl hover:bg-neutral-900"
+              />
             </div>
-            <input
-              type="text"
-              placeholder="Search intelligence..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-neutral-900/50 border border-neutral-800 focus:border-emerald-500/50 rounded-2xl py-3 pl-12 pr-4 text-neutral-200 placeholder:text-neutral-600 outline-none transition-all duration-300 backdrop-blur-xl hover:bg-neutral-900"
-            />
+            <button 
+              onClick={generateBriefing}
+              disabled={briefingLoading}
+              className="px-4 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl whitespace-nowrap font-semibold transition-colors disabled:opacity-50"
+            >
+              {briefingLoading ? "생성중..." : "AI 요약 생성"}
+            </button>
           </div>
         </div>
+
+        {/* AI Daily Briefing Section */}
+        {briefing && (
+          <div className="bg-gradient-to-br from-indigo-900/30 to-purple-900/30 border border-indigo-500/30 rounded-3xl p-8 backdrop-blur-md shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-indigo-500/20 blur-3xl rounded-full pointer-events-none"></div>
+            <div className="flex items-center justify-between mb-6 border-b border-indigo-500/20 pb-4">
+              <h2 className="text-2xl font-bold text-indigo-300 flex items-center gap-2">
+                ✨ AI Daily Analyst Briefing
+              </h2>
+              <span className="text-sm font-medium px-3 py-1 bg-indigo-500/20 text-indigo-200 rounded-full">
+                {briefing.date} | Model: {briefing.model_used}
+              </span>
+            </div>
+            <div className="prose prose-invert prose-indigo max-w-none text-neutral-300">
+              <ReactMarkdown>{briefing.content}</ReactMarkdown>
+            </div>
+          </div>
+        )}
 
         {/* Filter Chips */}
         <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">

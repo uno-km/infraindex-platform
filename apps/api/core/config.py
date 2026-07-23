@@ -116,7 +116,11 @@ class Settings(BaseSettings):
     ADMIN_API_KEY: Optional[str] = None
 
     # P3-001: LLM API Keys (Chat NLP 엔진)
-    OPENAI_API_KEY: Optional[str] = None   # GPT-4o-mini 사용 시 필요
+    OPENAI_API_KEY: str | None = None
+    
+    # 로컬 LLM 설정 (Ollama)
+    OLLAMA_BASE_URL: str = "http://localhost:11434/v1"
+    OLLAMA_MODEL: str = "llama3.1"
     GEMINI_API_KEY: Optional[str] = None   # Gemini Flash 폴백 시 필요
 
     class Config:

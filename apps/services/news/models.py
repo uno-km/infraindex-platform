@@ -113,3 +113,26 @@ class NewsArticle(Base, UUIDMixin):
             "published_at", "source_name"
         ),
     )
+
+class NewsDailyBriefing(Base, UUIDMixin):
+    """
+    일일 뉴스 요약 리포트 (LLM 기반)
+    """
+    __tablename__ = "tbl_news_daily_briefing"
+
+    date: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True, nullable=False)
+    category: Mapped[str] = mapped_column(String(50), index=True, nullable=False, default="전체")
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    model_used: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    source_article_ids: Mapped[list | dict | None] = mapped_column(JSON, nullable=True) # 요약에 쓰인 기사 ID들
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    __table_args__ = (
+        Index("idx_briefing_date_cat", "date", "category", unique=True),
+    )

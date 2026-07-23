@@ -15,7 +15,7 @@ from apps.api.models.outbox import OutboxEvent
 from apps.api.models.system_code import SystemCodeGroup, SystemCode
 from apps.api.models.batch_schedule import SysBatSchBas, SysBatSchDtl
 from apps.api.models.system_config import CrawlerConfig
-from apps.services.news.models import NewsSource, NewsTag, NewsArticleTag, NewsArticle
+from apps.services.news.models import NewsSource, NewsTag, NewsArticle, NewsArticleTag, NewsDailyBriefing
 from apps.api.models.market import MarketProduct, MarketListing, MarketPriceObservation, MarketRentalOffer
 from apps.api.models.ohlc import MarketOHLCDaily
 from apps.services.gpu.models_offering import PricingPlan, InstanceOffering, OfferingGpuConfiguration, OfferingCpuConfiguration

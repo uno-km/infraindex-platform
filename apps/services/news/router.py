@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import desc, or_
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 from apps.api.core.database import get_db
 from apps.services.news.models import NewsArticle
@@ -130,3 +130,89 @@ async def sync_news_from_crawler(db: AsyncSession = Depends(get_db)):
     await db.commit()
     
     return {"status": "success", "fetched": len(normalized), "inserted": inserted_count}
+
+@router.post("/briefing/generate")
+async def generate_briefing(date: str, db: AsyncSession = Depends(get_db)):
+    """
+    특정 일자의 기사들을 모아서 LLM으로 브리핑 생성
+    """
+    from datetime import datetime
+    try:
+        target_date = datetime.strptime(date, "%Y-%m-%d").date()
+    except ValueError:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD")
+        
+    # Get articles for the date
+    from apps.services.news.models import NewsArticle, NewsDailyBriefing
+    from sqlalchemy import cast, Date
+    
+    stmt = select(NewsArticle).where(cast(NewsArticle.published_at, Date) == target_date)
+    result = await db.execute(stmt)
+    articles = result.scalars().all()
+    
+    article_dicts = [
+        {
+            "title": a.title,
+            "source": a.source_name,
+            "summary": a.summary,
+            "category": a.category
+        }
+        for a in articles
+    ]
+    
+    from apps.api.core.ai_service import generate_daily_news_briefing
+    briefing_text = await generate_daily_news_briefing(date, article_dicts)
+    
+    # Save to DB
+    # Check if exists
+    stmt_check = select(NewsDailyBriefing).where(NewsDailyBriefing.date == target_date)
+    res_check = await db.execute(stmt_check)
+    existing = res_check.scalar_one_or_none()
+    
+    if existing:
+        existing.content = briefing_text
+        existing.source_article_ids = [str(a.id) for a in articles]
+    else:
+        new_briefing = NewsDailyBriefing(
+            date=target_date,
+            category="전체",
+            content=briefing_text,
+            model_used="llm",
+            source_article_ids=[str(a.id) for a in articles]
+        )
+        db.add(new_briefing)
+        
+    await db.commit()
+    
+    return {"status": "success", "briefing": briefing_text}
+
+@router.get("/briefing")
+async def get_briefings(date: Optional[str] = None, db: AsyncSession = Depends(get_db)):
+    """
+    저장된 LLM 브리핑 리포트 조회
+    """
+    from apps.services.news.models import NewsDailyBriefing
+    stmt = select(NewsDailyBriefing).order_by(NewsDailyBriefing.date.desc())
+    
+    if date:
+        from datetime import datetime
+        try:
+            target_date = datetime.strptime(date, "%Y-%m-%d").date()
+            stmt = stmt.where(NewsDailyBriefing.date == target_date)
+        except ValueError:
+            pass
+            
+    result = await db.execute(stmt)
+    briefings = result.scalars().all()
+    
+    return [
+        {
+            "id": str(b.id),
+            "date": b.date.strftime("%Y-%m-%d"),
+            "category": b.category,
+            "content": b.content,
+            "model_used": b.model_used
+        }
+        for b in briefings
+    ]

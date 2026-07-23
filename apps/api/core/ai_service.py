@@ -1,12 +1,62 @@
 import os
 from openai import AsyncOpenAI
 import logging
+from apps.api.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-# Scaffold: If no API key, use mock response.
-API_KEY = os.environ.get("OPENAI_API_KEY", "")
-client = AsyncOpenAI(api_key=API_KEY) if API_KEY else None
+# Ollama / Local LLM configuration
+OLLAMA_BASE_URL = settings.OLLAMA_BASE_URL
+OLLAMA_MODEL = settings.OLLAMA_MODEL
+API_KEY = settings.OPENAI_API_KEY
+
+# Prefer OpenAI if key exists, else fallback to Ollama
+if API_KEY:
+    client = AsyncOpenAI(api_key=API_KEY)
+    MODEL = "gpt-4o-mini"
+else:
+    # Use Ollama via OpenAI SDK compatibility
+    client = AsyncOpenAI(base_url=OLLAMA_BASE_URL, api_key="ollama")
+    MODEL = OLLAMA_MODEL
+
+async def generate_daily_news_briefing(date_str: str, articles: list) -> str:
+    """
+    Generate a daily briefing from a list of news articles using a local LLM.
+    """
+    logger.info(f"Generating Daily Briefing for {date_str} using {MODEL}...")
+    
+    if not articles:
+        return f"# {date_str} 브리핑\n\n수집된 뉴스가 없습니다."
+        
+    articles_text = "\n\n".join([
+        f"Title: {a.get('title')}\nSource: {a.get('source')}\nSummary: {a.get('summary')}\nCategory: {a.get('category')}"
+        for a in articles
+    ])
+    
+    prompt = f"""
+    당신은 글로벌 IT, 클라우드, 반도체 산업을 분석하는 시니어 애널리스트입니다.
+    아래는 {date_str}에 수집된 주요 뉴스 기사들입니다:
+    
+    {articles_text}
+    
+    이 기사들을 종합하여 3~4개의 단락으로 구성된 전문가 수준의 마크다운 형식 리포트를 작성해주세요.
+    단순한 요약이 아니라 시장의 흐름(공급망, 가격 변동, 트렌드 등)을 꿰뚫는 인사이트를 포함해야 합니다.
+    """
+
+    try:
+        response = await client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": "You are a professional IT/Semiconductor market analyst. Always respond in Korean and use clear Markdown formatting."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=800,
+            temperature=0.3
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        logger.error(f"LLM Generation failed: {str(e)}")
+        return _get_mock_briefing(date_str)
 
 async def generate_market_analysis(news_data: list, power_data: list, memory_data: list) -> str:
     """
@@ -23,20 +73,27 @@ async def generate_market_analysis(news_data: list, power_data: list, memory_dat
     Focus on supply chain constraints and power costs.
     """
 
-    if client:
-        try:
-            response = await client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=300
-            )
-            return response.choices[0].message.content
-        except Exception as e:
-            logger.error(f"LLM Generation failed: {str(e)}")
-            return _get_mock_analysis()
-    else:
-        # Fallback for scaffold / local testing without API key
+    try:
+        response = await client.chat.completions.create(
+            model=MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=300
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        logger.error(f"LLM Generation failed: {str(e)}")
         return _get_mock_analysis()
+
+def _get_mock_briefing(date_str: str) -> str:
+    return f"""# {date_str} 글로벌 IT 및 반도체 동향 브리핑 (Auto-generated Mock)
+
+최근 데이터센터 및 반도체 시장은 AI 수요 급증에 따른 공급 병목 현상을 지속적으로 겪고 있습니다. 주요 기업들은 전력 확보와 차세대 메모리 칩 수급에 총력을 다하고 있으며, 특히 HBM(High Bandwidth Memory) 시장의 쏠림 현상이 심화되고 있습니다.
+
+**주요 인사이트:**
+- **공급망 제약:** 최선단 공정의 패키징 캐파 부족으로 인해 주요 AI 가속기의 리드타임이 장기화되고 있습니다.
+- **전력 및 인프라:** 클라우드 사업자(CSP)들의 전력 확보 경쟁이 치열해지며, 특정 지역의 데이터센터 임대료가 급등하는 추세입니다.
+- **전망:** 당분간 하드웨어 인프라에 대한 투자는 공격적으로 진행될 것이며, 관련 반도체 장비 및 부품사들의 실적 호조가 예상됩니다.
+"""
 
 def _get_mock_analysis() -> str:
     return (
