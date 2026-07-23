@@ -4,6 +4,28 @@ import glob
 from typing import List, Dict, Any
 from apps.api.core.config import settings
 
+class SystemCodeService:
+    @staticmethod
+    async def get_codes_by_group(group_id: str) -> List[str]:
+        if not settings.USE_REAL_DB:
+            # DB 미사용 시 기본 메타데이터 반환 (Fallback)
+            if group_id == "GPU_PROVIDER":
+                return ["vast-ai", "runpod", "aws", "vessl", "gpuaas", "cloudv", "runyourai", "gabia", "ktcloud", "xesktop"]
+            return []
+            
+        from sqlalchemy.ext.asyncio import AsyncSession
+        from apps.api.core.database import SessionLocal
+        from apps.api.models.system_code import SystemCode
+        from sqlalchemy import select
+        
+        async with SessionLocal() as db:
+            result = await db.execute(
+                select(SystemCode.SYS_CD_ID)
+                .where(SystemCode.SYS_GROUP_ID == group_id)
+            )
+            return list(result.scalars().all())
+
+
 class DataService:
     """
     Data Access Layer that abstracts where data comes from.
@@ -13,31 +35,29 @@ class DataService:
         if settings.USE_REAL_DB:
             from sqlalchemy.ext.asyncio import AsyncSession
             from apps.api.core.database import SessionLocal
-            from apps.services.gpu.models_history import PriceHistory
+            from apps.services.gpu.models_history import GpuPriceHistory
             from sqlalchemy import select, desc
             
             all_records = []
             async with SessionLocal() as db:
-                # 간단히 최근 500개 레코드를 가져옵니다. 
-                # (실제로는 provider, gpu별 최신값을 서브쿼리로 가져와야 함)
                 result = await db.execute(
-                    select(PriceHistory)
-                    .where(PriceHistory.hardware_type == hardware_type)
-                    .order_by(desc(PriceHistory.timestamp))
+                    select(GpuPriceHistory)
+                    .where(GpuPriceHistory.hw_typ == hardware_type)
+                    .order_by(desc(GpuPriceHistory.ts))
                     .limit(500)
                 )
                 rows = result.scalars().all()
                 for r in rows:
                     all_records.append({
-                        "provider": r.provider_id,
-                        "gpu_model": r.gpu_model,
-                        "cpu_model": r.cpu_model,
+                        "provider": r.prv_id,
+                        "gpu_model": r.gpu_mdl,
+                        "cpu_model": r.cpu_mdl,
                         "vram_gb": r.vram_gb,
-                        "cores": r.cores,
-                        "price_per_hour": r.price_per_hour,
-                        "availability_status": r.availability_status,
-                        "provider_link": r.provider_link,
-                        "sys_ram_gb": r.sys_ram_gb,
+                        "cores": r.core_cnt,
+                        "price_per_hour": r.prc_ph,
+                        "availability_status": r.avl_st,
+                        "provider_link": r.prv_url,
+                        "sys_ram_gb": r.sys_ram,
                         "tdp_w": r.tdp_w,
                     })
             return all_records
@@ -48,7 +68,7 @@ class DataService:
             return []
 
         all_records = []
-        providers = ["vast-ai", "runpod", "aws", "vessl", "gpuaas", "cloudv", "runyourai", "gabia", "ktcloud", "xesktop"]
+        providers = await SystemCodeService.get_codes_by_group("GPU_PROVIDER")
         
         import re
 
@@ -65,7 +85,6 @@ class DataService:
             try:
                 with open(latest_file, "r", encoding="utf-8") as f:
                     records = json.load(f)
-                    # JSON에는 provider 필드가 없을 수 있으므로 주입
                     for r in records:
                         if "provider" not in r:
                             r["provider"] = provider
@@ -92,7 +111,7 @@ class DataService:
             return []
 
         all_records = []
-        providers = ["vast-ai", "runpod", "aws", "vessl", "gpuaas", "cloudv", "runyourai", "gabia", "ktcloud", "xesktop"]
+        providers = await SystemCodeService.get_codes_by_group("GPU_PROVIDER")
 
         for provider in providers:
             files = glob.glob(os.path.join(data_dir, f"{provider}_*.json"))

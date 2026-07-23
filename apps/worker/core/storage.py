@@ -106,7 +106,7 @@ class PostgresStorage(BaseStorage):
             logger.info(f"[{provider_slug}] No data to save.")
             return
 
-        from apps.services.gpu.models_history import PriceHistory
+        from apps.services.gpu.models_history import GpuPriceHistory
         from apps.api.models.outbox import OutboxEvent
 
         _, SessionLocal = _ensure_pg_engine()
@@ -123,23 +123,23 @@ class PostgresStorage(BaseStorage):
                         vram_gb_raw = item.get("vram_gb", 0)
                         price_raw = item.get("price_per_hour") or item.get("hourly_price") or 0.0
 
-                        # ── PriceHistory INSERT ────────────────────────────
-                        record = PriceHistory(
-                            provider_id=provider_slug,
-                            gpu_model=str(gpu_model)[:100],
+                        # ── GpuPriceHistory INSERT ────────────────────────────
+                        record = GpuPriceHistory(
+                            prv_id=provider_slug,
+                            gpu_mdl=str(gpu_model)[:100],
                             vram_gb=float(vram_gb_raw) if vram_gb_raw else 0.0,
-                            price_per_hour=float(price_raw),
-                            availability_status=str(item.get("availability_status", "unknown"))[:50],
-                            timestamp=now,
+                            prc_ph=float(price_raw),
+                            avl_st=str(item.get("availability_status", "unknown"))[:50],
+                            ts=now,
                         )
                         session.add(record)
 
                         # ── OutboxEvent INSERT (동일 트랜잭션) ────────────
                         # Outbox Publisher가 이 이벤트를 Redis Pub/Sub으로 전달
                         outbox_event = OutboxEvent(
-                            topic="price_updates",
-                            event_type="price.collected",
-                            payload={
+                            tpc_nm="price_updates",
+                            evt_typ="price.collected",
+                            payld_dat={
                                 "provider_id": provider_slug,
                                 "gpu_model": str(gpu_model)[:100],
                                 "price_per_hour": float(price_raw),

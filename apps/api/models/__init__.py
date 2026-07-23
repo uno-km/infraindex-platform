@@ -7,8 +7,12 @@ from apps.api.models.memory import MemoryManufacturer, MemoryModule
 from apps.api.models.storage import StorageProvider, StorageTier
 from apps.api.models.scheduler import ScheduleConfig, IdempotencyKey
 from apps.api.models.outbox import OutboxEvent
+from apps.api.models.system_code import SystemCodeGroup, SystemCode
 
-# Note: Other models like GPU, CPU, Retail, Financial, and News 
-# have been moved to their respective apps/services/{domain}/models*.py
+# Import domain models to register them with Base.metadata for Alembic
+from apps.services.gpu.models_history import GpuPriceHistory
+from apps.services.retail.models import RtlPriceHistory
+from apps.services.financial.models import FinMktHistory
+from apps.services.news.models import NewsArticle
 
-__all__ = ["Base", "CollectionRun", "DataQualityIssue"]
+__all__ = ["Base", "CollectionRun", "DataQualityIssue", "OutboxEvent", "SystemCodeGroup", "SystemCode", "GpuPriceHistory", "RtlPriceHistory", "FinMktHistory", "NewsArticle"]

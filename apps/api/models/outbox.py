@@ -9,15 +9,14 @@ from apps.api.models.base import Base, UUIDMixin
 class OutboxEvent(Base, UUIDMixin):
     """
     Transactional Outbox Pattern.
-    When a domain entity (e.g. PriceObservation) is created/updated, an event is written 
-    here within the same DB transaction. A background worker picks it up and pushes it 
-    to the EventBus (e.g. Kafka/Redis), ensuring zero data loss and no dual-write bugs.
+    - tbl_obx_evt
     """
-    __tablename__ = "outbox_events"
+    __tablename__ = "tbl_obx_evt"
     
-    topic: Mapped[str] = mapped_column(String(255), index=True)
-    event_type: Mapped[str] = mapped_column(String(255))
-    payload: Mapped[Dict[str, Any]] = mapped_column(JSON)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    processed: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
-    processed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    tpc_nm: Mapped[str] = mapped_column(String(255), index=True)
+    evt_typ: Mapped[str] = mapped_column(String(255))
+    payld_dat: Mapped[Dict[str, Any]] = mapped_column(JSON)
+    crt_ts: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    proc_st: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    proc_ts: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
