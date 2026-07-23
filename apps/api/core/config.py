@@ -42,7 +42,9 @@ class Settings(BaseSettings):
 
     @property
     def db_name(self) -> str:
-        return self.POSTGRES_DB if self.ENVIRONMENT == "prod" else self.TEST_POSTGRES_DB
+        if self.ENVIRONMENT == "test":
+            return self.TEST_POSTGRES_DB
+        return self.POSTGRES_DB
 
     @property
     def sync_database_uri(self) -> str:
@@ -122,11 +124,11 @@ def get_settings() -> Settings:
     
     # 2. 상태에 맞는 .env 파일 매핑
     env_file = ".env" # fallback
-    if env_state == "prod":
-        env_file = ".env.production"
-    elif env_state == "dev":
-        env_file = ".env.staging"
-    elif env_state == "local":
+    if env_state in ("prd", "prod", "production"):
+        env_file = ".env.prd" if os.path.exists(".env.prd") else ".env.production"
+    elif env_state in ("dev", "staging"):
+        env_file = ".env.staging" if os.path.exists(".env.staging") else ".env.dev"
+    elif env_state in ("local", "dev_local"):
         env_file = ".env.local"
         
     # 만약 매핑된 파일이 없으면 기본 .env 사용
