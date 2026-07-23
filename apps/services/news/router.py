@@ -37,12 +37,12 @@ async def get_latest_news(
     for record in records:
         news_list.append({
             "id": str(record.id),
-            "title": record.title,
-            "url": record.url,
-            "source": record.source,
-            "published_at": record.published_at.isoformat(),
-            "summary": record.summary,
-            "keywords": record.keywords
+            "title": record.titl_nm,
+            "url": record.arti_url,
+            "source": record.src_nm,
+            "published_at": record.pub_ts.isoformat() if record.pub_ts else None,
+            "summary": record.sum_txt,
+            "keywords": record.kwd_txt
         })
         
     return news_list

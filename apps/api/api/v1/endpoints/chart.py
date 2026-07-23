@@ -116,25 +116,27 @@ async def get_candlestick(
         # Group by day
         daily_groups = defaultdict(list)
         for row in rows:
-            day_str = row.timestamp.strftime("%Y-%m-%d")
+            day_str = row.ts.strftime("%Y-%m-%d") if row.ts else datetime.now(timezone.utc).strftime("%Y-%m-%d")
             daily_groups[day_str].append(row)
             
         candlesticks = []
         for day_str in sorted(daily_groups.keys()):
             records = daily_groups[day_str]
-            records.sort(key=lambda r: r.timestamp)
+            records.sort(key=lambda r: r.ts or datetime.now(timezone.utc))
             
             first_third = max(1, len(records) // 3)
             last_third = max(1, len(records) // 3)
             
-            open_price = sum(r.price_per_hour for r in records[:first_third]) / first_third
-            close_price = sum(r.price_per_hour for r in records[-last_third:]) / last_third
+            open_price = sum(float(r.prc_ph) for r in records[:first_third] if r.prc_ph) / first_third
+            close_price = sum(float(r.prc_ph) for r in records[-last_third:] if r.prc_ph) / last_third
             
-            sorted_by_price = sorted(records, key=lambda r: r.price_per_hour)
+            sorted_by_price = sorted([r for r in records if r.prc_ph], key=lambda r: float(r.prc_ph))
+            if not sorted_by_price:
+                continue
             low_record = sorted_by_price[0]
             high_record = sorted_by_price[-1]
             
-            avg_price = sum(r.price_per_hour for r in records) / len(records)
+            avg_price = sum(float(r.prc_ph) for r in sorted_by_price) / len(sorted_by_price)
             
             if abs(open_price - close_price) < 0.001:
                 open_price = avg_price * 0.99
@@ -142,9 +144,9 @@ async def get_candlestick(
             
             candlesticks.append(CandlestickDataPoint(
                 x=day_str + "T00:00:00Z",
-                y=[round(open_price, 4), round(high_record.price_per_hour, 4), round(low_record.price_per_hour, 4), round(close_price, 4)],
-                highProvider=high_record.provider_id,
-                lowProvider=low_record.provider_id,
+                y=[round(open_price, 4), round(float(high_record.prc_ph), 4), round(float(low_record.prc_ph), 4), round(close_price, 4)],
+                highProvider=high_record.prv_id,
+                lowProvider=low_record.prv_id,
                 avg=round(avg_price, 4)
             ))
 
@@ -203,7 +205,7 @@ async def get_price_series(
     # provider별로 그루핑
     series_map: dict = {}
     for row in rows:
-        key = (row.gpu_model, row.provider_id)
+        key = (row.gpu_mdl, row.prv_id)
         if key not in series_map:
             series_map[key] = []
         series_map[key].append(
@@ -267,7 +269,7 @@ async def get_cpu_price_series(
 
     series_map: dict = {}
     for row in rows:
-        key = (row.cpu_model, row.provider_id)
+        key = (row.cpu_mdl, row.prv_id)
         if key not in series_map:
             series_map[key] = []
         series_map[key].append(

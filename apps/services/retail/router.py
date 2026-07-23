@@ -42,20 +42,19 @@ async def get_retail_ohlc(
     stmt = f"""
     WITH ranked AS (
         SELECT 
-            date_trunc('{trunc_level}', timestamp) AS time_bucket,
-            price,
-            ROW_NUMBER() OVER(PARTITION BY date_trunc('{trunc_level}', timestamp) ORDER BY timestamp ASC) as rn_first,
-            ROW_NUMBER() OVER(PARTITION BY date_trunc('{trunc_level}', timestamp) ORDER BY timestamp DESC) as rn_last
-        FROM retail_price_history
-        WHERE hardware_type = :hardware_type AND model_name = :model_name
+            date_trunc('{trunc_level}', ts) AS time_bucket,
+            prc_amt as price,
+            ROW_NUMBER() OVER(PARTITION BY date_trunc('{trunc_level}', ts) ORDER BY ts ASC) as rn_first,
+            ROW_NUMBER() OVER(PARTITION BY date_trunc('{trunc_level}', ts) ORDER BY ts DESC) as rn_last
+        FROM tbl_rtl_prc_hist
+        WHERE hw_typ = :hardware_type AND mdl_nm = :model_name
     ),
     aggregated AS (
         SELECT 
             time_bucket,
             MIN(price) as low,
             MAX(price) as high
-        FROM retail_price_history
-        WHERE hardware_type = :hardware_type AND model_name = :model_name
+        FROM ranked
         GROUP BY time_bucket
     )
     SELECT 
@@ -97,16 +96,14 @@ async def get_enterprise_hardware(
     stmt = """
     WITH RankedPrices AS (
         SELECT 
-            model_name,
-            platform,
-            price,
-            capacity_gb,
-            product_url,
-            is_official,
-            timestamp,
-            ROW_NUMBER() OVER(PARTITION BY model_name, platform ORDER BY timestamp DESC) as rn
-        FROM retail_price_history
-        WHERE hardware_type = 'enterprise_gpu'
+            mdl_nm as model_name,
+            pltf_nm as platform,
+            prc_amt as price,
+            capa_gb as capacity_gb,
+            ts as timestamp,
+            ROW_NUMBER() OVER(PARTITION BY mdl_nm, pltf_nm ORDER BY ts DESC) as rn
+        FROM tbl_rtl_prc_hist
+        WHERE hw_typ = 'enterprise_gpu'
     )
     SELECT * FROM RankedPrices WHERE rn = 1;
     """
@@ -122,8 +119,8 @@ async def get_enterprise_hardware(
             "platform": row.platform,
             "price": float(row.price),
             "capacity_gb": float(row.capacity_gb) if row.capacity_gb else None,
-            "url": row.product_url,
-            "is_official": row.is_official,
+            "url": None,
+            "is_official": False,
             "updated_at": row.timestamp.isoformat() if row.timestamp else None
         })
         

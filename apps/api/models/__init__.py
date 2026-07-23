@@ -9,13 +9,7 @@ from apps.api.models.scheduler import ScheduleConfig, IdempotencyKey
 from apps.api.models.outbox import OutboxEvent
 from apps.api.models.system_code import SystemCodeGroup, SystemCode
 
-# Import domain models to register them with Base.metadata for Alembic
-from apps.services.gpu.models_history import GpuPriceHistory
-from apps.services.gpu.models_hardware import GpuManufacturer, GpuModel, GpuVariant, CpuManufacturer, CpuModel, CpuVariant
-from apps.services.gpu.models_provider import Provider, ProviderRegion
-from apps.services.gpu.models_offering import InstanceOffering, OfferingGpuConfiguration, OfferingCpuConfiguration, PricingPlan
-from apps.services.retail.models import RtlPriceHistory
-from apps.services.financial.models import FinMktHistory
-from apps.services.news.models import NewsArticle
+# Domain models are imported in database/migrations/env.py for Alembic
+# All domain models are imported in env.py to prevent circular imports during runtime
 
-__all__ = ["Base", "CollectionRun", "DataQualityIssue", "OutboxEvent", "SystemCodeGroup", "SystemCode", "GpuPriceHistory", "RtlPriceHistory", "FinMktHistory", "NewsArticle"]
+__all__ = ["Base", "CollectionRun", "DataQualityIssue", "OutboxEvent", "SystemCodeGroup", "SystemCode"]

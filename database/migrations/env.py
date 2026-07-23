@@ -20,6 +20,16 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 from apps.api.models import Base
 from apps.api.core.config import settings
+
+# Import all domain models so Alembic can detect them
+from apps.services.gpu.models_history import GpuPriceHistory
+from apps.services.gpu.models_hardware import GpuManufacturer, GpuModel, GpuVariant, CpuManufacturer, CpuModel, CpuVariant
+from apps.services.gpu.models_provider import Provider, ProviderRegion
+from apps.services.gpu.models_offering import InstanceOffering, OfferingGpuConfiguration, OfferingCpuConfiguration, PricingPlan
+from apps.services.retail.models import RtlPriceHistory
+from apps.services.financial.models import FinMktHistory
+from apps.services.news.models import NewsArticle
+
 target_metadata = Base.metadata
 
 config.set_main_option("sqlalchemy.url", settings.async_database_uri)

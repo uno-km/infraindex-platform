@@ -44,6 +44,7 @@ class SystemCode(Base):
     SYS_GROUP_ID: Mapped[str] = mapped_column(String(50), ForeignKey("SYS_CD_GROUP_BAS.SYS_GROUP_ID"), primary_key=True)
     SYS_CD_ID: Mapped[str] = mapped_column(String(50), primary_key=True)
     SYS_CD_NM: Mapped[str] = mapped_column(String(100), nullable=False)
+    SYS_VAL: Mapped[str | None] = mapped_column(String(200), nullable=True)
     
     CRT_DT: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     UPD_DT: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)

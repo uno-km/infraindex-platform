@@ -56,10 +56,10 @@ async def get_insight_correlation(
 
     # 2. Fetch baseline and latest for Retail GPUs (Average price)
     stmt_retail = select(
-        RetailGpuPriceHistory.model_name,
-        RetailGpuPriceHistory.price,
-        RetailGpuPriceHistory.ts
-    ).where(RetailGpuPriceHistory.ts >= cutoff).order_by(RetailGpuPriceHistory.ts.asc())
+        RtlPriceHistory.mdl_nm,
+        RtlPriceHistory.prc_amt,
+        RtlPriceHistory.ts
+    ).where(RtlPriceHistory.ts >= cutoff).order_by(RtlPriceHistory.ts.asc())
     
     retail_results = await db.execute(stmt_retail)
     retail_records = retail_results.all()

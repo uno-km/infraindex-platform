@@ -39,7 +39,7 @@ class DataService:
             from sqlalchemy import select, desc
             
             all_records = []
-            async with SessionLocal() as db:
+            async with AsyncSessionLocal() as db:
                 result = await db.execute(
                     select(GpuPriceHistory)
                     .where(GpuPriceHistory.hw_typ == hardware_type)
