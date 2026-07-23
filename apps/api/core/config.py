@@ -67,6 +67,13 @@ class Settings(BaseSettings):
     KAKAO_CLIENT_ID: Optional[str] = None
     KAKAO_CLIENT_SECRET: Optional[str] = None
 
+    # Retail Crawler API Keys
+    NAVER_SHOPPING_CLIENT_ID: Optional[str] = None
+    NAVER_SHOPPING_CLIENT_SECRET: Optional[str] = None
+    COUPANG_ACCESS_KEY: Optional[str] = None
+    COUPANG_SECRET_KEY: Optional[str] = None
+    ELEVENSTREET_OPENAPI_KEY: Optional[str] = None
+
     # ---------------------------------------------------------
     # 🎯 FEATURE FLAGS (Loose Coupling / Environment Switching)
     # ---------------------------------------------------------

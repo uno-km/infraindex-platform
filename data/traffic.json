@@ -1,1 +1,1 @@
-{"RTX 5090": 4, "A100": 46, "RTX 4090": 8, "V100": 6, "H100 SXM": 2, "RTX 3090": 4, "Unknown CPU": 7, "L40S": 3, "H100": 1, "L4": 2, "RTX 3080 TI": 2, "gp3": 4, "c6g.2xlarge": 2, "i3.metal": 1}
+{"RTX 5090": 4, "A100": 48, "RTX 4090": 8, "V100": 6, "H100 SXM": 2, "RTX 3090": 4, "Unknown CPU": 7, "L40S": 3, "H100": 1, "L4": 2, "RTX 3080 TI": 2, "gp3": 6, "c6g.2xlarge": 5, "i3.metal": 4, "pd-ssd": 1, "premium-ssd": 1, "c2-metal-88": 1, "bm-high-cpu": 1, "g3.c4.m16": 1}

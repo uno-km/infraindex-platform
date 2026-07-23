@@ -6,6 +6,7 @@ from typing import List, TYPE_CHECKING
 if TYPE_CHECKING:
     from apps.services.gpu.models_provider import Provider, ProviderRegion
     from apps.services.gpu.models_hardware import GpuVariant, CpuVariant
+    from apps.api.models.observation import PriceObservation
 
 class InstanceOffering(Base, UUIDMixin, TimeStampMixin):
     __tablename__ = "instance_offerings"

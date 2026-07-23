@@ -4,144 +4,169 @@ from typing import List, Dict, Any
 from datetime import datetime, timezone
 import urllib.request
 import urllib.error
-import re
-import uuid
+import urllib.parse
+import json
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import or_
 
 from apps.api.models.market import MarketProduct, MarketListing, MarketPriceObservation
+from apps.services.gpu.models_hardware import GpuModel, CpuModel
+from apps.api.core.config import settings
 
 logger = logging.getLogger(__name__)
 
 class RetailCrawler:
     """
-    Real Web Crawler that scrapes actual GPU market data.
-    Target: videocardbenchmark.net (Public GPU specs & pricing)
+    Real Web Crawler that scrapes actual retail market data using Naver Shopping API.
     """
     
     def __init__(self):
-        self.url = "https://en.wikipedia.org/wiki/GeForce_40_series"
-        self.headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        }
+        self.api_url = "https://openapi.naver.com/v1/search/shop.json"
+        self.client_id = settings.NAVER_SHOPPING_CLIENT_ID
+        self.client_secret = settings.NAVER_SHOPPING_CLIENT_SECRET
 
-    async def fetch_html(self) -> str:
-        logger.info(f"Crawling target URL: {self.url}")
-        req = urllib.request.Request(self.url, headers=self.headers)
-        try:
-            # Run in thread to not block event loop
-            response = await asyncio.to_thread(urllib.request.urlopen, req)
-            html = response.read().decode('utf-8', errors='ignore')
-            return html
-        except Exception as e:
-            logger.error(f"Failed to crawl {self.url}: {e}")
-            return ""
-
-    def parse_gpus(self, html: str) -> List[Dict[str, Any]]:
-        results = []
+    async def fetch_models(self, db: AsyncSession) -> List[str]:
+        """Fetch all GPU and CPU model names from the database."""
+        models = []
         
-        # Scrape models and prices based on Wikipedia text context
-        if "GeForce RTX 4090" in html:
-            results.append({
-                "manufacturer": "NVIDIA",
-                "model_name": "GeForce RTX 4090",
-                "product_line": "GPU",
-                "category": "GPU",
-                "price": 2590000,
-                "vendor": "Wikipedia (MSRP converted)",
-                "url": "https://www.nvidia.com/en-us/geforce/graphics-cards/40-series/rtx-4090/"
-            })
+        # Get GPU models
+        gpu_stmt = select(GpuModel.name)
+        gpu_res = await db.execute(gpu_stmt)
+        for row in gpu_res.scalars():
+            models.append(row)
             
-        if "GeForce RTX 4080" in html:
-            results.append({
-                "manufacturer": "NVIDIA",
-                "model_name": "GeForce RTX 4080",
-                "product_line": "GPU",
-                "category": "GPU",
-                "price": 1690000,
-                "vendor": "Wikipedia (MSRP converted)",
-                "url": "https://www.nvidia.com/en-us/geforce/graphics-cards/40-series/rtx-4080/"
-            })
+        # Get CPU models
+        cpu_stmt = select(CpuModel.name)
+        cpu_res = await db.execute(cpu_stmt)
+        for row in cpu_res.scalars():
+            models.append(row)
             
-        if "GeForce RTX 4070" in html:
-            results.append({
-                "manufacturer": "NVIDIA",
-                "model_name": "GeForce RTX 4070 Ti",
-                "product_line": "GPU",
-                "category": "GPU",
-                "price": 1150000,
-                "vendor": "Wikipedia (MSRP converted)",
-                "url": "https://www.nvidia.com/en-us/geforce/graphics-cards/40-series/rtx-4070-ti/"
-            })
+        # Fallback if DB is empty for hardware models
+        if not models:
+            logger.warning("No models found in GpuModel or CpuModel tables. Using fallback list.")
+            models = ["RTX 4090", "RTX 4080", "i9-14900K", "Ryzen 9 7950X"]
             
-        return results
+        return models
+
+    async def search_naver_shopping(self, query: str) -> List[Dict[str, Any]]:
+        """Search Naver Shopping for a given model."""
+        if not self.client_id or not self.client_secret:
+            logger.warning("Naver Shopping API keys not configured. Skipping real API call.")
+            return []
+
+        encText = urllib.parse.quote(query)
+        url = f"{self.api_url}?query={encText}&display=5&sort=asc"
+        
+        req = urllib.request.Request(url)
+        req.add_header("X-Naver-Client-Id", self.client_id)
+        req.add_header("X-Naver-Client-Secret", self.client_secret)
+        
+        try:
+            response = await asyncio.to_thread(urllib.request.urlopen, req)
+            rescode = response.getcode()
+            if rescode == 200:
+                response_body = response.read()
+                data = json.loads(response_body.decode('utf-8'))
+                return data.get("items", [])
+            else:
+                logger.error(f"Naver API error code: {rescode}")
+                return []
+        except Exception as e:
+            logger.error(f"Failed to fetch from Naver API for query '{query}': {e}")
+            return []
 
     async def sync_to_db(self, db: AsyncSession) -> Dict[str, Any]:
-        html = await self.fetch_html()
-        if not html:
-            return {"status": "error", "message": "Failed to fetch HTML"}
-            
-        parsed_data = self.parse_gpus(html)
-        if not parsed_data:
-            return {"status": "error", "message": "Regex parsing failed or no data found"}
+        models_to_search = await self.fetch_models(db)
+        
+        if not self.client_id or not self.client_secret:
+            return {
+                "status": "error",
+                "message": "NAVER_SHOPPING_CLIENT_ID or NAVER_SHOPPING_CLIENT_SECRET is missing. Cannot fetch real data."
+            }
             
         inserted_products = 0
         inserted_prices = 0
+        crawled_items = 0
         
-        for item in parsed_data:
-            # 1. Upsert MarketProduct
-            stmt = select(MarketProduct).where(MarketProduct.model_name == item["model_name"])
-            result = await db.execute(stmt)
-            product = result.scalar_one_or_none()
+        for model_name in models_to_search:
+            logger.info(f"Crawling retail prices for: {model_name}")
+            items = await self.search_naver_shopping(model_name)
             
-            if not product:
-                product = MarketProduct(
-                    manufacturer=item["manufacturer"],
-                    model_name=item["model_name"],
-                    product_line=item["product_line"],
-                    category=item["category"]
-                )
-                db.add(product)
-                await db.flush() # get product.id
-                inserted_products += 1
+            for item in items:
+                crawled_items += 1
                 
-            # 2. Upsert MarketListing
-            stmt_listing = select(MarketListing).where(
-                (MarketListing.product_id == str(product.id)) & 
-                (MarketListing.vendor_name == item["vendor"])
-            )
-            res_listing = await db.execute(stmt_listing)
-            listing = res_listing.scalar_one_or_none()
-            
-            if not listing:
-                listing = MarketListing(
-                    product_id=str(product.id),
-                    vendor_name=item["vendor"],
-                    original_title=item["model_name"],
-                    url=item["url"],
-                    condition="new"
-                )
-                db.add(listing)
-                await db.flush()
+                # Naver API returns title with <b> tags
+                title = item.get("title", "").replace("<b>", "").replace("</b>", "")
+                link = item.get("link", "")
+                mall_name = item.get("mallName", "Unknown")
+                price_str = item.get("lprice", "0")
                 
-            # 3. Insert Price Observation
-            obs = MarketPriceObservation(
-                listing_id=str(listing.id),
-                price=item["price"],
-                shipping_fee=0,
-                total_price=item["price"],
-                currency="KRW",
-                in_stock=True,
-                observed_at=datetime.now(timezone.utc)
-            )
-            db.add(obs)
-            inserted_prices += 1
-            
+                try:
+                    price = float(price_str)
+                except ValueError:
+                    continue
+                    
+                if price <= 0:
+                    continue
+                
+                # Determine category heuristically
+                category = "CPU" if "intel" in model_name.lower() or "ryzen" in model_name.lower() else "GPU"
+                
+                # 1. Upsert MarketProduct
+                stmt = select(MarketProduct).where(MarketProduct.model_name == model_name)
+                result = await db.execute(stmt)
+                product = result.scalar_one_or_none()
+                
+                if not product:
+                    product = MarketProduct(
+                        manufacturer="Unknown", # Will need better parsing in the future
+                        model_name=model_name,
+                        product_line=category,
+                        category=category
+                    )
+                    db.add(product)
+                    await db.flush()
+                    inserted_products += 1
+                    
+                # 2. Upsert MarketListing
+                stmt_listing = select(MarketListing).where(
+                    (MarketListing.product_id == str(product.id)) & 
+                    (MarketListing.vendor_name == mall_name) &
+                    (MarketListing.url == link)
+                )
+                res_listing = await db.execute(stmt_listing)
+                listing = res_listing.scalar_one_or_none()
+                
+                if not listing:
+                    listing = MarketListing(
+                        product_id=str(product.id),
+                        vendor_name=mall_name,
+                        original_title=title,
+                        url=link,
+                        condition="new"
+                    )
+                    db.add(listing)
+                    await db.flush()
+                    
+                # 3. Insert Price Observation
+                obs = MarketPriceObservation(
+                    listing_id=str(listing.id),
+                    price=price,
+                    shipping_fee=0,
+                    total_price=price,
+                    currency="KRW",
+                    in_stock=True,
+                    observed_at=datetime.now(timezone.utc)
+                )
+                db.add(obs)
+                inserted_prices += 1
+                
         await db.commit()
         return {
             "status": "success", 
-            "crawled_items": len(parsed_data),
+            "crawled_items": crawled_items,
             "inserted_products": inserted_products,
             "inserted_prices": inserted_prices
         }

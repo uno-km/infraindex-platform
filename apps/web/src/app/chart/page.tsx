@@ -1,6 +1,6 @@
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
-import PriceChart from '@/components/chart/PriceChart';
+import LineChartWidget from '@/components/chart/LineChartWidget';
 
 export default function ChartIndex() {
   return (
@@ -10,13 +10,17 @@ export default function ChartIndex() {
         <Sidebar selectedCategory="all" />
         <main className="flex-1 p-6">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Price Charts</h1>
-            <p className="text-gray-600 dark:text-gray-400">High-performance time-series analysis for GPU rentals.</p>
+            <h1 className="text-3xl font-bold mb-2">Unified Price Charts</h1>
+            <p className="text-gray-600 dark:text-gray-400">High-performance time-series analysis for Cloud Resources.</p>
           </div>
           
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-            <PriceChart gpuModelId="H100" />
-            <PriceChart gpuModelId="A100" />
+            <LineChartWidget hwTyp="gpu" modelId="H100" />
+            <LineChartWidget hwTyp="gpu" modelId="A100" />
+            <LineChartWidget hwTyp="cpu" modelId="EPYC" />
+            <LineChartWidget hwTyp="cpu" modelId="Xeon" />
+            <LineChartWidget hwTyp="storage" modelId="S3 Standard" />
+            <LineChartWidget hwTyp="baremetal" modelId="Metal" />
           </div>
         </main>
       </div>

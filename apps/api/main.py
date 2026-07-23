@@ -10,6 +10,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from starlette.middleware.base import BaseHTTPMiddleware
 
+import apps.api.models  # Preload models to fix circular imports
 from apps.api.api.v1.api import api_router
 from apps.api.api.v1.endpoints import admin
 from apps.api.core.config import settings
@@ -90,7 +91,7 @@ app = FastAPI(
 
 # 1. Rate Limiting
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler) # type: ignore
 
 
 # 2. X-Request-ID — 분산 추적 / 로그 correlation
@@ -154,7 +155,7 @@ app.add_middleware(SecurityHeadersMiddleware)
 # 4. CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+    allow_origins=[origin for origin in settings.BACKEND_CORS_ORIGINS],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],

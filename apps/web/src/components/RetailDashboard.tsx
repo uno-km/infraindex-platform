@@ -1,13 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
 import { 
   Server, Cpu, HardDrive, ShoppingCart, TrendingDown, 
-  ExternalLink, CheckCircle2, ChevronRight, Activity 
+  ExternalLink, CheckCircle2 
 } from 'lucide-react';
-
-const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
+import CandlestickChartWidget from './chart/CandlestickChartWidget';
 
 export function RetailDashboard() {
   const [data, setData] = useState<any[]>([]);
@@ -105,20 +103,7 @@ export function RetailDashboard() {
     return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(value);
   };
 
-  const options: any = {
-    chart: { type: 'line', height: 350, background: 'transparent', toolbar: { show: false } },
-    title: { text: `기간별 시세 동향`, align: 'left', style: { color: '#1e293b', fontWeight: 'bold' } },
-    xaxis: { type: 'datetime', labels: { style: { colors: '#64748b' } } },
-    yaxis: {
-      tooltip: { enabled: true },
-      labels: { style: { colors: '#64748b' }, formatter: (val: number) => formatPrice(val) }
-    },
-    grid: { borderColor: '#f1f5f9', strokeDashArray: 4 },
-    theme: { mode: 'light' },
-    stroke: { width: [1, 2, 2], curve: 'smooth' },
-    colors: ['#000000', '#3b82f6', '#ef4444'],
-    plotOptions: { candlestick: { colors: { upward: '#ef4444', downward: '#3b82f6' } } }
-  };
+  const chartTitle = selectedProduct ? `${selectedProduct.manufacturer} ${selectedProduct.model_name} 가격 변동` : '시세 동향 차트';
 
   const getProductIcon = (cat: string) => {
     switch(cat?.toUpperCase()) {
@@ -283,25 +268,14 @@ export function RetailDashboard() {
             </div>
 
             {/* Price Trend Chart */}
-            <div className="bg-white border border-slate-200/60 rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
-                  <Activity className="text-emerald-500" size={20} /> 시세 동향 차트
-                </h3>
-                <select 
-                  value={timeframe}
-                  onChange={(e) => setTimeframe(e.target.value)}
-                  className="bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 py-1.5 focus:outline-none focus:border-indigo-500"
-                >
-                  <option value="1W">1주일</option>
-                  <option value="1M">1개월</option>
-                  <option value="3M">3개월</option>
-                  <option value="1Y">1년</option>
-                </select>
-              </div>
-              <div className="w-full text-slate-800 h-[350px]">
-                <Chart options={options} series={data} type="candlestick" height="100%" width="100%" />
-              </div>
+            <div className="h-[430px]">
+              <CandlestickChartWidget 
+                title={chartTitle}
+                data={data}
+                timeframe={timeframe}
+                onTimeframeChange={setTimeframe}
+                loading={loading}
+              />
             </div>
 
           </div>

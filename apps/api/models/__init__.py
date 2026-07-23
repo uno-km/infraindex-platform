@@ -9,7 +9,7 @@ from apps.api.models.user_follows import UserFollow
 from apps.api.models.quality import CollectionRun, DataQualityIssue
 from apps.api.models.governance import DataLicense, SourceAttribution
 from apps.api.models.memory import MemoryManufacturer, MemoryModule
-from apps.api.models.storage import StorageProvider, StorageTier
+from apps.api.models.storage import StorageProvider, StorageTier, StoragePriceHistory
 from apps.api.models.scheduler import ScheduleConfig, IdempotencyKey
 from apps.api.models.outbox import OutboxEvent
 from apps.api.models.system_code import SystemCodeGroup, SystemCode
@@ -38,6 +38,7 @@ __all__ = [
     "MemoryModule",
     "StorageProvider",
     "StorageTier",
+    "StoragePriceHistory",
     "ScheduleConfig",
     "IdempotencyKey",
     "OutboxEvent", 
