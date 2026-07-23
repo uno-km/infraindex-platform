@@ -6,13 +6,13 @@ from datetime import datetime, timezone
 import asyncio
 
 from apps.worker.providers.common.base import BaseProviderCrawler
+from apps.services.news.config import classify_article
 
 logger = logging.getLogger(__name__)
 
 class NewsTier1Crawler(BaseProviderCrawler):
     """
     Tier 1 Fallback Crawler: RSS & XML Sitemap Parser + Trafilatura Full-text Extraction.
-    This is the fastest, safest, and most polite method to scrape news.
     """
     
     @property
@@ -50,38 +50,48 @@ class NewsTier1Crawler(BaseProviderCrawler):
                     return []
         
         for feed_info in feeds_to_fetch:
-            # We use asyncio.to_thread because feedparser is blocking
             feed = await asyncio.to_thread(feedparser.parse, feed_info["url"])
             
-            for entry in feed.entries[:5]: # Get top 5 per feed for demonstration
+            for entry in feed.entries[:10]: # Get top 10
                 raw_articles.append({
                     "title": entry.get("title", ""),
                     "url": entry.get("link", ""),
                     "published": entry.get("published", ""),
+                    "author": entry.get("author", ""),
                     "source": feed_info["source"]
                 })
         
         return raw_articles
 
     def parse_instances(self, raw_data: Any) -> List[Dict[str, Any]]:
-        # In this tier, parsing includes downloading the full text and extracting it via Trafilatura.
         parsed = []
         for item in raw_data:
             logger.debug(f"[Tier 1] Extracting text for: {item['title']}")
             
-            # Download and extract
-            downloaded = trafilatura.fetch_url(item["url"])
-            if downloaded:
-                text = trafilatura.extract(downloaded)
-            else:
-                text = None
+            # Use basic parsing without slow trafilatura download for every item just to get summary
+            # We will use the feed title for classification if trafilatura is slow
+            text = None
+            try:
+                # trafilatura is synchronous, but we are inside a blocking function parse_instances
+                downloaded = trafilatura.fetch_url(item["url"])
+                if downloaded:
+                    text = trafilatura.extract(downloaded)
+            except Exception as e:
+                logger.warning(f"Trafilatura failed for {item['url']}: {e}")
                 
+            summary = text[:500] + "..." if text else None
+            
+            # Classify
+            classification = classify_article(item["title"] + " " + (summary or ""))
+            
             parsed.append({
                 "title": item["title"],
                 "url": item["url"],
-                "source": item["source"],
-                "summary": text[:500] + "..." if text else None, # We use the first 500 chars as summary
-                "published_at": item["published"]
+                "source_name": item["source"],
+                "summary": summary,
+                "author": item.get("author", None),
+                "published_at": item["published"],
+                "classification": classification
             })
             
         return parsed
@@ -90,17 +100,21 @@ class NewsTier1Crawler(BaseProviderCrawler):
         # Map to NewsArticle schema
         normalized = []
         for item in parsed_data:
-            # Simple timestamp fallback
             dt = datetime.now(timezone.utc)
+            classification = item.get("classification", {})
             
             normalized.append({
                 "title": item["title"],
                 "url": item["url"],
-                "source": item["source"],
+                "source_name": item["source_name"],
                 "summary": item["summary"],
-                "keywords": "semiconductor, tech", # Extracted or mocked keywords
-                "published_at": dt,
+                "author": item.get("author", None),
+                "published_at": dt, # In reality, parse item["published_at"] format
                 "collection_tier": "tier1_rss",
-                "timestamp": dt
+                "is_semiconductor_related": classification.get("is_semiconductor_related", False),
+                "category": classification.get("primary_category"),
+                "categories": classification.get("categories", []),
+                "matched_keywords": ",".join(classification.get("matched_keywords", [])),
+                "content_type": "article"
             })
         return normalized

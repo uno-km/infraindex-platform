@@ -10,7 +10,7 @@ interface HeaderProps {
 }
 
 export default function Header({ searchQuery, setSearchQuery }: HeaderProps) {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
 
   return (
     <header className="bg-white/90 backdrop-blur-md border-b border-slate-300 sticky top-0 z-50 shadow-sm">

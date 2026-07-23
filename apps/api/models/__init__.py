@@ -15,6 +15,11 @@ from apps.api.models.outbox import OutboxEvent
 from apps.api.models.system_code import SystemCodeGroup, SystemCode
 from apps.api.models.batch_schedule import SysBatSchBas, SysBatSchDtl
 from apps.api.models.system_config import CrawlerConfig
+from apps.services.news.models import NewsArticle
+from apps.api.models.market import MarketProduct, MarketListing, MarketPriceObservation, MarketRentalOffer
+from apps.services.gpu.models_offering import PricingPlan, InstanceOffering, OfferingGpuConfiguration, OfferingCpuConfiguration
+from apps.services.gpu.models_hardware import GpuModel, GpuManufacturer, GpuVariant, CpuManufacturer, CpuModel, CpuVariant
+from apps.services.gpu.models_provider import Provider, ProviderRegion
 
 __all__ = [
     "Base", 
@@ -40,5 +45,22 @@ __all__ = [
     "SystemCode", 
     "SysBatSchBas", 
     "SysBatSchDtl",
-    "CrawlerConfig"
+    "CrawlerConfig",
+    "NewsArticle",
+    "MarketProduct",
+    "MarketListing",
+    "MarketPriceObservation",
+    "MarketRentalOffer",
+    "PricingPlan",
+    "InstanceOffering",
+    "OfferingGpuConfiguration",
+    "OfferingCpuConfiguration",
+    "GpuModel",
+    "GpuManufacturer",
+    "GpuVariant",
+    "CpuManufacturer",
+    "CpuModel",
+    "CpuVariant",
+    "Provider",
+    "ProviderRegion"
 ]

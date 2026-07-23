@@ -3,11 +3,11 @@
 import { Menu, ChevronRight, Server, Cpu, HardDrive, Cloud, BarChart2, Building, Lightbulb, Newspaper, TrendingUp } from "lucide-react";
 
 interface SidebarProps {
-  selectedCategory: string;
-  setSelectedCategory: (val: string) => void;
+  selectedCategory?: string;
+  setSelectedCategory?: (val: string) => void;
 }
 
-export default function Sidebar({ selectedCategory, setSelectedCategory }: SidebarProps) {
+export default function Sidebar({ selectedCategory = "", setSelectedCategory = () => {} }: SidebarProps) {
   const sections = [
     {
       title: "리소스 카테고리",

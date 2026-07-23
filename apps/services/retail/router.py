@@ -125,3 +125,13 @@ async def get_enterprise_hardware(
         })
         
     return hardware
+
+@router.post("/sync_enterprise")
+async def sync_enterprise_market_from_crawler(db: AsyncSession = Depends(get_db)):
+    """
+    Trigger the Enterprise Web Crawler manually to fetch and insert real GPU prices from the web.
+    """
+    from apps.services.market.crawler_enterprise import EnterpriseCrawler
+    crawler = EnterpriseCrawler()
+    result = await crawler.sync_to_db(db)
+    return result

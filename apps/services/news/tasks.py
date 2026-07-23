@@ -5,6 +5,7 @@ from apps.services.news.models import NewsArticle
 from apps.services.news.crawler_tier1_rss import NewsTier1Crawler
 from apps.services.news.crawler_tier2_api import NewsTier2Crawler
 from apps.services.news.crawler_tier3_browser import NewsTier3Crawler
+from apps.services.news.crawler_youtube import YouTubeCrawler
 
 import asyncio
 import logging
@@ -20,12 +21,19 @@ async def _save_news_items(news_items):
         for item in news_items:
             try:
                 article = NewsArticle(
-                    title=item["title"],
-                    url=item["url"],
-                    source=item["source"],
-                    published_at=item["published_at"],
+                    title=item.get("title", ""),
+                    url=item.get("url", ""),
+                    source_name=item.get("source_name", ""),
+                    published_at=item.get("published_at"),
                     summary=item.get("summary", ""),
-                    keywords=item.get("keywords", ""),
+                    author=item.get("author"),
+                    thumbnail_url=item.get("thumbnail_url"),
+                    language=item.get("language", "en"),
+                    content_type=item.get("content_type", "article"),
+                    is_semiconductor_related=item.get("is_semiconductor_related", False),
+                    category=item.get("category"),
+                    categories=item.get("categories", []),
+                    matched_keywords=item.get("matched_keywords", ""),
                     collection_tier=item.get("collection_tier", "unknown")
                 )
                 session.add(article)
@@ -71,6 +79,15 @@ async def _run_3_tier_crawling():
         t3_added = await _save_news_items(t3_data)
         total_added += t3_added
         logger.info(f"[Tier 3] Added {t3_added} new articles.")
+        logger.info(f"[Tier 3] Added {t3_added} new articles.")
+
+    # YouTube Crawler (Always runs)
+    logger.info("=== [Starting YouTube Crawler] ===")
+    yt_crawler = YouTubeCrawler()
+    yt_data = await yt_crawler.execute_pipeline()
+    yt_added = await _save_news_items(yt_data)
+    total_added += yt_added
+    logger.info(f"[YouTube] Added {yt_added} new videos.")
 
     return total_added
 

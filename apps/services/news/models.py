@@ -1,4 +1,4 @@
-from sqlalchemy import String, DateTime, Text, Index
+from sqlalchemy import String, DateTime, Text, Index, Boolean, JSON
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
 from datetime import datetime
@@ -13,23 +13,39 @@ class NewsArticle(Base, UUIDMixin):
     """
     __tablename__ = "tbl_news_arti"
 
-    titl_nm: Mapped[str] = mapped_column(String(500), nullable=False)
-    arti_url: Mapped[str] = mapped_column(String(1000), unique=True, index=True, nullable=False) # URL로 중복 방지
-    src_nm: Mapped[str] = mapped_column(String(100), index=True, nullable=False) # e.g. "Google News", "YouTube", "Bloomberg"
+    title: Mapped[str] = mapped_column(String(500), nullable=False)
+    url: Mapped[str] = mapped_column(String(1000), unique=True, index=True, nullable=False) 
+    canonical_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    source_name: Mapped[str] = mapped_column(String(100), index=True, nullable=False) # e.g. "Google News", "YouTube"
+    source_domain: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    author: Mapped[str | None] = mapped_column(String(100), nullable=True)
     
-    pub_ts: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True, nullable=False)
-    sum_txt: Mapped[str | None] = mapped_column(Text, nullable=True)
-    kwd_txt: Mapped[str | None] = mapped_column(String(500), nullable=True) # 콤마 분리된 키워드 등
-    clct_tr: Mapped[str | None] = mapped_column(String(50), nullable=True, default="tier1_rss") # e.g. "tier1_rss", "tier2_api", "tier3_scraper"
+    published_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True, nullable=False)
+    collected_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     
-    crt_ts: Mapped[datetime] = mapped_column(
+    summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+    thumbnail_url: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    language: Mapped[str | None] = mapped_column(String(10), nullable=True, default="en")
+    content_type: Mapped[str] = mapped_column(String(50), index=True, nullable=False, default="article") # article or youtube
+    
+    is_semiconductor_related: Mapped[bool] = mapped_column(Boolean, default=False)
+    category: Mapped[str | None] = mapped_column(String(50), index=True, nullable=True)
+    categories: Mapped[list | dict | None] = mapped_column(JSON, nullable=True) # 다중 카테고리
+    matched_keywords: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    
+    collection_tier: Mapped[str | None] = mapped_column(String(50), nullable=True, default="tier1_rss")
+    metadata_json: Mapped[list | dict | None] = mapped_column(JSON, nullable=True)
+    
+    created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), index=True, nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
     )
 
     __table_args__ = (
         Index(
             "idx_news_arti_pub_src",
-            "pub_ts", "src_nm"
+            "published_at", "source_name"
         ),
     )
-
