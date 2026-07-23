@@ -1,0 +1,1 @@
+INFO:     127.0.0.1:9095 - "GET /api/v1/chart/candlestick?gpu_model_id=aws HTTP/1.1" 500 Internal Server Error

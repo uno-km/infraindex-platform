@@ -1,0 +1,204 @@
+INFO:     Started server process [10492]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+ERROR:    Exception in ASGI application
+  + Exception Group Traceback (most recent call last):
+  |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\_utils.py", line 85, in create_collapsing_task_group
+  |     async with anyio.create_task_group() as tg:
+  |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 815, in __aexit__
+  |     raise BaseExceptionGroup(
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\uvicorn\protocols\http\h11_impl.py", line 416, in run_asgi
+    |     result = await app(  # type: ignore[func-returns-value]
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 63, in __call__
+    |     return await self.app(scope, receive, send)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi\applications.py", line 1163, in __call__
+    |     await super().__call__(scope, receive, send)
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    |     raise exc
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    |     await self.app(scope, receive, _send)
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\prometheus_fastapi_instrumentator\middleware.py", line 176, in __call__
+    |     raise exc
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\prometheus_fastapi_instrumentator\middleware.py", line 174, in __call__
+    |     await self.app(scope, receive, send_wrapper)
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\middleware\trustedhost.py", line 51, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\apps\api\main.py", line 132, in dispatch
+    |     response = await call_next(request)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    |     raise app_exc from app_exc.__cause__ or app_exc.__context__
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\apps\api\main.py", line 105, in dispatch
+    |     response = await call_next(request)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    |     raise app_exc from app_exc.__cause__ or app_exc.__context__
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi\routing.py", line 2685, in app
+    |     await route.handle(scope, receive, send)
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi\routing.py", line 1766, in handle
+    |     await self.original_router.handle(scope, receive, send)
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi\routing.py", line 2740, in handle
+    |     await included_router._handle_selected(scope, receive, send)
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi\routing.py", line 1777, in _handle_selected
+    |     await route.handle(scope, receive, send)
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi\routing.py", line 1766, in handle
+    |     await self.original_router.handle(scope, receive, send)
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi\routing.py", line 2740, in handle
+    |     await included_router._handle_selected(scope, receive, send)
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi\routing.py", line 1786, in _handle_selected
+    |     await original_route.handle(scope, receive, send)
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi\routing.py", line 1265, in handle
+    |     await app(scope, receive, send)
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi\routing.py", line 151, in app
+    |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi\routing.py", line 137, in app
+    |     response = await f(request)
+    |                ^^^^^^^^^^^^^^^^
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi\routing.py", line 691, in app
+    |     raw_response = await run_endpoint_function(
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi\routing.py", line 345, in run_endpoint_function
+    |     return await dependant.call(**values)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi_cache\decorator.py", line 187, in inner
+    |     result = await ensure_async_func(*args, **kwargs)
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi_cache\decorator.py", line 145, in ensure_async_func
+    |     return await func(*args, **kwargs)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\apps\api\api\v1\endpoints\chart.py", line 46, in get_candlestick
+    |     since = datetime.now(timezone.utc) - timedelta(days=days)
+    |                                          ^^^^^^^^^
+    | UnboundLocalError: cannot access local variable 'timedelta' where it is not associated with a value
+    +------------------------------------
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\uvicorn\protocols\http\h11_impl.py", line 416, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 63, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi\applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\prometheus_fastapi_instrumentator\middleware.py", line 176, in __call__
+    raise exc
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\prometheus_fastapi_instrumentator\middleware.py", line 174, in __call__
+    await self.app(scope, receive, send_wrapper)
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\middleware\trustedhost.py", line 51, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\apps\api\main.py", line 132, in dispatch
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\apps\api\main.py", line 105, in dispatch
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi\routing.py", line 2685, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi\routing.py", line 1766, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi\routing.py", line 2740, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi\routing.py", line 1777, in _handle_selected
+    await route.handle(scope, receive, send)
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi\routing.py", line 1766, in handle
+    await self.original_router.handle(scope, receive, send)
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi\routing.py", line 2740, in handle
+    await included_router._handle_selected(scope, receive, send)
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi\routing.py", line 1786, in _handle_selected
+    await original_route.handle(scope, receive, send)
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi\routing.py", line 1265, in handle
+    await app(scope, receive, send)
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi\routing.py", line 151, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi\routing.py", line 137, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi\routing.py", line 691, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi\routing.py", line 345, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi_cache\decorator.py", line 187, in inner
+    result = await ensure_async_func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\.venv\Lib\site-packages\fastapi_cache\decorator.py", line 145, in ensure_async_func
+    return await func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\GAME\Desktop\uno-km\dev\AMEVA-Memory-Price-Check\apps\api\api\v1\endpoints\chart.py", line 46, in get_candlestick
+    since = datetime.now(timezone.utc) - timedelta(days=days)
+                                         ^^^^^^^^^
+UnboundLocalError: cannot access local variable 'timedelta' where it is not associated with a value

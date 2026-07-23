@@ -17,6 +17,7 @@ class InstanceOffering(Base, UUIDMixin, TimeStampMixin):
     includes_cpu: Mapped[bool] = mapped_column(Boolean, default=True)
     includes_ram: Mapped[bool] = mapped_column(Boolean, default=True)
     includes_local_storage: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_baremetal: Mapped[bool] = mapped_column(Boolean, default=False, server_default='false')
     
     # Relationships
     provider: Mapped["Provider"] = relationship("Provider", back_populates="offerings")
