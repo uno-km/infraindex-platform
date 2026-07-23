@@ -175,6 +175,10 @@ async def trigger_schedule_refresh() -> Any:
     
     return {
         "status": "triggered",
+        "message": "Celery schedule refresh triggered successfully.",
+    }
+
+
 # --- 5. User Management ---
 
 @router.get("/users", dependencies=[Depends(verify_admin)])
