@@ -8,7 +8,7 @@ from jose import jwt, JWTError
 from apps.api.core.database import get_db
 from apps.api.core.config import settings
 from apps.api.models.quality import DataQualityIssue
-from apps.api.models.user import UserBas
+from apps.api.models.user import UserBas as User
 from apps.api.models.system_config import CrawlerConfig
 from pydantic import BaseModel
 

@@ -1,9 +1,23 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Any, Union
-from jose import jwt
+from jose import jwt, JWTError
 import bcrypt
 from apps.api.core.config import settings
+from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, HTTPException, status
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login")
+
+def verify_token(token: str = Depends(oauth2_scheme)) -> dict:
+    try:
+        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        return payload
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:
         return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))

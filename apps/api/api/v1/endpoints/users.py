@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from pydantic import BaseModel
 
-from apps.api.api.deps import get_db
+from apps.api.core.database import get_db
 from apps.api.core.security import verify_token
 from apps.api.models.user import UserBas
 from apps.api.models.user_favorites import UserFavorite
