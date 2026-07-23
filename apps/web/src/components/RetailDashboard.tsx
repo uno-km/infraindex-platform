@@ -227,9 +227,12 @@ export function RetailDashboard() {
                       </div>
                       <div>
                         <div className="font-bold text-slate-800 flex items-center gap-2">
-                          {vendor.vendor_name}
+                          {vendor.vendor_name.replace(' 로켓배송', '')}
+                          {vendor.vendor_name.includes("로켓배송") && (
+                            <span className="bg-blue-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-sm shadow-blue-500/20">로켓배송 🚀</span>
+                          )}
                           {vendor.is_lowest && (
-                            <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">최저가</span>
+                            <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-sm shadow-red-500/20">최저가</span>
                           )}
                         </div>
                         <div className="text-xs text-slate-500 mt-0.5 flex gap-2">
