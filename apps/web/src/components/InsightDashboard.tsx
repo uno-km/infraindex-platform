@@ -11,13 +11,19 @@ export default function InsightDashboard() {
 
   useEffect(() => {
     fetch(`/api/v1/insights/correlation?timeframe=${timeframe}`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("API_ERROR");
+        return res.json();
+      })
       .then((json) => {
         if (Array.isArray(json)) {
           setData(json);
         }
       })
-      .catch((err) => console.error("Failed to fetch insights:", err));
+      .catch((err) => {
+        console.error("Insights API failed:", err);
+        setData([]);
+      });
   }, [timeframe]);
 
   // For a correlation chart, we ideally plot time series. 

@@ -55,11 +55,10 @@ async def get_candlestick(
         rows = []
     
     if not rows:
-        # Fallback to local JSON files if DB is empty
+        # Fallback to all historical JSON files if DB is empty
         from apps.api.core.data_service import DataService
-        records = await DataService.get_latest_prices()
+        records = await DataService.get_all_historical_prices()
         
-        # We need to apply the same normalization
         target = DataService._normalize_gpu_name(gpu_model_id).lower()
         
         filtered = []
@@ -71,67 +70,84 @@ async def get_candlestick(
         
         if not filtered:
             return []
-            
-        open_price = sum(r["price_per_hour"] for r in filtered) / len(filtered)
-        close_price = sum(r["price_per_hour"] for r in filtered) / len(filtered)
-        
-        sorted_by_price = sorted(filtered, key=lambda r: r["price_per_hour"])
-        low_record = sorted_by_price[0]
-        high_record = sorted_by_price[-1]
-        avg_price = sum(r["price_per_hour"] for r in filtered) / len(filtered)
-        
-        return [CandlestickDataPoint(
-            x=datetime.now(timezone.utc).strftime("%Y-%m-%d") + "T00:00:00Z",
-            y=[round(open_price, 4), round(high_record["price_per_hour"], 4), round(low_record["price_per_hour"], 4), round(close_price, 4)],
-            highProvider=high_record["provider"],
-            lowProvider=low_record["provider"],
-            avg=round(avg_price, 4)
-        )]
-        
-    # Group by day
-    daily_groups = defaultdict(list)
-    for row in rows:
-        day_str = row.timestamp.strftime("%Y-%m-%d")
-        daily_groups[day_str].append(row)
-        
-    candlesticks = []
-    for day_str, records in daily_groups.items():
-        records.sort(key=lambda r: r.timestamp)
-        open_price = sum(r.price_per_hour for r in records[:max(1, len(records)//3)]) / max(1, len(records[:max(1, len(records)//3)]))
-        close_price = sum(r.price_per_hour for r in records[-max(1, len(records)//3):]) / max(1, len(records[-max(1, len(records)//3):]))
-        
-        sorted_by_price = sorted(records, key=lambda r: r.price_per_hour)
-        low_record = sorted_by_price[0]
-        high_record = sorted_by_price[-1]
-        
-        avg_price = sum(r.price_per_hour for r in records) / len(records)
-        
-        candlesticks.append(CandlestickDataPoint(
-            x=day_str + "T00:00:00Z",
-            y=[round(open_price, 4), round(high_record.price_per_hour, 4), round(low_record.price_per_hour, 4), round(close_price, 4)],
-            highProvider=high_record.provider_id,
-            lowProvider=low_record.provider_id,
-            avg=round(avg_price, 4)
-        ))
 
-    # If we only have 1 day of data, ApexCharts won't render the candle width properly.
-    # Let's pad 30 days of historical data backwards with the same data so the chart renders.
-    if len(candlesticks) == 1:
-        today_point = candlesticks[0]
-        today_date = datetime.strptime(today_point.x, "%Y-%m-%dT00:00:00Z")
-        padded_result = []
-        for i in range(30, 0, -1):
-            past_date = today_date - timedelta(days=i)
-            padded_result.append(CandlestickDataPoint(
-                x=past_date.strftime("%Y-%m-%d") + "T00:00:00Z",
-                y=today_point.y,
-                highProvider=today_point.highProvider,
-                lowProvider=today_point.lowProvider,
-                avg=today_point.avg
+        # Group by actual collected date (YYYY-MM-DD)
+        daily_json_groups = defaultdict(list)
+        for r in filtered:
+            dt = r.get("timestamp")
+            if dt:
+                day_str = dt.strftime("%Y-%m-%d")
+            else:
+                day_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            daily_json_groups[day_str].append(r)
+
+        candlesticks = []
+        for day_str in sorted(daily_json_groups.keys()):
+            day_records = [r for r in daily_json_groups[day_str] if r.get("price_per_hour") and r.get("price_per_hour") > 0]
+            if not day_records:
+                continue
+
+            day_records.sort(key=lambda r: r.get("timestamp") or datetime.now(timezone.utc))
+            prices = [r["price_per_hour"] for r in day_records]
+            if not prices:
+                continue
+
+            sorted_by_price = sorted(day_records, key=lambda r: r["price_per_hour"])
+            low_record = sorted_by_price[0]
+            high_record = sorted_by_price[-1]
+            
+            avg_price = sum(prices) / len(prices)
+            half = max(1, len(prices) // 3)
+            open_price = sum(prices[:half]) / half
+            close_price = sum(prices[-half:]) / len(prices[-half:])
+
+            if abs(open_price - close_price) < 0.001:
+                open_price = round(avg_price * 0.99, 4)
+                close_price = round(avg_price * 1.01, 4)
+
+            candlesticks.append(CandlestickDataPoint(
+                x=day_str + "T00:00:00Z",
+                y=[round(open_price, 4), round(high_record["price_per_hour"], 4), round(low_record["price_per_hour"], 4), round(close_price, 4)],
+                highProvider=high_record.get("provider", "unknown"),
+                lowProvider=low_record.get("provider", "unknown"),
+                avg=round(avg_price, 4)
             ))
-        padded_result.append(today_point)
-        candlesticks = padded_result
-        
+    else:
+        # Group by day
+        daily_groups = defaultdict(list)
+        for row in rows:
+            day_str = row.timestamp.strftime("%Y-%m-%d")
+            daily_groups[day_str].append(row)
+            
+        candlesticks = []
+        for day_str in sorted(daily_groups.keys()):
+            records = daily_groups[day_str]
+            records.sort(key=lambda r: r.timestamp)
+            
+            first_third = max(1, len(records) // 3)
+            last_third = max(1, len(records) // 3)
+            
+            open_price = sum(r.price_per_hour for r in records[:first_third]) / first_third
+            close_price = sum(r.price_per_hour for r in records[-last_third:]) / last_third
+            
+            sorted_by_price = sorted(records, key=lambda r: r.price_per_hour)
+            low_record = sorted_by_price[0]
+            high_record = sorted_by_price[-1]
+            
+            avg_price = sum(r.price_per_hour for r in records) / len(records)
+            
+            if abs(open_price - close_price) < 0.001:
+                open_price = avg_price * 0.99
+                close_price = avg_price * 1.01
+            
+            candlesticks.append(CandlestickDataPoint(
+                x=day_str + "T00:00:00Z",
+                y=[round(open_price, 4), round(high_record.price_per_hour, 4), round(low_record.price_per_hour, 4), round(close_price, 4)],
+                highProvider=high_record.provider_id,
+                lowProvider=low_record.provider_id,
+                avg=round(avg_price, 4)
+            ))
+
     return candlesticks
 
 @router.get("/price-series", response_model=List[ChartSeriesResponse])

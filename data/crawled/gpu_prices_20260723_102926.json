@@ -1,0 +1,1368 @@
+[
+  {
+    "provider": "runpod",
+    "gpu_model": "MI300X",
+    "vram_gb": 192,
+    "price_per_hour": 2.39,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "A100 PCIe",
+    "vram_gb": 80,
+    "price_per_hour": 1.39,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "A100 SXM 40GB",
+    "vram_gb": 40,
+    "price_per_hour": 1.0,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "A100 SXM",
+    "vram_gb": 80,
+    "price_per_hour": 1.49,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "A40",
+    "vram_gb": 48,
+    "price_per_hour": 0.44,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "B200",
+    "vram_gb": 180,
+    "price_per_hour": 5.89,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "B300",
+    "vram_gb": 288,
+    "price_per_hour": 7.39,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "NVIDIA GeForce GTX 1050 Ti",
+    "vram_gb": 4,
+    "price_per_hour": 0.5,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "RTX 3070",
+    "vram_gb": 8,
+    "price_per_hour": 0.13,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "RTX 3080",
+    "vram_gb": 10,
+    "price_per_hour": 0.17,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "RTX 3080 Ti",
+    "vram_gb": 12,
+    "price_per_hour": 0.18,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "RTX 3090",
+    "vram_gb": 24,
+    "price_per_hour": 0.5,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "RTX 3090 Ti",
+    "vram_gb": 24,
+    "price_per_hour": 0.46,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "RTX 4070 Ti",
+    "vram_gb": 12,
+    "price_per_hour": 0.5,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "RTX 4080",
+    "vram_gb": 16,
+    "price_per_hour": 0.5,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "RTX 4080 SUPER",
+    "vram_gb": 16,
+    "price_per_hour": 0.5,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "RTX 4090",
+    "vram_gb": 24,
+    "price_per_hour": 0.69,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "RTX 5080",
+    "vram_gb": 16,
+    "price_per_hour": 0.59,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "RTX 5090",
+    "vram_gb": 32,
+    "price_per_hour": 0.99,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "H100 SXM",
+    "vram_gb": 80,
+    "price_per_hour": 2.99,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "H100 NVL",
+    "vram_gb": 94,
+    "price_per_hour": 3.19,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "H100 PCIe",
+    "vram_gb": 80,
+    "price_per_hour": 2.89,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "H200 SXM",
+    "vram_gb": 141,
+    "price_per_hour": 4.39,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "H200 NVL",
+    "vram_gb": 143,
+    "price_per_hour": 3.79,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "L4",
+    "vram_gb": 24,
+    "price_per_hour": 0.39,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "L40",
+    "vram_gb": 48,
+    "price_per_hour": 0.82,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "L40S",
+    "vram_gb": 48,
+    "price_per_hour": 0.99,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "RTX 2000 Ada",
+    "vram_gb": 16,
+    "price_per_hour": 0.24,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "RTX 4000 Ada",
+    "vram_gb": 20,
+    "price_per_hour": 0.28,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "RTX 4000 Ada SFF",
+    "vram_gb": 20,
+    "price_per_hour": 0.44,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "RTX 5000 Ada",
+    "vram_gb": 32,
+    "price_per_hour": 0.83,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "RTX 6000 Ada",
+    "vram_gb": 48,
+    "price_per_hour": 0.84,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "RTX A2000",
+    "vram_gb": 6,
+    "price_per_hour": 0.5,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "RTX A4000",
+    "vram_gb": 16,
+    "price_per_hour": 0.25,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "RTX A4500",
+    "vram_gb": 20,
+    "price_per_hour": 0.25,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "RTX A5000",
+    "vram_gb": 24,
+    "price_per_hour": 0.27,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "RTX A6000",
+    "vram_gb": 48,
+    "price_per_hour": 0.53,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "RTX PRO 4000",
+    "vram_gb": 24,
+    "price_per_hour": 0.57,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "RTX PRO 4500",
+    "vram_gb": 32,
+    "price_per_hour": 0.74,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "RTX PRO 5000",
+    "vram_gb": 48,
+    "price_per_hour": 0.96,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "RTX PRO 6000 MaxQ",
+    "vram_gb": 96,
+    "price_per_hour": 0.5,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "RTX PRO 6000",
+    "vram_gb": 96,
+    "price_per_hour": 1.99,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "PRO 6000 MIG 24GB",
+    "vram_gb": 24,
+    "price_per_hour": 0.49,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "PRO 6000 MIG 48GB",
+    "vram_gb": 48,
+    "price_per_hour": 1.0,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "RTX PRO 6000 WK",
+    "vram_gb": 96,
+    "price_per_hour": 1.89,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "Tesla V100",
+    "vram_gb": 16,
+    "price_per_hour": 0.19,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runpod",
+    "gpu_model": "V100 SXM2",
+    "vram_gb": 16,
+    "price_per_hour": 0.23,
+    "availability_status": "available",
+    "provider_link": "https://www.runpod.io/console/gpu-cloud",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "Unknown GPU",
+    "instance_type": "g6e.xlarge",
+    "price_per_hour": 2.288,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g6e/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "Unknown GPU",
+    "instance_type": "g6e.24xlarge",
+    "price_per_hour": 18.5223,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g6e/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "L4",
+    "instance_type": "g6.12xlarge",
+    "price_per_hour": 23.6582,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g6/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "T4",
+    "instance_type": "g4dn.2xlarge",
+    "price_per_hour": 0.925,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g4dn/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "L4",
+    "instance_type": "g6.24xlarge",
+    "price_per_hour": 44.208,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g6/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "Unknown GPU",
+    "instance_type": "g6f.2xlarge",
+    "price_per_hour": 0.7193,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g6f/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "A10G",
+    "instance_type": "g5.4xlarge",
+    "price_per_hour": 1.9969,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g5/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "V100",
+    "instance_type": "p3.16xlarge",
+    "price_per_hour": 33.872,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/p3/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "L4",
+    "instance_type": "g6.2xlarge",
+    "price_per_hour": 2.1621,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g6/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "Unknown GPU",
+    "instance_type": "g6e.2xlarge",
+    "price_per_hour": 2.7565,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g6e/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "L4",
+    "instance_type": "g6.xlarge",
+    "price_per_hour": 1.4696,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g6/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "Unknown GPU",
+    "instance_type": "g6f.xlarge",
+    "price_per_hour": 0.292,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g6f/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "L4",
+    "instance_type": "g6.8xlarge",
+    "price_per_hour": 3.0177,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g6/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "Unknown GPU",
+    "instance_type": "g6f.large",
+    "price_per_hour": 0.2484,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g6f/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "A10G",
+    "instance_type": "g5.8xlarge",
+    "price_per_hour": 3.0101,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g5/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "Unknown GPU",
+    "instance_type": "g5g.4xlarge",
+    "price_per_hour": 1.0185,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g5g/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "L4",
+    "instance_type": "g6.16xlarge",
+    "price_per_hour": 5.2584,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g6/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "V100",
+    "instance_type": "p3.2xlarge",
+    "price_per_hour": 4.234,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/p3/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "T4",
+    "instance_type": "g4dn.4xlarge",
+    "price_per_hour": 1.481,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g4dn/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "Unknown GPU",
+    "instance_type": "g5g.2xlarge",
+    "price_per_hour": 0.6839,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g5g/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "Unknown GPU",
+    "instance_type": "g5g.8xlarge",
+    "price_per_hour": 1.6876,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g5g/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "Unknown GPU",
+    "instance_type": "g5g.16xlarge",
+    "price_per_hour": 3.3752,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g5g/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "T4",
+    "instance_type": "g4dn.xlarge",
+    "price_per_hour": 0.647,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g4dn/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "T4",
+    "instance_type": "g4dn.12xlarge",
+    "price_per_hour": 4.812,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g4dn/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "T4",
+    "instance_type": "g4dn.16xlarge",
+    "price_per_hour": 5.353,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g4dn/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "T4",
+    "instance_type": "g4dn.metal",
+    "price_per_hour": 9.624,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g4dn/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "A10G",
+    "instance_type": "g5.12xlarge",
+    "price_per_hour": 6.9744,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g5/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "Unknown GPU",
+    "instance_type": "g6f.4xlarge",
+    "price_per_hour": 7.1681,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g6f/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "A10G",
+    "instance_type": "g5.24xlarge",
+    "price_per_hour": 10.014,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g5/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "V100",
+    "instance_type": "p3.8xlarge",
+    "price_per_hour": 16.936,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/p3/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "L4",
+    "instance_type": "g6.48xlarge",
+    "price_per_hour": 19.6608,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g6/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "T4",
+    "instance_type": "g4dn.8xlarge",
+    "price_per_hour": 2.677,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g4dn/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "Unknown GPU",
+    "instance_type": "p5en.48xlarge",
+    "price_per_hour": 87.3485,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/p5en/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "A10G",
+    "instance_type": "g5.16xlarge",
+    "price_per_hour": 5.0365,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g5/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "Unknown GPU",
+    "instance_type": "g6e.12xlarge",
+    "price_per_hour": 12.9001,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g6e/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "L4",
+    "instance_type": "g6.4xlarge",
+    "price_per_hour": 7.627,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g6/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "H100",
+    "instance_type": "p5.48xlarge",
+    "price_per_hour": 75.9552,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/p5/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "Unknown GPU",
+    "instance_type": "g5g.metal",
+    "price_per_hour": 3.3752,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g5g/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "A100",
+    "instance_type": "p4d.24xlarge",
+    "price_per_hour": 30.4103,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/p4d/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "Unknown GPU",
+    "instance_type": "g5g.xlarge",
+    "price_per_hour": 0.5166,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g5g/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "A10G",
+    "instance_type": "g5.2xlarge",
+    "price_per_hour": 1.4903,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g5/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "Unknown GPU",
+    "instance_type": "g6e.48xlarge",
+    "price_per_hour": 37.0447,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g6e/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "A10G",
+    "instance_type": "g5.xlarge",
+    "price_per_hour": 1.237,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g5/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "Unknown GPU",
+    "instance_type": "g6e.4xlarge",
+    "price_per_hour": 3.6936,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g6e/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "Unknown GPU",
+    "instance_type": "g6e.8xlarge",
+    "price_per_hour": 5.5676,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g6e/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "A10G",
+    "instance_type": "g5.48xlarge",
+    "price_per_hour": 20.0281,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g5/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "Inferentia2",
+    "instance_type": "inf2.xlarge",
+    "price_per_hour": 0.9098,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/inf2/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "aws",
+    "gpu_model": "Unknown GPU",
+    "instance_type": "g6e.16xlarge",
+    "price_per_hour": 9.3157,
+    "availability_status": "available",
+    "provider_link": "https://aws.amazon.com/ec2/instance-types/g6e/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "vessl",
+    "gpu_model": "B300",
+    "vram_gb": 288,
+    "price_per_hour": 7.29,
+    "availability_status": "available",
+    "provider_link": "https://vessl.ai/ko/pricing",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "vessl",
+    "gpu_model": "B200",
+    "vram_gb": 192,
+    "price_per_hour": 5.79,
+    "availability_status": "available",
+    "provider_link": "https://vessl.ai/ko/pricing",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "vessl",
+    "gpu_model": "H200 SXM",
+    "vram_gb": 141,
+    "price_per_hour": 4.29,
+    "availability_status": "available",
+    "provider_link": "https://vessl.ai/ko/pricing",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "vessl",
+    "gpu_model": "H100 SXM",
+    "vram_gb": 80,
+    "price_per_hour": 3.19,
+    "availability_status": "available",
+    "provider_link": "https://vessl.ai/ko/pricing",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "vessl",
+    "gpu_model": "A100 SXM",
+    "vram_gb": 80,
+    "price_per_hour": 1.39,
+    "availability_status": "available",
+    "provider_link": "https://vessl.ai/ko/pricing",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "vessl",
+    "gpu_model": "L40S",
+    "vram_gb": 48,
+    "price_per_hour": 1.8,
+    "availability_status": "available",
+    "provider_link": "https://vessl.ai/ko/pricing",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "gpuaas",
+    "gpu_model": "H100 SXM",
+    "vram_gb": 80,
+    "price_per_hour": 2.39,
+    "availability_status": "available",
+    "provider_link": "https://gpuaas.kr/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "gpuaas",
+    "gpu_model": "H100 SXM (연간계약)",
+    "vram_gb": 80,
+    "price_per_hour": 2.2,
+    "availability_status": "available",
+    "provider_link": "https://gpuaas.kr/",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "cloudv",
+    "gpu_model": "A100 40GB",
+    "vram_gb": 40,
+    "price_per_hour": 0.1884,
+    "availability_status": "available",
+    "provider_link": "https://cloudv.kr/server/gpu.html",
+    "gpu_count": 1,
+    "monthly_krw": 189800,
+    "note": "1x GPU, 189,800원/월 (IDC요금)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "cloudv",
+    "gpu_model": "A100 40GB",
+    "vram_gb": 40,
+    "price_per_hour": 0.3125,
+    "availability_status": "available",
+    "provider_link": "https://cloudv.kr/server/gpu.html",
+    "gpu_count": 2,
+    "monthly_krw": 314800,
+    "note": "2x GPU, 314,800원/월 (IDC요금)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "cloudv",
+    "gpu_model": "A100 40GB",
+    "vram_gb": 40,
+    "price_per_hour": 0.5607,
+    "availability_status": "available",
+    "provider_link": "https://cloudv.kr/server/gpu.html",
+    "gpu_count": 4,
+    "monthly_krw": 564800,
+    "note": "4x GPU, 564,800원/월 (IDC요금)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "cloudv",
+    "gpu_model": "A100 80GB",
+    "vram_gb": 80,
+    "price_per_hour": 0.2261,
+    "availability_status": "available",
+    "provider_link": "https://cloudv.kr/server/gpu.html",
+    "gpu_count": 1,
+    "monthly_krw": 227800,
+    "note": "1x GPU, 227,800원/월 (IDC요금)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "cloudv",
+    "gpu_model": "A100 80GB",
+    "vram_gb": 80,
+    "price_per_hour": 0.375,
+    "availability_status": "available",
+    "provider_link": "https://cloudv.kr/server/gpu.html",
+    "gpu_count": 2,
+    "monthly_krw": 377800,
+    "note": "2x GPU, 377,800원/월 (IDC요금)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "cloudv",
+    "gpu_model": "A100 80GB",
+    "vram_gb": 80,
+    "price_per_hour": 0.6728,
+    "availability_status": "available",
+    "provider_link": "https://cloudv.kr/server/gpu.html",
+    "gpu_count": 4,
+    "monthly_krw": 677800,
+    "note": "4x GPU, 677,800원/월 (IDC요금)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "cloudv",
+    "gpu_model": "PRO 5000",
+    "vram_gb": 48,
+    "price_per_hour": 0.1884,
+    "availability_status": "available",
+    "provider_link": "https://cloudv.kr/server/gpu.html",
+    "gpu_count": 1,
+    "monthly_krw": 189800,
+    "note": "1x GPU, 189,800원/월 (IDC요금)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "cloudv",
+    "gpu_model": "PRO 6000",
+    "vram_gb": 96,
+    "price_per_hour": 0.1884,
+    "availability_status": "available",
+    "provider_link": "https://cloudv.kr/server/gpu.html",
+    "gpu_count": 1,
+    "monthly_krw": 189800,
+    "note": "1x GPU, 189,800원/월 (IDC요금)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "cloudv",
+    "gpu_model": "RTX 5060",
+    "vram_gb": 16,
+    "price_per_hour": 0.1209,
+    "availability_status": "available",
+    "provider_link": "https://cloudv.kr/server/gpu.html",
+    "gpu_count": 1,
+    "monthly_krw": 121800,
+    "note": "1x GPU, 121,800원/월 (IDC요금)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "cloudv",
+    "gpu_model": "RTX 5090",
+    "vram_gb": 32,
+    "price_per_hour": 0.2624,
+    "availability_status": "available",
+    "provider_link": "https://cloudv.kr/server/gpu.html",
+    "gpu_count": 1,
+    "monthly_krw": 264300,
+    "note": "1x GPU, 264,300원/월 (IDC요금)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "H100",
+    "vram_gb": 80,
+    "price_per_hour": 2.6196,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 3615,
+    "note": "3,615 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "B200",
+    "vram_gb": 192,
+    "price_per_hour": 6.7761,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 9351,
+    "note": "9,351 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "L40s",
+    "vram_gb": 48,
+    "price_per_hour": 1.2326,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 1701,
+    "note": "1,701 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "RTX",
+    "vram_gb": 0,
+    "price_per_hour": 0.8174,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 1128,
+    "note": "1,128 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "RTX",
+    "vram_gb": 0,
+    "price_per_hour": 0.5406,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 746,
+    "note": "746 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "RTX",
+    "vram_gb": 0,
+    "price_per_hour": 0.9138,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 1261,
+    "note": "1,261 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "A100",
+    "vram_gb": 80,
+    "price_per_hour": 1.9254,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 2657,
+    "note": "2,657 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "A100",
+    "vram_gb": 40,
+    "price_per_hour": 1.4543,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 2007,
+    "note": "2,007 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "RTX",
+    "vram_gb": 0,
+    "price_per_hour": 0.3326,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 459,
+    "note": "459 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "L40s",
+    "vram_gb": 48,
+    "price_per_hour": 1.5094,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 2083,
+    "note": "2,083 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "H200",
+    "vram_gb": 80,
+    "price_per_hour": 4.0043,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 5526,
+    "note": "5,526 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "H100",
+    "vram_gb": 80,
+    "price_per_hour": 3.1732,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 4379,
+    "note": "4,379 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "L20",
+    "vram_gb": 48,
+    "price_per_hour": 7.2413,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 9993,
+    "note": "9,993 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "L20",
+    "vram_gb": 48,
+    "price_per_hour": 3.3007,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 4555,
+    "note": "4,555 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "L20",
+    "vram_gb": 48,
+    "price_per_hour": 3.6203,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 4996,
+    "note": "4,996 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "RTX",
+    "vram_gb": 0,
+    "price_per_hour": 1.1768,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 1624,
+    "note": "1,624 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "A10",
+    "vram_gb": 24,
+    "price_per_hour": 4.8732,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 6725,
+    "note": "6,725 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "A10",
+    "vram_gb": 24,
+    "price_per_hour": 3.5087,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 4842,
+    "note": "4,842 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "A10",
+    "vram_gb": 24,
+    "price_per_hour": 2.4362,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 3362,
+    "note": "3,362 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "A10",
+    "vram_gb": 24,
+    "price_per_hour": 2.9239,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 4035,
+    "note": "4,035 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "A10",
+    "vram_gb": 24,
+    "price_per_hour": 2.071,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 2858,
+    "note": "2,858 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "A10",
+    "vram_gb": 24,
+    "price_per_hour": 2.1928,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 3026,
+    "note": "3,026 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "A100",
+    "vram_gb": 80,
+    "price_per_hour": 2.6174,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 3612,
+    "note": "3,612 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "A100",
+    "vram_gb": 40,
+    "price_per_hour": 2.2022,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 3039,
+    "note": "3,039 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "P100",
+    "vram_gb": 16,
+    "price_per_hour": 2.6884,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 3710,
+    "note": "3,710 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "P100",
+    "vram_gb": 16,
+    "price_per_hour": 2.2326,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 3081,
+    "note": "3,081 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "P100",
+    "vram_gb": 16,
+    "price_per_hour": 4.171,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 5756,
+    "note": "5,756 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "H100",
+    "vram_gb": 94,
+    "price_per_hour": 5.0725,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 7000,
+    "note": "7,000 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "provider": "runyourai",
+    "gpu_model": "L40S",
+    "vram_gb": 48,
+    "price_per_hour": 2.7536,
+    "availability_status": "available",
+    "provider_link": "https://console.runyour.ai/gpu-cloud",
+    "raw_credits_per_hr": 3800,
+    "note": "3,800 C/hr (1C≈1KRW 기준)",
+    "collected_at": "20260723_102926"
+  }
+]

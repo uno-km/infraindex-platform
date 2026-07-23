@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   description: 'Global GPU Rental Price Intelligence Platform',
 };
 
+import { AuthProvider } from '../context/AuthContext';
+import LoginModal from '../components/LoginModal';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -14,7 +17,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        {children}
+        <AuthProvider>
+          {children}
+          <LoginModal />
+        </AuthProvider>
       </body>
     </html>
   );

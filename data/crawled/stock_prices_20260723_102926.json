@@ -1,0 +1,83 @@
+[
+  {
+    "symbol": "NVDA",
+    "company": "NVIDIA Corp",
+    "price": 212.06,
+    "prev_close": 207.29,
+    "change_pct": 2.3,
+    "currency": "USD",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "symbol": "AMD",
+    "company": "AMD",
+    "price": 552.33,
+    "prev_close": 544.43,
+    "change_pct": 1.45,
+    "currency": "USD",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "symbol": "000660.KS",
+    "company": "SK하이닉스",
+    "price": 1939500.0,
+    "prev_close": 1830000.0,
+    "change_pct": 5.98,
+    "currency": "KRW",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "symbol": "005930.KS",
+    "company": "삼성전자",
+    "price": 271250.0,
+    "prev_close": 260500.0,
+    "change_pct": 4.13,
+    "currency": "KRW",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "symbol": "WDC",
+    "company": "Western Digital",
+    "price": 556.67,
+    "prev_close": 548.39,
+    "change_pct": 1.51,
+    "currency": "USD",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "symbol": "INTC",
+    "company": "Intel",
+    "price": 102.62,
+    "prev_close": 105.45,
+    "change_pct": -2.68,
+    "currency": "USD",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "symbol": "MU",
+    "company": "마이크론",
+    "price": 959.48,
+    "prev_close": 970.82,
+    "change_pct": -1.17,
+    "currency": "USD",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "symbol": "TSM",
+    "company": "TSMC",
+    "price": 421.21,
+    "prev_close": 424.61,
+    "change_pct": -0.8,
+    "currency": "USD",
+    "collected_at": "20260723_102926"
+  },
+  {
+    "symbol": "AMAT",
+    "company": "Applied Materials",
+    "price": 553.92,
+    "prev_close": 564.55,
+    "change_pct": -1.88,
+    "currency": "USD",
+    "collected_at": "20260723_102926"
+  }
+]

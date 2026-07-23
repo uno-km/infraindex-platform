@@ -50,12 +50,18 @@ class DataService:
         all_records = []
         providers = ["vast-ai", "runpod", "aws", "vessl", "gpuaas", "cloudv", "runyourai", "gabia", "ktcloud", "xesktop"]
         
+        import re
+
         for provider in providers:
             files = glob.glob(os.path.join(data_dir, f"{provider}_*.json"))
             if not files:
                 continue
                 
-            latest_file = max(files, key=os.path.getctime)
+            def _extract_ts(fpath):
+                m = re.search(r'(\d{8}_\d{6})', os.path.basename(fpath))
+                return m.group(1) if m else "00000000_000000"
+
+            latest_file = max(files, key=_extract_ts)
             try:
                 with open(latest_file, "r", encoding="utf-8") as f:
                     records = json.load(f)
@@ -67,6 +73,54 @@ class DataService:
             except Exception as e:
                 print(f"Error reading {latest_file}: {e}")
                 
+        return all_records
+
+    @staticmethod
+    async def get_all_historical_prices(hardware_type: str = "gpu") -> List[Dict[str, Any]]:
+        """
+        Reads ALL JSON files from data directory to build complete historical time-series.
+        Extracts collection timestamp from file names (e.g. provider_20260722_193345.json).
+        """
+        import re
+        from datetime import datetime, timezone
+
+        if settings.USE_REAL_DB:
+            return await DataService.get_latest_prices(hardware_type)
+
+        data_dir = settings.LOCAL_STORAGE_DIR
+        if not os.path.exists(data_dir):
+            return []
+
+        all_records = []
+        providers = ["vast-ai", "runpod", "aws", "vessl", "gpuaas", "cloudv", "runyourai", "gabia", "ktcloud", "xesktop"]
+
+        for provider in providers:
+            files = glob.glob(os.path.join(data_dir, f"{provider}_*.json"))
+            for file_path in files:
+                filename = os.path.basename(file_path)
+                match = re.search(r'(\d{8}_\d{6})', filename)
+                file_dt = None
+                if match:
+                    try:
+                        file_dt = datetime.strptime(match.group(1), "%Y%m%d_%H%M%S").replace(tzinfo=timezone.utc)
+                    except Exception:
+                        pass
+                if not file_dt:
+                    mtime = os.path.getmtime(file_path)
+                    file_dt = datetime.fromtimestamp(mtime, tz=timezone.utc)
+
+                try:
+                    with open(file_path, "r", encoding="utf-8") as f:
+                        records = json.load(f)
+                        for r in records:
+                            rec_copy = dict(r)
+                            if "provider" not in rec_copy:
+                                rec_copy["provider"] = provider
+                            rec_copy["timestamp"] = file_dt
+                            all_records.append(rec_copy)
+                except Exception as e:
+                    print(f"Error reading {file_path}: {e}")
+
         return all_records
 
     @staticmethod
@@ -118,6 +172,8 @@ class DataService:
             
             provider_name = r.get("provider", "Unknown")
             price = float(r.get("price_per_hour", 0.0))
+            if price <= 0:
+                continue
             
             existing_offer = next((o for o in gpu_map[gpu_name]["offers"] if o["provider"] == provider_name), None)
             

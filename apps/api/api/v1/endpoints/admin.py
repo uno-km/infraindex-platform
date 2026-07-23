@@ -1,5 +1,5 @@
 from typing import Any, List
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -134,3 +134,28 @@ async def reject_quarantine_item(
     issue.severity = "rejected"
     await db.commit()
     return {"status": "rejected", "issue_id": issue_id}
+
+
+# --- 3. Manual Batch Trigger ---
+
+class BatchTriggerRequest(BaseModel):
+    target: str = "all"  # "all", "gpu", "retail", "financial", "news", or specific provider e.g. "aws"
+
+@router.post("/batch/trigger")
+async def trigger_manual_batch(
+    background_tasks: BackgroundTasks,
+    request_data: BatchTriggerRequest = BatchTriggerRequest(),
+) -> Any:
+    """
+    Manually trigger batch crawler job in the background.
+    Target options: 'all', 'gpu', 'retail', 'financial', 'news', or a specific provider (e.g. 'aws').
+    """
+    from apps.worker.batch_runner import run_batch
+
+    background_tasks.add_task(run_batch, request_data.target)
+    return {
+        "status": "scheduled",
+        "message": f"Batch job triggered for target '{request_data.target}' in background.",
+        "target": request_data.target,
+    }
+

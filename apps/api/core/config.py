@@ -112,11 +112,27 @@ class Settings(BaseSettings):
 
     class Config:
         case_sensitive = True
-        env_file = ".env"
         extra = "ignore"
+        # 초기화 시점에 동적으로 결정되도록 함수에서 주입
 
 @lru_cache()
 def get_settings() -> Settings:
-    return Settings()
+    # 1. OS 환경변수에서 ENVIRONMENT 확인 (기본값 local)
+    env_state = os.environ.get("ENVIRONMENT", "local").lower()
+    
+    # 2. 상태에 맞는 .env 파일 매핑
+    env_file = ".env" # fallback
+    if env_state == "prod":
+        env_file = ".env.production"
+    elif env_state == "dev":
+        env_file = ".env.staging"
+    elif env_state == "local":
+        env_file = ".env.local"
+        
+    # 만약 매핑된 파일이 없으면 기본 .env 사용
+    if not os.path.exists(env_file):
+        env_file = ".env"
+        
+    return Settings(_env_file=env_file, _env_file_encoding="utf-8")
 
 settings = get_settings()

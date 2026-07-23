@@ -1,6 +1,7 @@
 [
   {
     "provider": "vessl",
+    "hardware_type": "gpu",
     "gpu_model": "H100 SXM",
     "vram_gb": 80,
     "price_per_hour": 2.39,
@@ -11,6 +12,7 @@
   },
   {
     "provider": "vessl",
+    "hardware_type": "gpu",
     "gpu_model": "A100 SXM",
     "vram_gb": 80,
     "price_per_hour": 1.55,
@@ -21,6 +23,7 @@
   },
   {
     "provider": "vessl",
+    "hardware_type": "gpu",
     "gpu_model": "A100 PCIe",
     "vram_gb": 40,
     "price_per_hour": 1.1,
@@ -28,5 +31,16 @@
     "provider_link": "https://vessl.ai/ko/pricing",
     "sys_ram_gb": 128,
     "tdp_w": 400
+  },
+  {
+    "provider": "vessl",
+    "hardware_type": "gpu",
+    "gpu_model": "RTX 4090",
+    "vram_gb": 24,
+    "price_per_hour": 0.89,
+    "availability_status": "available",
+    "provider_link": "https://vessl.ai/ko/pricing",
+    "sys_ram_gb": 64,
+    "tdp_w": 450
   }
 ]

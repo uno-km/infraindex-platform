@@ -66,14 +66,14 @@ export function RetailDashboard() {
       text: `${hardwareType.toUpperCase()} - ${modelName} Retail Prices`,
       align: 'left',
       style: {
-        color: '#fff'
+        color: '#1e293b' // slate-800
       }
     },
     xaxis: {
       type: 'datetime',
       labels: {
         style: {
-          colors: '#a1a1aa' // zinc-400
+          colors: '#64748b' // slate-500
         }
       }
     },
@@ -83,7 +83,7 @@ export function RetailDashboard() {
       },
       labels: {
         style: {
-          colors: '#a1a1aa' // zinc-400
+          colors: '#64748b' // slate-500
         },
         formatter: (value: number) => {
           return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(value);
@@ -91,27 +91,27 @@ export function RetailDashboard() {
       }
     },
     grid: {
-      borderColor: '#3f3f46' // zinc-700
+      borderColor: '#f1f5f9' // slate-100
     },
     theme: {
-      mode: 'dark'
+      mode: 'light'
     }
   };
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 w-full mt-8 shadow-xl">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-          <span className="bg-gradient-to-r from-blue-500 to-cyan-400 text-transparent bg-clip-text">Retail Market</span>
-          <span className="text-zinc-500 font-normal">|</span>
-          <span className="text-lg text-zinc-300">Price History</span>
+    <div className="bg-white border border-slate-200/60 rounded-3xl p-6 w-full shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+      <div className="flex flex-col md:flex-row justify-between items-center mb-6 border-b border-slate-100 pb-4">
+        <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-3">
+          <span className="bg-gradient-to-r from-indigo-600 to-indigo-400 text-transparent bg-clip-text">리테일 시장</span>
+          <span className="text-slate-300 font-normal">|</span>
+          <span className="text-lg text-slate-500">가격 동향</span>
         </h2>
         
         <div className="flex gap-4 mt-4 md:mt-0">
           <select 
             value={hardwareType}
             onChange={(e) => setHardwareType(e.target.value)}
-            className="bg-zinc-800 border border-zinc-700 text-white rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="bg-slate-50 border border-slate-200 text-slate-700 font-semibold rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all cursor-pointer"
           >
             <option value="gpu">GPU</option>
             <option value="cpu">CPU</option>
@@ -121,7 +121,7 @@ export function RetailDashboard() {
           <select 
             value={timeframe}
             onChange={(e) => setTimeframe(e.target.value)}
-            className="bg-zinc-800 border border-zinc-700 text-white rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="bg-slate-50 border border-slate-200 text-slate-700 font-semibold rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all cursor-pointer"
           >
             <option value="1h">1 Hour (1h)</option>
             <option value="1d">1 Day (1d)</option>
@@ -133,10 +133,10 @@ export function RetailDashboard() {
       
       {loading ? (
         <div className="flex justify-center items-center h-[350px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
         </div>
       ) : (
-        <div className="w-full text-black">
+        <div className="w-full text-slate-800">
           <Chart
             options={options}
             series={data}

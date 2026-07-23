@@ -7,68 +7,57 @@ import InsightDashboard from "../components/InsightDashboard";
 import NewsDashboard from "../components/NewsDashboard";
 import EnterpriseDashboard from "../components/EnterpriseDashboard";
 import TabButton from "../components/TabButton";
+import { useAuth } from "../context/AuthContext";
+import Header from "../components/layout/Header";
+import Sidebar from "../components/layout/Sidebar";
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState("storage");
+  const [selectedCategory, setSelectedCategory] = useState<string>("gpu");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
+  const isResourceCategory = ["gpu", "cpu", "storage", "baremetal"].includes(selectedCategory);
 
   return (
-    <main className="min-h-screen p-8 relative overflow-hidden">
-      {/* Background decorations */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-purple-600/20 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
+    <div className="min-h-screen bg-slate-50/50 font-sans text-slate-900 pb-24 selection:bg-indigo-100">
+      {/* Global Header */}
+      <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
-      <div className="max-w-7xl mx-auto relative z-10">
-        <header className="flex justify-between items-end mb-12 animate-in fade-in slide-in-from-top-4 duration-700">
-          <div>
-            <h1 className="text-4xl font-bold tracking-tighter text-white mb-2">
-              Infra<span className="text-neon">Index</span>
-            </h1>
-            <div className="flex gap-2">
-              <TabButton id="storage" active={activeTab} onClick={setActiveTab}>Storage</TabButton>
-              <TabButton id="retail" active={activeTab} onClick={setActiveTab}>Retail Market</TabButton>
-              <TabButton id="enterprise" active={activeTab} onClick={setActiveTab}>Enterprise AI</TabButton>
-              <TabButton id="insights" active={activeTab} onClick={setActiveTab}>Market Insights</TabButton>
-              <TabButton id="news" active={activeTab} onClick={setActiveTab}>Global News</TabButton>
+      {/* Main Layout Area */}
+      <div className="max-w-7xl mx-auto mt-8 px-6 flex gap-8 items-start">
+        {/* Global Sidebar */}
+        <Sidebar selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} />
+
+        {/* Main Dynamic Content Area */}
+        <main className="flex-1 min-w-0">
+          {isResourceCategory && (
+            <GpuDashboard selectedCategory={selectedCategory} searchQuery={searchQuery} />
+          )}
+
+          {selectedCategory === 'retail' && (
+            <div className="animate-in fade-in zoom-in duration-500">
+              <RetailDashboard />
             </div>
-          </div>
-          <div className="text-right">
-            <div className="inline-flex items-center gap-2 glass-panel px-4 py-2 rounded-full animate-pulse-glow">
-              <span className="w-2 h-2 rounded-full bg-green-400"></span>
-              <span className="text-xs text-green-400 font-medium tracking-wider uppercase">Live Network</span>
+          )}
+
+          {selectedCategory === 'enterprise' && (
+            <div className="animate-in fade-in zoom-in duration-500">
+              <EnterpriseDashboard />
             </div>
-          </div>
-        </header>
+          )}
 
-        {activeTab === 'storage' && (
-          <div className="space-y-6 animate-in fade-in zoom-in duration-500">
-            <GpuDashboard />
-          </div>
-        )}
+          {selectedCategory === 'insights' && (
+            <div className="animate-in fade-in zoom-in duration-500">
+              <InsightDashboard />
+            </div>
+          )}
 
-        {activeTab === 'retail' && (
-          <div className="space-y-6 animate-in fade-in zoom-in duration-500">
-            <RetailDashboard />
-          </div>
-        )}
-
-        {activeTab === 'enterprise' && (
-          <div className="space-y-6 animate-in fade-in zoom-in duration-500">
-            <EnterpriseDashboard />
-          </div>
-        )}
-
-        {activeTab === 'insights' && (
-          <div className="space-y-6 animate-in fade-in zoom-in duration-500">
-            <InsightDashboard />
-          </div>
-        )}
-
-        {activeTab === 'news' && (
-          <div className="space-y-6 animate-in fade-in zoom-in duration-500">
-            <NewsDashboard />
-          </div>
-        )}
+          {selectedCategory === 'news' && (
+            <div className="animate-in fade-in zoom-in duration-500">
+              <NewsDashboard />
+            </div>
+          )}
+        </main>
       </div>
-    </main>
+    </div>
   );
 }

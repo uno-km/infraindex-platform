@@ -17,6 +17,9 @@ async def get_latest_news(
     """
     최신 글로벌 IT/반도체 뉴스 목록을 반환합니다.
     """
+    if db is None:
+        return []
+
     stmt = select(
         NewsArticle.id,
         NewsArticle.title,

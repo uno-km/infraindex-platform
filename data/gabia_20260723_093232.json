@@ -1,0 +1,24 @@
+[
+  {
+    "provider": "gabia",
+    "hardware_type": "gpu",
+    "gpu_model": "A100 80GB",
+    "vram_gb": 80,
+    "price_per_hour": 0.85,
+    "availability_status": "available",
+    "provider_link": "https://www.gabia.com/",
+    "sys_ram_gb": 128,
+    "tdp_w": 400
+  },
+  {
+    "provider": "gabia",
+    "hardware_type": "gpu",
+    "gpu_model": "V100",
+    "vram_gb": 32,
+    "price_per_hour": 0.4,
+    "availability_status": "available",
+    "provider_link": "https://www.gabia.com/",
+    "sys_ram_gb": 64,
+    "tdp_w": 300
+  }
+]

@@ -20,6 +20,9 @@ async def get_insight_correlation(
     Returns percentage change (% diff) from the start of the timeframe 
     for cloud GPU, retail GPU, and semiconductor stocks, normalized to base 0%.
     """
+    if db is None:
+        return []
+
     # Calculate cutoff time
     now = datetime.now(timezone.utc)
     if timeframe == "1d":

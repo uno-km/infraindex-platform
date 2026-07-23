@@ -20,3 +20,6 @@ build-backend = "hatchling.build"
 [tool.ruff]
 line-length = 88
 target-version = "py313"
+
+[tool.pyright]
+extraPaths = ["../.."]

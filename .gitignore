@@ -36,3 +36,9 @@ coverage/
 .vscode/
 *.swp
 *.swo
+
+# Temp HTML dumps
+html_dump_*.html
+crawl_result_korean_*.json
+debug_ncloud*.py
+

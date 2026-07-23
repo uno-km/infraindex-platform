@@ -8,7 +8,10 @@ export default function NewsDashboard() {
 
   useEffect(() => {
     fetch("/api/v1/news?limit=30")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("API_ERROR");
+        return res.json();
+      })
       .then((data) => {
         if (Array.isArray(data)) {
           setNews(data);
@@ -16,7 +19,7 @@ export default function NewsDashboard() {
         setLoading(false);
       })
       .catch((err) => {
-        console.error("Failed to fetch news:", err);
+        console.error("News API failed:", err);
         setLoading(false);
       });
   }, []);

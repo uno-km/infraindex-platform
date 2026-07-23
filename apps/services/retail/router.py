@@ -29,6 +29,9 @@ async def get_retail_ohlc(
     if timeframe not in trunc_map:
         raise HTTPException(status_code=400, detail="Invalid timeframe. Must be 1h, 1d, 1w, or 1m.")
     
+    if db is None:
+        return []
+    
     trunc_level = trunc_map[timeframe]
     
     # Subquery: get min, max, first, last per time bucket
@@ -88,6 +91,9 @@ async def get_enterprise_hardware(
     """
     Get the latest prices for Enterprise B2B Hardware (H100, B200, DGX).
     """
+    if db is None:
+        return []
+
     stmt = """
     WITH RankedPrices AS (
         SELECT 

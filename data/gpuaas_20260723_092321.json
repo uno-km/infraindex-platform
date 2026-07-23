@@ -1,0 +1,35 @@
+[
+  {
+    "provider": "gpuaas",
+    "hardware_type": "gpu",
+    "gpu_model": "H100 SXM",
+    "vram_gb": 80,
+    "price_per_hour": 2.39,
+    "availability_status": "available",
+    "provider_link": "https://gpuaas.kr/",
+    "sys_ram_gb": 256,
+    "tdp_w": 700
+  },
+  {
+    "provider": "gpuaas",
+    "hardware_type": "gpu",
+    "gpu_model": "A100 SXM",
+    "vram_gb": 80,
+    "price_per_hour": 1.55,
+    "availability_status": "available",
+    "provider_link": "https://gpuaas.kr/",
+    "sys_ram_gb": 128,
+    "tdp_w": 400
+  },
+  {
+    "provider": "gpuaas",
+    "hardware_type": "gpu",
+    "gpu_model": "L40S",
+    "vram_gb": 48,
+    "price_per_hour": 1.8,
+    "availability_status": "available",
+    "provider_link": "https://gpuaas.kr/",
+    "sys_ram_gb": 128,
+    "tdp_w": 350
+  }
+]

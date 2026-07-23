@@ -15,5 +15,7 @@ async def read_storage_tiers(
     skip: int = 0,
     limit: int = 100,
 ) -> Any:
+    if db is None:
+        return []
     result = await db.execute(select(StorageTier).offset(skip).limit(limit))
     return result.scalars().all()
