@@ -4,13 +4,13 @@ from datetime import datetime, timezone
 import random
 
 from apps.worker.providers.common.base import BaseProviderCrawler
-from apps.services.retail.models import RetailPriceHistory
+from apps.services.retail.models import RtlPriceHistory
 
 class RetailUniversalCrawler(BaseProviderCrawler):
     """
     Retail price crawler for E-commerce sites like Danawa, Coupang, Amazon, Naver Shopping.
     This crawler currently uses a mock strategy for bot-protected pages but establishes
-    the architecture to scrape retail prices and save them to RetailPriceHistory.
+    the architecture to scrape retail prices and save them to RetailGpuPriceHistory.
     """
     name = "retail_universal"
     

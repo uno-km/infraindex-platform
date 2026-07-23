@@ -13,7 +13,7 @@ from docx.shared import Pt, RGBColor
 
 from apps.api.core.database import get_db
 from apps.api.core.ai_service import generate_market_analysis
-from apps.services.gpu.models_history import PriceHistory
+from apps.services.gpu.models_history import GpuPriceHistory
 
 router = APIRouter()
 
@@ -23,22 +23,22 @@ async def _fetch_price_data(
 ) -> List[Dict]:
     """price_history 테이블에서 일별 집계 데이터 조회."""
     since = datetime.now(timezone.utc) - timedelta(days=days)
-    day_col = cast(PriceHistory.timestamp, Date).label("day")
+    day_col = cast(GpuPriceHistory.ts, Date).label("day")
 
     result = await db.execute(
         select(
             day_col,
-            PriceHistory.provider_id,
-            PriceHistory.gpu_model,
-            func.min(PriceHistory.price_per_hour).label("min_price"),
-            func.avg(PriceHistory.price_per_hour).label("avg_price"),
-            func.max(PriceHistory.price_per_hour).label("max_price"),
-            func.count(PriceHistory.id).label("cnt"),
+            GpuPriceHistory.prv_id,
+            GpuPriceHistory.gpu_mdl,
+            func.min(GpuPriceHistory.prc_ph).label("min_price"),
+            func.avg(GpuPriceHistory.prc_ph).label("avg_price"),
+            func.max(GpuPriceHistory.prc_ph).label("max_price"),
+            func.count(GpuPriceHistory.id).label("cnt"),
         )
-        .where(PriceHistory.gpu_model.ilike(f"%{gpu_model_id}%"))
-        .where(PriceHistory.timestamp >= since)
-        .group_by(day_col, PriceHistory.provider_id, PriceHistory.gpu_model)
-        .order_by(day_col.asc(), PriceHistory.provider_id)
+        .where(GpuPriceHistory.gpu_mdl.ilike(f"%{gpu_model_id}%"))
+        .where(GpuPriceHistory.ts >= since)
+        .group_by(day_col, GpuPriceHistory.prv_id, GpuPriceHistory.gpu_mdl)
+        .order_by(day_col.asc(), GpuPriceHistory.prv_id)
     )
     rows = result.all()
     return [

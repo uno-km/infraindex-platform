@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, cast, Date, desc
 
 from apps.api.core.database import get_db
-from apps.services.gpu.models_history import PriceHistory
+from apps.services.gpu.models_history import GpuPriceHistory
 
 router = APIRouter()
 
@@ -50,20 +50,20 @@ async def get_price_summary(
 
     result = await db.execute(
         select(
-            func.min(PriceHistory.price_per_hour).label("min_price"),
-            func.max(PriceHistory.price_per_hour).label("max_price"),
-            func.avg(PriceHistory.price_per_hour).label("avg_price"),
-            func.count(PriceHistory.id).label("cnt"),
+            func.min(GpuPriceHistory.prc_ph).label("min_price"),
+            func.max(GpuPriceHistory.prc_ph).label("max_price"),
+            func.avg(GpuPriceHistory.prc_ph).label("avg_price"),
+            func.count(GpuPriceHistory.id).label("cnt"),
         )
         .where(_build_filter(PriceHistory, provider, model_name, hw_type))
-        .where(PriceHistory.timestamp >= since)
+        .where(GpuPriceHistory.ts >= since)
     )
     row = result.one_or_none()
 
     latest_result = await db.execute(
-        select(PriceHistory.price_per_hour)
+        select(GpuPriceHistory.prc_ph)
         .where(_build_filter(PriceHistory, provider, model_name, hw_type))
-        .order_by(desc(PriceHistory.timestamp))
+        .order_by(desc(GpuPriceHistory.ts))
         .limit(1)
     )
     latest_row = latest_result.scalar_one_or_none()
@@ -92,10 +92,10 @@ async def get_price_history(
     since = datetime.now(timezone.utc) - timedelta(days=days)
 
     query = (
-        select(PriceHistory)
+        select(GpuPriceHistory)
         .where(_build_filter(PriceHistory, provider, model_name, hw_type))
-        .where(PriceHistory.timestamp >= since)
-        .order_by(PriceHistory.timestamp.asc())
+        .where(GpuPriceHistory.ts >= since)
+        .order_by(GpuPriceHistory.ts.asc())
         .limit(limit)
     )
 

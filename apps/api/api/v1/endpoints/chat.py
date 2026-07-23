@@ -22,7 +22,7 @@ import logging
 
 from apps.api.core.database import get_db
 from apps.api.core.config import settings
-from apps.services.gpu.models_history import PriceHistory
+from apps.services.gpu.models_history import GpuPriceHistory
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -122,22 +122,22 @@ async def _fetch_price_context(db: AsyncSession, intent: IntentResult) -> Dict:
 
     query = (
         select(
-            PriceHistory.provider_id,
-            PriceHistory.gpu_model,
-            func.min(PriceHistory.price_per_hour).label("min_price"),
-            func.max(PriceHistory.price_per_hour).label("max_price"),
-            func.avg(PriceHistory.price_per_hour).label("avg_price"),
-            func.count(PriceHistory.id).label("cnt"),
+            GpuPriceHistory.prv_id,
+            GpuPriceHistory.gpu_mdl,
+            func.min(GpuPriceHistory.prc_ph).label("min_price"),
+            func.max(GpuPriceHistory.prc_ph).label("max_price"),
+            func.avg(GpuPriceHistory.prc_ph).label("avg_price"),
+            func.count(GpuPriceHistory.id).label("cnt"),
         )
-        .where(PriceHistory.gpu_model.ilike(f"%{intent.gpu_model}%"))
-        .where(PriceHistory.timestamp >= since)
-        .group_by(PriceHistory.provider_id, PriceHistory.gpu_model)
-        .order_by(func.min(PriceHistory.price_per_hour).asc())
+        .where(GpuPriceHistory.gpu_mdl.ilike(f"%{intent.gpu_model}%"))
+        .where(GpuPriceHistory.ts >= since)
+        .group_by(GpuPriceHistory.prv_id, GpuPriceHistory.gpu_mdl)
+        .order_by(func.min(GpuPriceHistory.prc_ph).asc())
     )
     if intent.provider:
-        query = query.where(PriceHistory.provider_id == intent.provider)
+        query = query.where(GpuPriceHistory.prv_id == intent.provider)
     if intent.budget_usd:
-        query = query.having(func.min(PriceHistory.price_per_hour) <= intent.budget_usd)
+        query = query.having(func.min(GpuPriceHistory.prc_ph) <= intent.budget_usd)
 
     result = await db.execute(query)
     rows = result.all()

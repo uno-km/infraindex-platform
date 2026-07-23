@@ -79,7 +79,7 @@ class StockMarketCrawler(BaseProviderCrawler):
         
     def save(self, data: List[Dict[str, Any]]) -> None:
         """
-        Saves the normalized data into FinancialMarketHistory.
+        Saves the normalized data into FinMktHistory.
         """
         print(f"[StockMarketCrawler] Ready to save {len(data)} stock market records.")
 

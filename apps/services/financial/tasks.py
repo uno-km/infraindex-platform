@@ -28,7 +28,7 @@ async def execute_financial_extraction(provider_slug: str):
         # Storage doesn't have an explicit save_financial method yet, we'll update storage.py or just use SQLAlchemy directly for now
         if settings.USE_REAL_DB and settings.DATABASE_URL:
             from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-            from apps.services.financial.models import FinancialMarketHistory
+            from apps.services.financial.models import FinMktHistory
             
             db_url = settings.DATABASE_URL
             if db_url.startswith("postgresql://") and "+asyncpg" not in db_url:
@@ -40,7 +40,7 @@ async def execute_financial_extraction(provider_slug: str):
             async with SessionLocal() as db:
                 async with db.begin():
                     for item in raw_normalized:
-                        record = FinancialMarketHistory(
+                        record = FinMktHistory(
                             symbol=item["symbol"],
                             asset_type=item["asset_type"],
                             open=item["open"],

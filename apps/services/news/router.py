@@ -22,13 +22,13 @@ async def get_latest_news(
 
     stmt = select(
         NewsArticle.id,
-        NewsArticle.title,
-        NewsArticle.url,
-        NewsArticle.source,
-        NewsArticle.published_at,
-        NewsArticle.summary,
-        NewsArticle.keywords
-    ).order_by(desc(NewsArticle.published_at)).limit(limit)
+        NewsArticle.titl_nm,
+        NewsArticle.arti_url,
+        NewsArticle.src_nm,
+        NewsArticle.pub_ts,
+        NewsArticle.sum_txt,
+        NewsArticle.kwd_txt
+    ).order_by(desc(NewsArticle.pub_ts)).limit(limit)
     
     result = await db.execute(stmt)
     records = result.all()

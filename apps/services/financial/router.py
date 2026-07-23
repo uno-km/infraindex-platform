@@ -5,9 +5,9 @@ from typing import List, Dict, Any
 from datetime import datetime, timedelta, timezone
 
 from apps.api.core.database import get_db
-from apps.services.financial.models import FinancialMarketHistory
-from apps.services.gpu.models_history import PriceHistory
-from apps.services.retail.models import RetailPriceHistory
+from apps.services.financial.models import FinMktHistory
+from apps.services.gpu.models_history import GpuPriceHistory
+from apps.services.retail.models import RtlPriceHistory
 
 router = APIRouter()
 
@@ -38,10 +38,10 @@ async def get_insight_correlation(
 
     # 1. Fetch baseline (oldest price in timeframe) and latest price for Stocks
     stmt_financial = select(
-        FinancialMarketHistory.symbol, 
-        FinancialMarketHistory.close, 
-        FinancialMarketHistory.timestamp
-    ).where(FinancialMarketHistory.timestamp >= cutoff).order_by(FinancialMarketHistory.timestamp.asc())
+        FinMktHistory.sym_cd, 
+        FinMktHistory.cls_prc, 
+        FinMktHistory.ts
+    ).where(FinMktHistory.ts >= cutoff).order_by(FinMktHistory.ts.asc())
     
     financial_results = await db.execute(stmt_financial)
     financial_records = financial_results.all()
@@ -56,10 +56,10 @@ async def get_insight_correlation(
 
     # 2. Fetch baseline and latest for Retail GPUs (Average price)
     stmt_retail = select(
-        RetailPriceHistory.model_name,
-        RetailPriceHistory.price,
-        RetailPriceHistory.timestamp
-    ).where(RetailPriceHistory.timestamp >= cutoff).order_by(RetailPriceHistory.timestamp.asc())
+        RetailGpuPriceHistory.model_name,
+        RetailGpuPriceHistory.price,
+        RetailGpuPriceHistory.ts
+    ).where(RetailGpuPriceHistory.ts >= cutoff).order_by(RetailGpuPriceHistory.ts.asc())
     
     retail_results = await db.execute(stmt_retail)
     retail_records = retail_results.all()

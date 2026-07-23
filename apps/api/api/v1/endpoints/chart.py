@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, cast, Date
 
 from apps.api.core.database import get_db
-from apps.services.gpu.models_history import PriceHistory
+from apps.services.gpu.models_history import GpuPriceHistory
 
 from collections import defaultdict
 
@@ -43,10 +43,10 @@ async def get_candlestick(
     since = datetime.now(timezone.utc) - timedelta(days=days)
     
     query = (
-        select(PriceHistory)
-        .where(PriceHistory.gpu_model.ilike(f"%{gpu_model_id}%"))
-        .where(PriceHistory.timestamp >= since)
-        .order_by(PriceHistory.timestamp.asc())
+        select(GpuPriceHistory)
+        .where(GpuPriceHistory.gpu_mdl.ilike(f"%{gpu_model_id}%"))
+        .where(GpuPriceHistory.ts >= since)
+        .order_by(GpuPriceHistory.ts.asc())
     )
     if db is not None:
         result = await db.execute(query)
@@ -171,25 +171,25 @@ async def get_price_series(
     since = datetime.now(timezone.utc) - timedelta(days=days)
 
     # 일별 집계 쿼리
-    day_col = cast(PriceHistory.timestamp, Date).label("day")
+    day_col = cast(GpuPriceHistory.ts, Date).label("day")
     query = (
         select(
-            PriceHistory.gpu_model,
-            PriceHistory.provider_id,
+            GpuPriceHistory.gpu_mdl,
+            GpuPriceHistory.prv_id,
             day_col,
-            func.min(PriceHistory.price_per_hour).label("min_price"),
-            func.max(PriceHistory.price_per_hour).label("max_price"),
-            func.avg(PriceHistory.price_per_hour).label("avg_price"),
-            func.count(PriceHistory.id).label("cnt"),
+            func.min(GpuPriceHistory.prc_ph).label("min_price"),
+            func.max(GpuPriceHistory.prc_ph).label("max_price"),
+            func.avg(GpuPriceHistory.prc_ph).label("avg_price"),
+            func.count(GpuPriceHistory.id).label("cnt"),
         )
-        .where(PriceHistory.gpu_model.ilike(f"%{gpu_model_id}%"))
-        .where(PriceHistory.timestamp >= since)
-        .group_by(PriceHistory.gpu_model, PriceHistory.provider_id, day_col)
-        .order_by(PriceHistory.provider_id, day_col)
+        .where(GpuPriceHistory.gpu_mdl.ilike(f"%{gpu_model_id}%"))
+        .where(GpuPriceHistory.ts >= since)
+        .group_by(GpuPriceHistory.gpu_mdl, GpuPriceHistory.prv_id, day_col)
+        .order_by(GpuPriceHistory.prv_id, day_col)
     )
 
     if provider:
-        query = query.where(PriceHistory.provider_id == provider)
+        query = query.where(GpuPriceHistory.prv_id == provider)
 
     if db is not None:
         result = await db.execute(query)
@@ -235,26 +235,26 @@ async def get_cpu_price_series(
 ) -> Any:
     since = datetime.now(timezone.utc) - timedelta(days=days)
 
-    day_col = cast(PriceHistory.timestamp, Date).label("day")
+    day_col = cast(GpuPriceHistory.ts, Date).label("day")
     query = (
         select(
-            PriceHistory.cpu_model,
-            PriceHistory.provider_id,
+            GpuPriceHistory.cpu_mdl,
+            GpuPriceHistory.prv_id,
             day_col,
-            func.min(PriceHistory.price_per_hour).label("min_price"),
-            func.max(PriceHistory.price_per_hour).label("max_price"),
-            func.avg(PriceHistory.price_per_hour).label("avg_price"),
-            func.count(PriceHistory.id).label("cnt"),
+            func.min(GpuPriceHistory.prc_ph).label("min_price"),
+            func.max(GpuPriceHistory.prc_ph).label("max_price"),
+            func.avg(GpuPriceHistory.prc_ph).label("avg_price"),
+            func.count(GpuPriceHistory.id).label("cnt"),
         )
-        .where(PriceHistory.hardware_type == "cpu")
-        .where(PriceHistory.cpu_model.ilike(f"%{cpu_model_id}%"))
-        .where(PriceHistory.timestamp >= since)
-        .group_by(PriceHistory.cpu_model, PriceHistory.provider_id, day_col)
-        .order_by(PriceHistory.provider_id, day_col)
+        .where(GpuPriceHistory.hw_typ == "cpu")
+        .where(GpuPriceHistory.cpu_mdl.ilike(f"%{cpu_model_id}%"))
+        .where(GpuPriceHistory.ts >= since)
+        .group_by(GpuPriceHistory.cpu_mdl, GpuPriceHistory.prv_id, day_col)
+        .order_by(GpuPriceHistory.prv_id, day_col)
     )
 
     if provider:
-        query = query.where(PriceHistory.provider_id == provider)
+        query = query.where(GpuPriceHistory.prv_id == provider)
 
     if db is not None:
         result = await db.execute(query)
