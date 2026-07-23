@@ -40,10 +40,11 @@ if ($dockerCmd) {
     if ($LASTEXITCODE -eq 0) {
         Write-Host "[Docker Compose] Ensuring PostgreSQL & Redis containers are UP..." -ForegroundColor Cyan
         docker compose -f infrastructure/docker/docker-compose.yml up -d
+        $env:USE_REAL_DB="True"
 
         # 4. Run Alembic Database Migrations
         Write-Host "[DB Migration] Syncing DB schemas..." -ForegroundColor Green
-        alembic -c alembic.ini upgrade head 2>&1 | Out-Null
+        alembic -c alembic.ini upgrade head
     }
 } else {
     Write-Host "[Notice] Docker not installed. Running in Serverless/JSON mode." -ForegroundColor Gray
