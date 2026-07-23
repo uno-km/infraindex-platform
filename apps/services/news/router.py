@@ -13,12 +13,14 @@ router = APIRouter()
 # caching the entire endpoint with arbitrary params might fill up the cache quickly or not work.
 # We will remove the @cache decorator for this dynamic endpoint or leave it only for common queries.
 
-@router.get("", response_model=List[Dict[str, Any]])
+@router.get("", response_model=Dict[str, Any])
 async def get_latest_news(
     query: str = Query(None, description="검색어"),
     category: str = Query(None, description="카테고리 필터"),
     content_type: str = Query(None, description="콘텐츠 타입 (article, youtube)"),
     is_semiconductor_related: bool = Query(None, description="반도체 관련 여부"),
+    source_id: str = Query(None, description="출처 ID 필터"),
+    tag_id: str = Query(None, description="태그 ID 필터"),
     page: int = Query(1, ge=1, description="페이지 번호"),
     limit: int = Query(30, ge=1, le=100, description="페이지당 항목 수"),
     db: AsyncSession = Depends(get_db)
@@ -27,12 +29,11 @@ async def get_latest_news(
     최신 글로벌 IT/반도체 뉴스 및 유튜브 목록을 반환합니다. (검색 및 필터 지원)
     """
     if db is None:
-        return []
+        return {"items": []}
 
     stmt = select(NewsArticle)
 
     if query:
-        # 간단한 ILIKE 검색 (Postgres 기준, SQLite도 호환됨)
         stmt = stmt.where(
             or_(
                 NewsArticle.title.ilike(f"%{query}%"),
@@ -49,6 +50,14 @@ async def get_latest_news(
     if is_semiconductor_related is not None:
         stmt = stmt.where(NewsArticle.is_semiconductor_related == is_semiconductor_related)
 
+    if source_id:
+        stmt = stmt.where(NewsArticle.source_id == source_id)
+        
+    # 태그 필터 시 JOIN 필요
+    if tag_id:
+        from apps.services.news.models import NewsArticleTag
+        stmt = stmt.join(NewsArticleTag, NewsArticle.id == NewsArticleTag.article_id).where(NewsArticleTag.tag_id == tag_id)
+
     offset = (page - 1) * limit
     stmt = stmt.order_by(desc(NewsArticle.published_at)).offset(offset).limit(limit)
     
@@ -61,17 +70,35 @@ async def get_latest_news(
             "id": str(record.id),
             "title": record.title,
             "url": record.url,
-            "source": record.source_name,
+            "source_name": record.source_name, # 호환성
+            "source_id": str(record.source_id) if record.source_id else None,
             "published_at": record.published_at.isoformat() if record.published_at else None,
             "summary": record.summary,
             "thumbnail_url": record.thumbnail_url,
             "content_type": record.content_type,
             "category": record.category,
             "is_semiconductor_related": record.is_semiconductor_related,
-            "matched_keywords": record.matched_keywords
         })
         
-    return news_list
+    return {"items": news_list}
+
+@router.get("/sources", response_model=List[Dict[str, Any]])
+async def get_news_sources(db: AsyncSession = Depends(get_db)):
+    """뉴스 수집 출처 목록"""
+    from apps.services.news.models import NewsSource
+    stmt = select(NewsSource).order_by(NewsSource.name)
+    result = await db.execute(stmt)
+    records = result.scalars().all()
+    return [{"id": str(r.id), "name": r.name, "country": r.country} for r in records]
+
+@router.get("/tags", response_model=List[Dict[str, Any]])
+async def get_news_tags(db: AsyncSession = Depends(get_db)):
+    """뉴스 태그 목록"""
+    from apps.services.news.models import NewsTag
+    stmt = select(NewsTag).order_by(NewsTag.name)
+    result = await db.execute(stmt)
+    records = result.scalars().all()
+    return [{"id": str(r.id), "name": r.name, "category": r.category} for r in records]
 
 @router.post("/sync")
 async def sync_news_from_crawler(db: AsyncSession = Depends(get_db)):
@@ -91,16 +118,13 @@ async def sync_news_from_crawler(db: AsyncSession = Depends(get_db)):
     normalized = crawler.normalize_pricing(parsed_data)
     
     # 4. Insert into DB (Upsert / ignore duplicates)
+    from apps.services.news.crawler import NewsAggregatorService
+    aggregator = NewsAggregatorService()
+    
     inserted_count = 0
     for item in normalized:
-        # Check if URL exists
-        stmt = select(NewsArticle).where(NewsArticle.url == item["url"])
-        result = await db.execute(stmt)
-        existing = result.scalar_one_or_none()
-        
-        if not existing:
-            new_article = NewsArticle(**item)
-            db.add(new_article)
+        success = await aggregator.upsert_article(db, item)
+        if success:
             inserted_count += 1
             
     await db.commit()

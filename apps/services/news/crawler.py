@@ -1,104 +1,84 @@
 import asyncio
-import feedparser
 import logging
-from datetime import datetime, timezone
-from dateutil import parser as date_parser
 from typing import List, Dict, Any
-import html
-import re
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 
-from apps.worker.providers.common.playwright_base import BasePlaywrightCrawler
+from apps.services.news.models import NewsSource, NewsArticle, NewsTag, NewsArticleTag
 
 logger = logging.getLogger(__name__)
 
-class GlobalNewsCrawler:
+class NewsAggregatorService:
     """
-    글로벌 뉴스 및 미디어(유튜브) 크롤러.
-    RSS Feed를 메인으로 사용하고 필요시 Playwright 기반 접근 가능성을 엽니다.
+    뉴스 기사 및 소스/태그를 Upsert 하는 서비스 클래스
     """
     
-    def __init__(self):
-        self.keywords = ["반도체", "Nvidia", "GPU 가격", "DRAM", "Semiconductor"]
+    async def get_or_create_source(self, db: AsyncSession, source_name: str, country: str = "US") -> NewsSource:
+        stmt = select(NewsSource).where(NewsSource.name == source_name)
+        result = await db.execute(stmt)
+        source = result.scalar_one_or_none()
         
-        # Google News RSS for specific keywords (한국어 & 영어 뉴스 믹스)
-        self.google_news_base = "https://news.google.com/rss/search?q={keyword}&hl=ko&gl=KR&ceid=KR:ko"
+        if not source:
+            source = NewsSource(name=source_name, country=country)
+            db.add(source)
+            await db.flush()
+        return source
+
+    async def get_or_create_tag(self, db: AsyncSession, tag_name: str, category: str = None) -> NewsTag:
+        stmt = select(NewsTag).where(NewsTag.name == tag_name)
+        result = await db.execute(stmt)
+        tag = result.scalar_one_or_none()
         
-        # Bloomberg, Reuters 등 RSS 제공 여부에 따라 추가
-        self.feeds = []
-        for kw in self.keywords:
-            self.feeds.append({
-                "source": "Google News",
-                "url": self.google_news_base.format(keyword=kw),
-                "keyword": kw
-            })
-            
-    def _clean_html(self, raw_html: str) -> str:
-        cleanr = re.compile('<.*?>')
-        cleantext = re.sub(cleanr, '', raw_html)
-        return html.unescape(cleantext).strip()
+        if not tag:
+            tag = NewsTag(name=tag_name, category=category)
+            db.add(tag)
+            await db.flush()
+        return tag
 
-    def fetch_rss_feed(self, feed_info: Dict[str, str]) -> List[Dict[str, Any]]:
-        """단일 RSS 피드를 가져와서 파싱합니다."""
-        results = []
-        try:
-            feed = feedparser.parse(feed_info["url"])
-            for entry in feed.entries:
-                try:
-                    # 날짜 파싱
-                    published_at = datetime.now(timezone.utc)
-                    if hasattr(entry, 'published'):
-                        try:
-                            published_at = date_parser.parse(entry.published)
-                        except Exception:
-                            pass
-
-                    # 요약 정리
-                    summary = ""
-                    if hasattr(entry, 'summary'):
-                        summary = self._clean_html(entry.summary)
-                    
-                    results.append({
-                        "title": html.unescape(entry.title).strip(),
-                        "url": entry.link,
-                        "source": feed_info["source"],
-                        "published_at": published_at,
-                        "summary": summary[:2000] if summary else "",
-                        "keywords": feed_info["keyword"]
-                    })
-                except Exception as e:
-                    logger.warning(f"Error parsing news entry: {e}")
-                    continue
-        except Exception as e:
-            logger.error(f"Error fetching RSS feed {feed_info['url']}: {e}")
-            
-        return results
-
-    async def crawl(self) -> List[Dict[str, Any]]:
+    async def upsert_article(self, db: AsyncSession, item: Dict[str, Any]) -> bool:
         """
-        등록된 모든 미디어/뉴스 소스를 크롤링합니다.
-        (현재 RSS 위주이며 비동기 래퍼 사용)
+        주어진 크롤링 아이템을 DB에 적재합니다. (중복 검사 및 Source/Tag 연동)
         """
-        logger.info("Starting Global News Crawl...")
+        # 1. Source 확인 및 생성
+        source_name = item.get("source_name", "Unknown")
+        source = await self.get_or_create_source(db, source_name)
         
-        all_news = []
+        # 2. 기사 중복 검사
+        stmt = select(NewsArticle).where(NewsArticle.url == item["url"])
+        result = await db.execute(stmt)
+        existing = result.scalar_one_or_none()
         
-        # RSS Feeds (CPU/IO Bound - asyncio.to_thread 활용)
-        for feed_info in self.feeds:
-            # RSS 가져오기는 requests를 내부적으로 사용하므로 블로킹 방지를 위해 to_thread 사용
-            news_items = await asyncio.to_thread(self.fetch_rss_feed, feed_info)
-            all_news.extend(news_items)
+        if existing:
+            return False # 이미 존재함
             
-        # 중복 URL 제거 (가장 빠른 published_at 유지 등)
-        unique_news = {}
-        for item in all_news:
-            if item["url"] not in unique_news:
-                unique_news[item["url"]] = item
-            else:
-                # 같은 기사인데 다른 키워드에 걸린 경우 키워드 합치기
-                existing_keywords = unique_news[item["url"]]["keywords"].split(",")
-                if item["keywords"] not in existing_keywords:
-                    unique_news[item["url"]]["keywords"] += f",{item['keywords']}"
-
-        results = list(unique_news.values())
-        logger.info(f"Global News Crawl finished. Extracted {len(results)} unique articles.")
-        return results
+        # 3. 새로운 기사 삽입
+        new_article = NewsArticle(
+            title=item["title"],
+            url=item["url"],
+            source_id=str(source.id),
+            source_name=source_name,
+            published_at=item["published_at"],
+            summary=item.get("summary", ""),
+            content_type=item.get("content_type", "article"),
+            is_semiconductor_related=item.get("is_semiconductor_related", False),
+            category=item.get("categories", [])[0] if item.get("categories") else None,
+            matched_keywords=",".join(item.get("matched_keywords", [])),
+        )
+        db.add(new_article)
+        await db.flush()
+        
+        # 4. 태그 연동
+        categories = item.get("categories", [])
+        keywords = item.get("matched_keywords", [])
+        
+        # 카테고리 태그 
+        for cat in categories:
+            tag = await self.get_or_create_tag(db, cat, category="Category")
+            db.add(NewsArticleTag(article_id=str(new_article.id), tag_id=str(tag.id)))
+            
+        # 키워드 태그
+        for kw in keywords:
+            tag = await self.get_or_create_tag(db, kw, category="Keyword")
+            db.add(NewsArticleTag(article_id=str(new_article.id), tag_id=str(tag.id)))
+            
+        return True

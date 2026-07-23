@@ -38,14 +38,14 @@ export default function Header({ searchQuery, setSearchQuery }: HeaderProps) {
         </div>
 
         <div className="flex gap-7 items-center text-slate-700">
-          <div className="flex items-center gap-2 cursor-pointer hover:text-indigo-700 transition-colors">
+          <a href="/retail" className="flex items-center gap-2 cursor-pointer hover:text-indigo-700 transition-colors">
             <Activity size={18} strokeWidth={2.5} />
             <span className="text-sm font-bold hidden sm:block">시장 데이터</span>
-          </div>
-          <div className="flex items-center gap-2 cursor-pointer hover:text-indigo-700 transition-colors">
+          </a>
+          <a href="/news" className="flex items-center gap-2 cursor-pointer hover:text-indigo-700 transition-colors">
             <Bookmark size={18} strokeWidth={2.5} />
-            <span className="text-sm font-bold hidden sm:block">관심 자원</span>
-          </div>
+            <span className="text-sm font-bold hidden sm:block">글로벌 뉴스</span>
+          </a>
           
           {isAuthenticated && user ? (
             <div className="flex items-center gap-4">

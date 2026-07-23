@@ -114,7 +114,7 @@ class NewsTier1Crawler(BaseProviderCrawler):
                 "is_semiconductor_related": classification.get("is_semiconductor_related", False),
                 "category": classification.get("primary_category"),
                 "categories": classification.get("categories", []),
-                "matched_keywords": ",".join(classification.get("matched_keywords", [])),
+                "matched_keywords": classification.get("matched_keywords", []),
                 "content_type": "article"
             })
         return normalized
