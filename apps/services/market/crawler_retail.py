@@ -69,7 +69,15 @@ class RetailCrawler:
             if rescode == 200:
                 response_body = response.read()
                 data = json.loads(response_body.decode('utf-8'))
-                return data.get("items", [])
+                items = data.get("items", [])
+                negative_keywords = ["쿨러", "파워", "케이스", "팬", "방열판", "수냉", "가이드", "브라켓", "케이블", "스티커", "박스", "공박스", "fan", "cooler", "heatsink", "water block"]
+                filtered_items = []
+                for item in items:
+                    title = item.get("title", "").replace("<b>", "").replace("</b>", "").lower()
+                    if any(kw in title for kw in negative_keywords):
+                        continue
+                    filtered_items.append(item)
+                return filtered_items
             else:
                 logger.error(f"Naver API error code: {rescode}")
                 return []

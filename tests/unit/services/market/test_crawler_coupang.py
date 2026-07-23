@@ -36,3 +36,16 @@ def test_search_products_error(mock_urlopen, mock_coupang_crawler):
     results = mock_coupang_crawler.search_products("RTX 4090")
     
     assert len(results) == 0
+
+@patch("apps.services.market.crawler_coupang.urllib.request.urlopen")
+def test_search_products_filters_accessories(mock_urlopen, mock_coupang_crawler):
+    mock_response = MagicMock()
+    # "팬", "쿨러" 등의 금지어가 포함된 데이터와 정상 데이터를 함께 반환
+    mock_response.read.return_value = '{"rCode": "0", "data": {"productData": [{"productName": "RTX 4090", "productPrice": 3000000}, {"productName": "RTX 4090 쿨러 팬", "productPrice": 50000}]}}'.encode('utf-8')
+    mock_urlopen.return_value.__enter__.return_value = mock_response
+
+    results = mock_coupang_crawler.search_products("RTX 4090")
+    
+    # 쿨러가 필터링되어 1개만 남아야 함
+    assert len(results) == 1
+    assert results[0]["productName"] == "RTX 4090"

@@ -53,7 +53,15 @@ class CoupangCrawler:
                 res_data = response.read().decode('utf-8')
                 data = json.loads(res_data)
                 if data.get("rCode") == "0" and "data" in data:
-                    return data["data"].get("productData", [])
+                    items = data["data"].get("productData", [])
+                    negative_keywords = ["쿨러", "파워", "케이스", "팬", "방열판", "수냉", "가이드", "브라켓", "케이블", "스티커", "박스", "공박스", "fan", "cooler", "heatsink", "water block"]
+                    filtered_items = []
+                    for item in items:
+                        name = item.get("productName", "").lower()
+                        if any(kw in name for kw in negative_keywords):
+                            continue
+                        filtered_items.append(item)
+                    return filtered_items
                 else:
                     logger.warning(f"Coupang API Error: {data.get('rMessage')}")
                     return []
