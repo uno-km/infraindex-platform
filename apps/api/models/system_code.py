@@ -1,4 +1,4 @@
-from sqlalchemy import String, Text, DateTime
+from sqlalchemy import String, Text, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 from datetime import datetime
@@ -41,7 +41,7 @@ class SystemCode(Base):
     """
     __tablename__ = "SYS_CD_BAS"
 
-    SYS_GROUP_ID: Mapped[str] = mapped_column(String(50), primary_key=True)
+    SYS_GROUP_ID: Mapped[str] = mapped_column(String(50), ForeignKey("SYS_CD_GROUP_BAS.SYS_GROUP_ID"), primary_key=True)
     SYS_CD_ID: Mapped[str] = mapped_column(String(50), primary_key=True)
     SYS_CD_NM: Mapped[str] = mapped_column(String(100), nullable=False)
     

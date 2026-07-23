@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: infraindex-worker
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: infraindex-worker
+  template:
+    metadata:
+      labels:
+        app: infraindex-worker
+    spec:
+      containers:
+      - name: celery-worker
+        image: infraindex-worker:latest
+        imagePullPolicy: IfNotPresent
+        command: ["celery", "-A", "apps.worker.celery_app", "worker", "--loglevel=info"]
+        envFrom:
+        - configMapRef:
+            name: infraindex-config
+        - secretRef:
+            name: infraindex-secret
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: infraindex-celery-beat
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: infraindex-celery-beat
+  template:
+    metadata:
+      labels:
+        app: infraindex-celery-beat
+    spec:
+      containers:
+      - name: celery-beat
+        image: infraindex-worker:latest
+        imagePullPolicy: IfNotPresent
+        command: ["celery", "-A", "apps.worker.celery_app", "beat", "--loglevel=info", "--schedule=/tmp/celerybeat-schedule"]
+        envFrom:
+        - configMapRef:
+            name: infraindex-config
+        - secretRef:
+            name: infraindex-secret

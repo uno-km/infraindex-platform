@@ -39,7 +39,7 @@ if ($dockerCmd) {
     docker info 2>&1 | Out-Null
     if ($LASTEXITCODE -eq 0) {
         Write-Host "[Docker Compose] Ensuring PostgreSQL & Redis containers are UP..." -ForegroundColor Cyan
-        docker compose -f infrastructure/docker/docker-compose.yml up -d
+        docker compose --env-file .env -f infrastructure/docker/docker-compose.yml up -d db redis
         $env:USE_REAL_DB="True"
 
         # 4. Run Alembic Database Migrations

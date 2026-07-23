@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: infraindex-api
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: infraindex-api
+  template:
+    metadata:
+      labels:
+        app: infraindex-api
+    spec:
+      containers:
+      - name: api
+        image: infraindex-api:latest # Needs to be pushed to your registry (e.g., ECR/Docker Hub)
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: infraindex-config
+        - secretRef:
+            name: infraindex-secret
+        livenessProbe:
+          httpGet:
+            path: /api/v1/health
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /api/v1/health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: infraindex-api-service
+  namespace: default
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8000
+  selector:
+    app: infraindex-api

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: infraindex-config
+  namespace: default
+data:
+  ENVIRONMENT: "prd"
+  POSTGRES_SERVER: "infraindex-db"
+  POSTGRES_DB: "infraindex"
+  POSTGRES_USER: "infraindex"
+  REDIS_URL: "redis://infraindex-redis:6379/0"
+  USE_REAL_DB: "True"
+  USE_CELERY_QUEUE: "True"
+  ENABLE_ALERTS: "True"
+  BACKEND_CORS_ORIGINS: '["https://infraindex.io", "https://app.infraindex.io", "http://localhost:3000"]'
+  TRUSTED_HOSTS: '["infraindex.io", "app.infraindex.io", "api.infraindex.io"]'

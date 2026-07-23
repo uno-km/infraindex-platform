@@ -5,12 +5,14 @@ import sys
 # 프로젝트 루트 경로 추가 (apps. 등 임포트 가능하도록)
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from apps.api.core.database import SessionLocal
+os.environ["USE_REAL_DB"] = "True"
+
+from apps.api.core.database import AsyncSessionLocal
 from apps.api.models.system_code import SystemCodeGroup, SystemCode
 
 async def seed_metadata():
     print("Seeding System Code Metadata...")
-    async with SessionLocal() as session:
+    async with AsyncSessionLocal() as session:
         async with session.begin():
             # 1. SYS_CD_GROUP_BAS 추가
             gpu_group = SystemCodeGroup(

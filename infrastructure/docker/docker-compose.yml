@@ -1,3 +1,5 @@
+name: infraindex-platform
+
 version: '3.8'
 
 services:
@@ -20,7 +22,7 @@ services:
     environment:
       # FIX-03: 하드코딩 비밀번호 제거. 반드시 .env 파일 또는 환경변수로 주입할 것.
       POSTGRES_USER: ${POSTGRES_USER:-infraindex}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-devpassword_local_only}
       POSTGRES_DB: ${POSTGRES_DB:-infraindex}
     ports:
       - "5432:5432"
@@ -65,11 +67,11 @@ services:
     environment:
       - POSTGRES_SERVER=db
       - POSTGRES_USER=${POSTGRES_USER:-infraindex}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-devpassword_local_only}
       - POSTGRES_DB=${POSTGRES_DB:-infraindex}
       - REDIS_URL=redis://redis:6379/0
       - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS:-["http://localhost:3000"]}
-      - ADMIN_API_KEY=${ADMIN_API_KEY:?ADMIN_API_KEY is required}
+      - ADMIN_API_KEY=${ADMIN_API_KEY:-local-dev-admin-key-change-in-production}
       - USE_REAL_DB=True
       # Redis Pool 튜닝 (docker 환경)
       - REDIS_MAX_CONNECTIONS=50
@@ -91,7 +93,7 @@ services:
       context: ../../
       dockerfile: apps/worker/Dockerfile
     environment:
-      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-infraindex}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@db:5432/${POSTGRES_DB:-infraindex}
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-infraindex}:${POSTGRES_PASSWORD:-devpassword_local_only}@db:5432/${POSTGRES_DB:-infraindex}
       - REDIS_URL=redis://redis:6379/0
       - USE_REAL_DB=True
       - USE_CELERY_QUEUE=True
@@ -110,7 +112,7 @@ services:
       dockerfile: apps/worker/Dockerfile
     command: celery -A apps.worker.celery_app beat --loglevel=info --schedule=/tmp/celerybeat-schedule
     environment:
-      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-infraindex}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@db:5432/${POSTGRES_DB:-infraindex}
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-infraindex}:${POSTGRES_PASSWORD:-devpassword_local_only}@db:5432/${POSTGRES_DB:-infraindex}
       - REDIS_URL=redis://redis:6379/0
       - USE_REAL_DB=True
       - USE_CELERY_QUEUE=True

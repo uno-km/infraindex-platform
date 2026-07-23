@@ -14,7 +14,7 @@ class SystemCodeService:
             return []
             
         from sqlalchemy.ext.asyncio import AsyncSession
-        from apps.api.core.database import SessionLocal
+        from apps.api.core.database import AsyncSessionLocal
         from apps.api.models.system_code import SystemCode
         from sqlalchemy import select
         
@@ -34,7 +34,7 @@ class DataService:
     async def get_latest_prices(hardware_type: str = "gpu") -> List[Dict[str, Any]]:
         if settings.USE_REAL_DB:
             from sqlalchemy.ext.asyncio import AsyncSession
-            from apps.api.core.database import SessionLocal
+            from apps.api.core.database import AsyncSessionLocal
             from apps.services.gpu.models_history import GpuPriceHistory
             from sqlalchemy import select, desc
             

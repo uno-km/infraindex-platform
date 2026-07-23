@@ -11,6 +11,9 @@ from apps.api.models.system_code import SystemCodeGroup, SystemCode
 
 # Import domain models to register them with Base.metadata for Alembic
 from apps.services.gpu.models_history import GpuPriceHistory
+from apps.services.gpu.models_hardware import GpuManufacturer, GpuModel, GpuVariant, CpuManufacturer, CpuModel, CpuVariant
+from apps.services.gpu.models_provider import Provider, ProviderRegion
+from apps.services.gpu.models_offering import InstanceOffering, OfferingGpuConfiguration, OfferingCpuConfiguration, PricingPlan
 from apps.services.retail.models import RtlPriceHistory
 from apps.services.financial.models import FinMktHistory
 from apps.services.news.models import NewsArticle

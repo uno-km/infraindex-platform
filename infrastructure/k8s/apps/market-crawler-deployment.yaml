@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: infraindex-market-crawler
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: infraindex-market-crawler
+  template:
+    metadata:
+      labels:
+        app: infraindex-market-crawler
+    spec:
+      containers:
+      - name: crawler
+        # This will be replaced with the actual image of the news/stock crawler microservice
+        image: infraindex-crawler:latest 
+        imagePullPolicy: IfNotPresent
+        envFrom:
+        - configMapRef:
+            name: infraindex-config
+        - secretRef:
+            name: infraindex-secret
