@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from apps.api.api.v1.endpoints import search, history, admin, memory, storage, chat, chart, stream, health, reports, traffic, auth, users, market
+from apps.api.api.v1.endpoints import search, history, admin, memory, storage, chat, chart, stream, health, reports, traffic, auth, users, market, alerts
 
 # Imported from Domain Services
 from apps.services.gpu import router_providers as providers
@@ -38,3 +38,4 @@ api_router.include_router(retail_ohlc_router, prefix="/retail", tags=["retail-oh
 api_router.include_router(insights_router, prefix="/insights", tags=["insights"])
 api_router.include_router(news_router, prefix="/news", tags=["news"])
 api_router.include_router(market.router, prefix="/market", tags=["market"])
+api_router.include_router(alerts.router, prefix="/alerts", tags=["alerts"])

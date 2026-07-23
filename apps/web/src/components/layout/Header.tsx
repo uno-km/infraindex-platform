@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, User, Activity, Bookmark, Cloud, Settings, LogOut } from "lucide-react";
+import { Search, User, Activity, Bookmark, Cloud, Settings, LogOut, Bell } from "lucide-react";
 
 import { useAuth } from "../../context/AuthContext";
 
@@ -69,6 +69,15 @@ export default function Header({ searchQuery, setSearchQuery }: HeaderProps) {
                   <span className="text-sm font-bold hidden sm:block">마이페이지</span>
                 </div>
               )}
+              
+              <a 
+                href="/dashboard"
+                className="relative p-2 text-slate-400 hover:text-indigo-600 transition-colors ml-2 cursor-pointer"
+                title="알림 대시보드"
+              >
+                <Bell size={20} strokeWidth={2.5} />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+              </a>
               
               <button 
                 onClick={logout}

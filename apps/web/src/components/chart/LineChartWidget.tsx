@@ -109,7 +109,7 @@ export default function LineChartWidget({
             <Tooltip 
               contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', color: '#0f172a', borderRadius: '12px', fontWeight: 'bold', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
               itemStyle={{ color: '#334155' }}
-              formatter={(value: number) => [`$${value.toFixed(hwTyp === 'storage' ? 4 : 2)}`, undefined]}
+              formatter={(value: any) => [`$${Number(value).toFixed(hwTyp === 'storage' ? 4 : 2)}`, undefined]}
             />
             <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontWeight: 'bold', fontSize: '13px' }} />
             <Line type="monotone" dataKey="Avg Price" stroke="#4f46e5" strokeWidth={3} dot={{ r: 4, fill: '#4f46e5', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6 }} />

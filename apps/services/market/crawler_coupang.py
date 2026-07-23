@@ -12,6 +12,7 @@ from sqlalchemy.future import select
 
 from apps.api.core.config import settings
 from apps.api.models.market import MarketProduct, MarketListing, MarketPriceObservation
+from apps.services.alerts.alert_engine import AlertEngine
 
 logger = logging.getLogger(__name__)
 
@@ -127,6 +128,11 @@ class CoupangCrawler:
                 )
                 db.add(obs)
                 total_inserted += 1
+                
+                # Check for alerts
+                alert_engine = AlertEngine()
+                link = item.get("productUrl", "")
+                await alert_engine.check_retail_alerts(db, model_name, price, link)
 
         await db.commit()
         return {"status": "success", "crawled_items": total_inserted}

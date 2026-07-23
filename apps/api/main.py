@@ -176,7 +176,20 @@ if settings.TRUSTED_HOSTS:
 Instrumentator().instrument(app).expose(app)
 
 
-# ── Routers ───────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------------------
+# Static Files
+# -----------------------------------------------------------------------------
+import os
+from fastapi.staticfiles import StaticFiles
+
+STORAGE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "storage")
+os.makedirs(os.path.join(STORAGE_DIR, "reports"), exist_ok=True)
+app.mount("/storage", StaticFiles(directory=STORAGE_DIR), name="storage")
+
+
+# -----------------------------------------------------------------------------
+# Routers
+# -----------------------------------------------------------------------------
 app.include_router(api_router, prefix=settings.API_V1_STR)
 app.include_router(admin.router, prefix=f"{settings.API_V1_STR}/admin", tags=["admin"])
 

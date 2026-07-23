@@ -12,6 +12,7 @@ from sqlalchemy.future import select
 from sqlalchemy import or_
 
 from apps.api.models.market import MarketProduct, MarketListing, MarketPriceObservation
+from apps.services.alerts.alert_engine import AlertEngine
 from apps.services.gpu.models_hardware import GpuModel, CpuModel
 from apps.api.core.config import settings
 
@@ -170,6 +171,10 @@ class RetailCrawler:
                 )
                 db.add(obs)
                 inserted_prices += 1
+                
+                # Check for alerts
+                alert_engine = AlertEngine()
+                await alert_engine.check_retail_alerts(db, model_name, price, link)
                 
         await db.commit()
         return {

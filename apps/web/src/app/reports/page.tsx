@@ -95,15 +95,82 @@ export default function ReportsIndex() {
                   ))}
                 </div>
               </div>
-
             </div>
           ) : (
             <div className="flex justify-center py-20">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             </div>
           )}
+
+          {/* Generated PDF Reports Section */}
+          <div className="mt-8 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold flex items-center text-red-600 dark:text-red-400">
+                <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                Generated PDF Reports
+              </h2>
+              <button 
+                onClick={() => {
+                  fetch('http://localhost:8000/api/v1/reports/pdf/generate?report_type=morning', { method: 'POST' })
+                    .then(() => window.location.reload())
+                    .catch(err => alert("Error generating report"));
+                }}
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md font-medium text-sm transition-colors"
+              >
+                Generate Morning Report Now
+              </button>
+            </div>
+            <PDFReportList />
+          </div>
+
         </main>
       </div>
+    </div>
+  );
+}
+
+function PDFReportList() {
+  const [reports, setReports] = useState<any[]>([]);
+  useEffect(() => {
+    fetch('http://localhost:8000/api/v1/reports/pdf')
+      .then(res => res.json())
+      .then(data => setReports(data))
+      .catch(console.error);
+  }, []);
+
+  if (reports.length === 0) return <p className="text-gray-500">No PDF reports available.</p>;
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-left border-collapse">
+        <thead>
+          <tr className="border-b border-gray-200 dark:border-gray-700">
+            <th className="py-3 px-4 font-bold text-gray-600 dark:text-gray-400">Date</th>
+            <th className="py-3 px-4 font-bold text-gray-600 dark:text-gray-400">Type</th>
+            <th className="py-3 px-4 font-bold text-gray-600 dark:text-gray-400">Size</th>
+            <th className="py-3 px-4 font-bold text-gray-600 dark:text-gray-400">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {reports.map((r, idx) => (
+            <tr key={idx} className="border-b border-gray-100 dark:border-gray-800">
+              <td className="py-3 px-4">{r.report_date}</td>
+              <td className="py-3 px-4 capitalize">{r.report_type}</td>
+              <td className="py-3 px-4">{(r.file_size_bytes / 1024).toFixed(1)} KB</td>
+              <td className="py-3 px-4">
+                <a 
+                  href={`http://localhost:8000${r.file_path}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline font-medium"
+                >
+                  Download PDF
+                </a>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

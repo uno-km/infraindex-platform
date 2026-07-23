@@ -31,3 +31,47 @@ def task_run_pipeline():
     except Exception as e:
         print(f"Error in pipeline task: {e}")
         return {"status": "error", "message": str(e)}
+
+@shared_task(name="tasks.crawl_arxiv_papers")
+def task_crawl_arxiv_papers():
+    print("[Celery] Starting arxiv paper crawl task.")
+    from apps.services.paper.paper_service import PaperService
+    from apps.api.core.database import AsyncSessionLocal
+    import asyncio
+    
+    async def _do_crawl():
+        async with AsyncSessionLocal() as session:
+            service = PaperService(session)
+            count = await service.crawl_and_save_arxiv_recent(max_results=50)
+            return count
+
+    loop = asyncio.get_event_loop()
+    if loop.is_closed():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    new_count = loop.run_until_complete(_do_crawl())
+    print(f"[Celery] Finished arxiv paper crawl task. New papers: {new_count}")
+
+@shared_task
+def task_generate_morning_report():
+    """
+    Generate morning report. Scheduled by Celery Beat.
+    """
+    from datetime import date
+    from apps.services.reporter.pdf_generator import PDFReporter
+    
+    reporter = PDFReporter()
+    loop = asyncio.get_event_loop()
+    if loop.is_closed():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+    try:
+        file_path = loop.run_until_complete(reporter.generate_report(date.today(), "morning"))
+        print(f"Successfully generated morning report: {file_path}")
+        return {"status": "success", "file_path": file_path}
+    except Exception as e:
+        print(f"Error generating report: {e}")
+        import traceback
+        traceback.print_exc()
+        return {"status": "error", "message": str(e)}

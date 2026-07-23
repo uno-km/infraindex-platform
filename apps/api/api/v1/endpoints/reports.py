@@ -222,3 +222,62 @@ async def get_daily_brief_json(db: AsyncSession = Depends(get_db)) -> Any:
             {"component": "GDDR6 16GB", "price_usd": 45.00, "status": "stable"},
         ],
     }
+
+
+from apps.api.models.reporter import DailyReport
+from apps.services.reporter.pdf_generator import PDFReporter
+from datetime import date
+from fastapi import HTTPException
+
+@router.get("/pdf")
+async def list_pdf_reports(
+    db: AsyncSession = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100
+) -> Any:
+    """
+    Retrieve list of generated daily PDF reports.
+    """
+    stmt = select(DailyReport).order_by(DailyReport.report_date.desc(), DailyReport.generated_at.desc()).offset(skip).limit(limit)
+    result = await db.execute(stmt)
+    reports = result.scalars().all()
+    
+    return [
+        {
+            "id": str(r.id),
+            "report_date": r.report_date.strftime("%Y-%m-%d"),
+            "report_type": r.report_type,
+            "file_path": r.file_path,
+            "file_size_bytes": r.file_size_bytes,
+            "generated_at": r.generated_at.isoformat() if r.generated_at else None
+        } for r in reports
+    ]
+
+@router.post("/pdf/generate")
+async def generate_pdf_report_manually(
+    report_type: str = Query("morning", description="morning or evening"),
+    target_date: date = Query(None, description="Target date (default today)")
+) -> Any:
+    """
+    Manually trigger PDF report generation.
+    """
+    if not target_date:
+        target_date = date.today()
+        
+    if report_type not in ["morning", "evening"]:
+        raise HTTPException(status_code=400, detail="Invalid report type. Must be 'morning' or 'evening'.")
+        
+    reporter = PDFReporter()
+    try:
+        import asyncio
+        # Run in a separate thread to avoid event loop conflicts with Playwright
+        file_path = await asyncio.to_thread(
+            asyncio.run,
+            reporter.generate_report(target_date, report_type)
+        )
+        return {"status": "success", "file_path": file_path, "message": f"Report generated at {file_path}"}
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Failed to generate report: {repr(e)}")
+

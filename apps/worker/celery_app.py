@@ -27,9 +27,24 @@ celery_app.conf.update(
 
 # Setup Periodic Tasks (Celery Beat)
 celery_app.conf.beat_schedule = {
-    # 매 1분마다 DB 싱글턴 메모리 일정을 검사
     "tick-every-minute-for-dynamic-schedule": {
         "task": "orchestrator.tick",
         "schedule": crontab(minute="*"),
+    },
+    'crawl-news-every-30-minutes': {
+        'task': 'tasks.crawl_all_news',
+        'schedule': crontab(minute='*/30'),
+    },
+    'crawl-arxiv-every-6-hours': {
+        'task': 'tasks.crawl_arxiv_papers',
+        'schedule': crontab(minute='0', hour='*/6'),
+    },
+    'morning-report': {
+        'task': 'tasks.generate_morning_report',
+        'schedule': crontab(hour=7, minute=0),
+    },
+    'evening-report': {
+        'task': 'tasks.generate_evening_report',
+        'schedule': crontab(hour=18, minute=0),
     },
 }

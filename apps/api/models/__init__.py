@@ -18,9 +18,12 @@ from apps.api.models.system_config import CrawlerConfig
 from apps.services.news.models import NewsSource, NewsTag, NewsArticle, NewsArticleTag, NewsDailyBriefing
 from apps.api.models.market import MarketProduct, MarketListing, MarketPriceObservation, MarketRentalOffer
 from apps.api.models.ohlc import MarketOHLCDaily
+from apps.api.models.paper import PaperSource, PaperArticle, PaperTag, PaperArticleTag
 from apps.services.gpu.models_offering import PricingPlan, InstanceOffering, OfferingGpuConfiguration, OfferingCpuConfiguration
 from apps.services.gpu.models_hardware import GpuModel, GpuManufacturer, GpuVariant, CpuManufacturer, CpuModel, CpuVariant
 from apps.services.gpu.models_provider import Provider, ProviderRegion
+from apps.api.models.alerts import AlertRule, AlertHistory
+from apps.api.models.reporter import DailyReport
 
 __all__ = [
     "Base", 
@@ -68,5 +71,8 @@ __all__ = [
     "CpuModel",
     "CpuVariant",
     "Provider",
-    "ProviderRegion"
+    "ProviderRegion",
+    "AlertRule",
+    "AlertHistory",
+    "DailyReport"
 ]
