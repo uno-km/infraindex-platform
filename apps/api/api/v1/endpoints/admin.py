@@ -8,7 +8,7 @@ from jose import jwt, JWTError
 from apps.api.core.database import get_db
 from apps.api.core.config import settings
 from apps.api.models.quality import DataQualityIssue
-from apps.api.models.user import User
+from apps.api.models.user import UserBas
 from apps.api.models.system_config import CrawlerConfig
 from pydantic import BaseModel
 
@@ -159,3 +159,79 @@ async def trigger_manual_batch(
         "target": request_data.target,
     }
 
+
+# --- 4. Schedule Refresh ---
+
+@router.post("/schedules/refresh", dependencies=[Depends(verify_admin)])
+async def trigger_schedule_refresh() -> Any:
+    """
+    Refresh the batch schedules loaded in memory (Singleton).
+    This triggers the Celery worker to reload schedules from the database.
+    """
+    from apps.worker.tasks.orchestrator import refresh_schedules as refresh_schedules_task
+    
+    # Send a celery task to the worker to reload its schedule singleton
+    refresh_schedules_task.delay()
+    
+    return {
+        "status": "triggered",
+# --- 5. User Management ---
+
+@router.get("/users", dependencies=[Depends(verify_admin)])
+async def list_users(
+    db: AsyncSession = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100,
+) -> Any:
+    """
+    List all users.
+    """
+    from apps.api.models.user import UserBas
+    result = await db.execute(
+        select(UserBas).order_by(UserBas.created_at.desc()).offset(skip).limit(limit)
+    )
+    users = result.scalars().all()
+    return [
+        {
+            "id": str(u.id),
+            "email": u.email,
+            "nickname": u.nickname,
+            "oauth_provider": u.oauth_provider,
+            "is_admin": u.is_admin,
+            "is_active": u.is_active,
+            "created_at": u.created_at.isoformat() if u.created_at else None,
+        }
+        for u in users
+    ]
+
+@router.get("/login-history", dependencies=[Depends(verify_admin)])
+async def list_login_history(
+    db: AsyncSession = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100,
+) -> Any:
+    """
+    List login history for all users.
+    """
+    from apps.api.models.login_history import LoginHistory
+    from sqlalchemy.orm import joinedload
+    
+    result = await db.execute(
+        select(LoginHistory)
+        .options(joinedload(LoginHistory.user))
+        .order_by(LoginHistory.created_at.desc())
+        .offset(skip).limit(limit)
+    )
+    histories = result.scalars().all()
+    return [
+        {
+            "id": str(h.id),
+            "user_id": str(h.user_id),
+            "nickname": h.user.nickname if h.user else "Unknown",
+            "login_method": h.login_method,
+            "ip_address": h.ip_address,
+            "user_agent": h.user_agent,
+            "created_at": h.created_at.isoformat() if h.created_at else None,
+        }
+        for h in histories
+    ]

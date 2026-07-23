@@ -250,26 +250,107 @@ async def execute_extraction(provider_slug: str):
 
 
 # ----------------- Celery Tasks ----------------- #
+from celery import chain
+from sqlalchemy import select
+from apps.worker.core.schedule_manager import schedule_manager
+
+@shared_task(name="orchestrator.refresh_schedules")
+def refresh_schedules():
+    """Admin API에서 호출 시 메모리에 적재된 스케줄을 갱신합니다."""
+    logger.info("Refreshing batch schedules in memory...")
+    schedule_manager.load_sync()
+    logger.info(f"Schedules refreshed: {list(schedule_manager.get_schedules().keys())}")
 
 @shared_task(name="orchestrator.tick")
 def tick():
-    """Called by Celery Beat every 5 minutes."""
+    """Called by Celery Beat every 1 minute."""
     if not settings.USE_CELERY_QUEUE:
         logger.warning("Tick called but USE_CELERY_QUEUE is False.")
         return
 
-    logger.info("Tick: Dispatching factory crawlers...")
-    # 글로벌 공급자
-    run_provider_collection.delay("vast-ai")
-    run_provider_collection.delay("runpod")
-    run_provider_collection.delay("aws")
-    # 특화 공급자
-    run_provider_collection.delay("vessl")
-    run_provider_collection.delay("xesktop")
-    # 한국 공급자
-    for slug in ["gpuaas", "cloudv", "runyourai", "gabia", "ktcloud", "sugarcube", "appleplaza", "ncloud", "rebellion"]:
-        run_provider_collection.delay(slug)
+    # 워커 시작 후 최초 호출이거나, 아직 로드가 안 된 경우 로드
+    if not schedule_manager._is_loaded:
+        schedule_manager.load_sync()
 
+    schedules = schedule_manager.get_schedules()
+    for bat_id, sched in schedules.items():
+        if schedule_manager.is_time_to_run(bat_id):
+            logger.info(f"Tick: 배치가 실행 조건에 맞습니다. Dispatching {bat_id}...")
+            run_batch_chain.delay(bat_id)
+
+async def _get_batch_details(bat_id: str):
+    try:
+        from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+        from apps.api.models.batch_schedule import SysBatSchDtl
+        
+        db_url = settings.DATABASE_URL
+        if db_url.startswith("postgresql://") and "+asyncpg" not in db_url:
+            db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+        engine = create_async_engine(db_url, echo=False, future=True, pool_size=2, max_overflow=5)
+        SessionLocal = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
+
+        async with SessionLocal() as session:
+            stmt = select(SysBatSchDtl).where(
+                SysBatSchDtl.bat_id == bat_id,
+                SysBatSchDtl.use_yn == "Y"
+            ).order_by(SysBatSchDtl.run_ord)
+            
+            result = await session.execute(stmt)
+            dtls = result.scalars().all()
+            
+            # extract provider_slugs from ref_val_1
+            slugs = [dtl.ref_val_1 for dtl in dtls if dtl.ref_val_1]
+            
+        await engine.dispose()
+        return slugs
+    except Exception as e:
+        logger.error(f"Failed to fetch DTLs for {bat_id}: {e}")
+        return []
+
+@shared_task(name="orchestrator.run_batch_chain")
+def run_batch_chain(bat_id: str):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        slugs = loop.run_until_complete(_get_batch_details(bat_id))
+    finally:
+        loop.close()
+        
+    if not slugs:
+        logger.warning(f"No DTLs found for {bat_id} or USE_YN is not 'Y'.")
+        return
+        
+    logger.info(f"Constructing sequential chain for {bat_id}: {slugs}")
+    
+    # 순차 실행을 위해 chain 구성 (si = immutable signature, 결과를 다음 태스크에 넘기지 않음)
+    tasks = [run_provider_collection.si(slug) for slug in slugs]
+    workflow = chain(*tasks)
+    workflow.apply_async()
+
+async def _update_dtl_error(provider_slug: str, error_msg: str):
+    try:
+        from sqlalchemy import update
+        from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+        from apps.api.models.batch_schedule import SysBatSchDtl
+        
+        db_url = settings.DATABASE_URL
+        if db_url.startswith("postgresql://") and "+asyncpg" not in db_url:
+            db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+        engine = create_async_engine(db_url, echo=False, future=True)
+        SessionLocal = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
+
+        async with SessionLocal() as session:
+            stmt = update(SysBatSchDtl).where(SysBatSchDtl.ref_val_1 == provider_slug).values(
+                rmk=error_msg[:500]
+            )
+            await session.execute(stmt)
+            await session.commit()
+            
+        await engine.dispose()
+    except Exception as e:
+        logger.error(f"Failed to update DTL error for {provider_slug}: {e}")
 
 @shared_task(
     name="orchestrator.run_provider_collection",
@@ -283,5 +364,8 @@ def run_provider_collection(provider_slug: str):
     asyncio.set_event_loop(loop)
     try:
         loop.run_until_complete(execute_extraction(provider_slug))
+    except Exception as e:
+        loop.run_until_complete(_update_dtl_error(provider_slug, str(e)))
+        raise e
     finally:
         loop.close()

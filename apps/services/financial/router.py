@@ -11,7 +11,10 @@ from apps.services.retail.models import RtlPriceHistory
 
 router = APIRouter()
 
+from fastapi_cache.decorator import cache
+
 @router.get("/correlation", response_model=List[Dict[str, Any]])
+@cache(expire=3600 * 8)
 async def get_insight_correlation(
     timeframe: str = Query("1w", description="Timeframe (e.g., 1d, 1w, 1mo, 3mo)"),
     db: AsyncSession = Depends(get_db)

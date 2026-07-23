@@ -44,6 +44,19 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"[Startup] DB engine init failed: {e}. Check DATABASE_URL.")
 
+    # 3. FastAPI Cache 초기화 (Redis Backend)
+    try:
+        from fastapi_cache import FastAPICache
+        from fastapi_cache.backends.redis import RedisBackend
+        from redis import asyncio as aioredis
+        import os
+        redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
+        redis_client = aioredis.from_url(redis_url)
+        FastAPICache.init(RedisBackend(redis_client), prefix="fastapi-cache")
+        logger.info("[Startup] FastAPI Cache initialized.")
+    except Exception as e:
+        logger.warning(f"[Startup] FastAPI Cache init failed: {e}")
+
     logger.info("[Startup] Infrastructure ready.")
     yield
 

@@ -34,7 +34,10 @@ class ChartSeriesResponse(BaseModel):
     data: List[ChartDataPoint]
 
 
+from fastapi_cache.decorator import cache
+
 @router.get("/candlestick", response_model=List[CandlestickDataPoint])
+@cache(expire=3600 * 8)
 async def get_candlestick(
     gpu_model_id: str = Query(..., description="GPU model name"),
     days: int = Query(90, description="Number of days"),
@@ -153,6 +156,7 @@ async def get_candlestick(
     return candlesticks
 
 @router.get("/price-series", response_model=List[ChartSeriesResponse])
+@cache(expire=3600 * 8)
 async def get_price_series(
     gpu_model_id: str = Query(..., description="GPU model name (e.g. 'H100', 'RTX 4090')"),
     provider: Optional[str] = Query(None, description="Filter by provider slug (e.g. 'vast-ai', 'runpod')"),
@@ -229,6 +233,7 @@ async def get_price_series(
 
 
 @router.get("/cpu-price-series", response_model=List[ChartSeriesResponse])
+@cache(expire=3600 * 8)
 async def get_cpu_price_series(
     cpu_model_id: str = Query(..., description="CPU model name (e.g. 'EPYC', 'Xeon')"),
     provider: Optional[str] = Query(None, description="Filter by provider slug"),

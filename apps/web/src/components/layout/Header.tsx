@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, User, Activity, Bookmark, Cloud } from "lucide-react";
+import { Search, User, Activity, Bookmark, Cloud, Settings, LogOut } from "lucide-react";
 
 import { useAuth } from "../../context/AuthContext";
 
@@ -47,13 +47,36 @@ export default function Header({ searchQuery, setSearchQuery }: HeaderProps) {
             <span className="text-sm font-bold hidden sm:block">관심 자원</span>
           </div>
           
-          {isAuthenticated ? (
-            <div 
-              onClick={logout}
-              className="flex items-center gap-2 cursor-pointer bg-slate-900 hover:bg-red-600 text-white px-4 py-2 rounded-xl transition-all shadow-md shadow-slate-300 hover:shadow-red-200"
-            >
-              <User size={16} strokeWidth={2.5} />
-              <span className="text-sm font-bold hidden sm:block">로그아웃</span>
+          {isAuthenticated && user ? (
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-medium text-slate-700 hidden sm:block">
+                <span className="font-bold text-indigo-700">{user.nickname}</span>님 안녕하세요
+              </span>
+              
+              {user.is_admin ? (
+                <a 
+                  href="/admin"
+                  className="flex items-center gap-2 cursor-pointer bg-slate-900 hover:bg-indigo-600 text-white px-4 py-2 rounded-xl transition-all shadow-md hover:shadow-indigo-200"
+                >
+                  <Settings size={16} strokeWidth={2.5} />
+                  <span className="text-sm font-bold hidden sm:block">관리하기</span>
+                </a>
+              ) : (
+                <div 
+                  className="flex items-center gap-2 cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl transition-all shadow-sm"
+                >
+                  <User size={16} strokeWidth={2.5} />
+                  <span className="text-sm font-bold hidden sm:block">마이페이지</span>
+                </div>
+              )}
+              
+              <button 
+                onClick={logout}
+                className="p-2 text-slate-400 hover:text-red-500 transition-colors ml-2"
+                title="로그아웃"
+              >
+                <LogOut size={20} />
+              </button>
             </div>
           ) : (
             <div 

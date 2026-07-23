@@ -9,7 +9,10 @@ from apps.services.news.models import NewsArticle
 
 router = APIRouter()
 
+from fastapi_cache.decorator import cache
+
 @router.get("", response_model=List[Dict[str, Any]])
+@cache(expire=3600 * 8)
 async def get_latest_news(
     limit: int = Query(50, description="불러올 뉴스의 최대 개수"),
     db: AsyncSession = Depends(get_db)
