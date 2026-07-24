@@ -37,7 +37,7 @@ async def list_papers(
     total = total_result.scalar() or 0
     
     # Paginate
-    stmt = stmt.order_by(PaperArticle.published_at.desc(), PaperArticle.created_at.desc())
+    stmt = stmt.order_by(PaperArticle.published_at.desc(), PaperArticle.crawled_at.desc())
     stmt = stmt.offset((page - 1) * size).limit(size)
     
     result = await db.execute(stmt)

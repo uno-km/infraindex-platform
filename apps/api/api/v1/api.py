@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from apps.api.api.v1.endpoints import search, history, admin, memory, storage, chat, chart, stream, health, reports, traffic, auth, users, market, alerts
+from apps.api.api.v1.endpoints import search, history, admin, memory, storage, chat, chart, stream, health, reports, traffic, auth, users, market, alerts, backfill
 
 # Imported from Domain Services
 from apps.services.gpu import router_providers as providers
@@ -9,6 +9,7 @@ from apps.services.retail.router import router as retail_charts_router
 from apps.services.financial.router import router as insights_router
 from apps.services.news.router import router as news_router
 from apps.services.market.endpoints_retail_chart import router as retail_ohlc_router
+from apps.api.api.v1.endpoints.papers import router as papers_router
 
 api_router = APIRouter()
 api_router.include_router(health.router, prefix="/health", tags=["health"])
@@ -39,3 +40,5 @@ api_router.include_router(insights_router, prefix="/insights", tags=["insights"]
 api_router.include_router(news_router, prefix="/news", tags=["news"])
 api_router.include_router(market.router, prefix="/market", tags=["market"])
 api_router.include_router(alerts.router, prefix="/alerts", tags=["alerts"])
+api_router.include_router(papers_router, prefix="/papers", tags=["papers"])
+api_router.include_router(backfill.router, prefix="/backfill", tags=["backfill"])

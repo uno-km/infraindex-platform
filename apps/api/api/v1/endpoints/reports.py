@@ -44,8 +44,8 @@ async def _fetch_price_data(
     return [
         {
             "date": str(r.day),
-            "provider": r.provider_id,
-            "gpu_model": r.gpu_model,
+            "provider": r.prv_id,
+            "gpu_model": r.gpu_mdl,
             "min_price": round(float(r.min_price), 4),
             "avg_price": round(float(r.avg_price), 4),
             "max_price": round(float(r.max_price), 4),

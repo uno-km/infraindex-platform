@@ -6,6 +6,9 @@ import { useAuth } from '../context/AuthContext';
 import Header from './layout/Header';
 import Sidebar from './layout/Sidebar';
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1';
+
+
 // Types
 interface AlertRule {
   id: string;
@@ -40,7 +43,7 @@ export default function AlertsDashboard() {
 
   const fetchHistory = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/v1/alerts/history', {
+      const res = await fetch(`${API_BASE}/alerts/history`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -54,7 +57,7 @@ export default function AlertsDashboard() {
 
   const fetchRules = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/v1/alerts/rules', {
+      const res = await fetch(`${API_BASE}/alerts/rules`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -75,7 +78,7 @@ export default function AlertsDashboard() {
 
   const handleMarkAsRead = async (id: string) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/v1/alerts/history/${id}/read`, {
+      const res = await fetch(`${API_BASE}/alerts/history/${id}/read`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -100,7 +103,7 @@ export default function AlertsDashboard() {
         payload.price_threshold = parseFloat(newRuleForm.price_threshold);
       }
       
-      const res = await fetch('http://localhost:8000/api/v1/alerts/rules', {
+      const res = await fetch(`${API_BASE}/alerts/rules`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
