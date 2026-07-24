@@ -1,5 +1,5 @@
 import pytest
-from apps.api.core import ai_service
+from apps.server.core import ai_service
 
 """
 ===============================================================================

@@ -1,5 +1,5 @@
 import pytest
-from apps.services.retail.crawler import RetailUniversalCrawler
+from apps.batch.services.retail.crawler import RetailUniversalCrawler
 
 @pytest.mark.asyncio
 async def test_retail_universal_crawler_returns_normalized_data():

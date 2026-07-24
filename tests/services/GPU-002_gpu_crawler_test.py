@@ -1,7 +1,7 @@
 import pytest
-from apps.services.gpu.crawler_vast import VastCrawler
-from apps.services.gpu.crawler_runpod import RunpodCrawler
-from apps.services.gpu.crawler_aws import AWSCrawler
+from apps.batch.services.gpu.crawler_vast import VastCrawler
+from apps.batch.services.gpu.crawler_runpod import RunpodCrawler
+from apps.batch.services.gpu.crawler_aws import AWSCrawler
 
 def test_crawler_factory_compliance():
     """
@@ -24,7 +24,7 @@ def test_crawler_factory_compliance():
 @pytest.mark.asyncio
 async def test_stealth_http_client():
     """Test the Stealth HTTP Client instantiation."""
-    from apps.worker.providers.common.http_client import StealthHttpClient
+    from apps.batch.worker.providers.common.http_client import StealthHttpClient
     
     client = StealthHttpClient()
     httpx_client = await client.get_client()

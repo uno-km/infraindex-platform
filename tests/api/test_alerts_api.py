@@ -3,8 +3,8 @@ import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
-from apps.api.main import app
-from apps.api.core.database import get_db
+from apps.server.main import app
+from shared.db.session import get_db
 
 async def override_get_db():
     mock_db = AsyncMock()

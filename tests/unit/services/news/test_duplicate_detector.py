@@ -21,7 +21,7 @@ class TestDuplicateDetection:
 
     def test_paper_service_importable(self):
         """PaperService가 정상적으로 임포트되어야 한다"""
-        from apps.services.paper.paper_service import PaperService
+        from apps.batch.services.paper.paper_service import PaperService
         assert PaperService is not None
 
     @pytest.mark.asyncio
@@ -29,8 +29,8 @@ class TestDuplicateDetection:
         """
         PaperService: 이미 존재하는 external_id의 논문은 add하지 않고 update만 해야 한다
         """
-        from apps.services.paper.paper_service import PaperService
-        from apps.services.paper.crawler_arxiv import ArXivCrawler
+        from apps.batch.services.paper.paper_service import PaperService
+        from apps.batch.services.paper.crawler_arxiv import ArXivCrawler
 
         mock_db = AsyncMock()
         mock_source = MagicMock()

@@ -15,8 +15,8 @@ class TestNewsAPIPhase2:
     @pytest.mark.asyncio
     async def test_get_news_list(self):
         """뉴스 리스트 정상 조회 확인"""
-        from apps.api.main import app
-        from apps.api.core.database import get_db
+        from apps.server.main import app
+        from shared.db.session import get_db
 
         mock_db = AsyncMock()
         mock_result = MagicMock()
@@ -56,8 +56,8 @@ class TestNewsAPIPhase2:
     @pytest.mark.asyncio
     async def test_get_news_sources(self):
         """소스 목록 조회 확인"""
-        from apps.api.main import app
-        from apps.api.core.database import get_db
+        from apps.server.main import app
+        from shared.db.session import get_db
 
         mock_db = AsyncMock()
         mock_result = MagicMock()
@@ -90,8 +90,8 @@ class TestNewsAPIPhase2:
     @pytest.mark.asyncio
     async def test_get_news_tags(self):
         """태그 목록 조회 확인"""
-        from apps.api.main import app
-        from apps.api.core.database import get_db
+        from apps.server.main import app
+        from shared.db.session import get_db
 
         mock_db = AsyncMock()
         mock_result = MagicMock()

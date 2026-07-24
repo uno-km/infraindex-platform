@@ -3,7 +3,7 @@ tests/unit/services/news/test_tag_mapper.py
 Phase 2 - classify_article() 키워드 분류(태그 매핑) 유닛 테스트
 """
 import pytest
-from apps.services.news.config import classify_article, CATEGORY_KEYWORDS
+from apps.batch.services.news.config import classify_article, CATEGORY_KEYWORDS
 
 
 class TestClassifyArticle:

@@ -3,7 +3,7 @@ tests/unit/services/news/test_heuristic_predictor.py
 Phase 2 - 뉴스 감성/관련도 휴리스틱 예측 유닛 테스트
 """
 import pytest
-from apps.services.news.config import classify_article, CATEGORY_KEYWORDS
+from apps.batch.services.news.config import classify_article, CATEGORY_KEYWORDS
 
 
 class TestHeuristicPredictor:

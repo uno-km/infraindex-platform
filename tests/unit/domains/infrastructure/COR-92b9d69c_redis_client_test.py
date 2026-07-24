@@ -1,5 +1,5 @@
 import pytest
-from apps.api.core import redis_client
+from apps.server.core import redis_client
 
 """
 ===============================================================================

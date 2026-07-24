@@ -12,31 +12,31 @@ class TestAlertsAPI:
 
     def test_alerts_router_importable(self):
         """alerts router가 임포트 가능해야 한다"""
-        from apps.api.api.v1.endpoints.alerts import router
+        from apps.server.api.v1.endpoints.alerts import router
         assert router is not None
 
     def test_rules_route_exists(self):
         """/rules 라우트가 등록되어야 한다"""
-        from apps.api.api.v1.endpoints.alerts import router
+        from apps.server.api.v1.endpoints.alerts import router
         routes = [r.path for r in router.routes]
         assert any("rules" in r for r in routes), f"rules 라우트 없음: {routes}"
 
     def test_history_route_exists(self):
         """/history 라우트가 등록되어야 한다"""
-        from apps.api.api.v1.endpoints.alerts import router
+        from apps.server.api.v1.endpoints.alerts import router
         routes = [r.path for r in router.routes]
         assert any("history" in r for r in routes), f"history 라우트 없음: {routes}"
 
     def test_history_read_route_exists(self):
         """/history/{id}/read POST 라우트가 등록되어야 한다"""
-        from apps.api.api.v1.endpoints.alerts import router
+        from apps.server.api.v1.endpoints.alerts import router
         routes = [r.path for r in router.routes]
         assert any("read" in r for r in routes), f"history/read 라우트 없음: {routes}"
 
     @pytest.mark.asyncio
     async def test_get_alert_rules_returns_list(self):
         """GET /rules는 리스트를 반환해야 한다"""
-        from apps.api.api.v1.endpoints.alerts import get_alert_rules
+        from apps.server.api.v1.endpoints.alerts import get_alert_rules
 
         mock_rule = MagicMock()
         mock_rule.id = uuid.uuid4()
@@ -56,7 +56,7 @@ class TestAlertsAPI:
     @pytest.mark.asyncio
     async def test_create_alert_rule(self):
         """POST /rules로 알림 규칙을 생성할 수 있어야 한다"""
-        from apps.api.api.v1.endpoints.alerts import create_alert_rule, AlertRuleCreate
+        from apps.server.api.v1.endpoints.alerts import create_alert_rule, AlertRuleCreate
 
         rule_data = AlertRuleCreate(
             target="RTX 4090",
@@ -79,7 +79,7 @@ class TestAlertsAPI:
 
         with MagicMock() as mock_alert_rule:
             from unittest.mock import patch
-            with patch("apps.api.api.v1.endpoints.alerts.AlertRule") as MockRule:
+            with patch("apps.server.api.v1.endpoints.alerts.AlertRule") as MockRule:
                 MockRule.return_value = mock_new_rule
                 result = await create_alert_rule(rule_in=rule_data, db=mock_db)
 
@@ -88,7 +88,7 @@ class TestAlertsAPI:
     @pytest.mark.asyncio
     async def test_get_alert_history_returns_list(self):
         """GET /history는 리스트를 반환해야 한다"""
-        from apps.api.api.v1.endpoints.alerts import get_alert_history
+        from apps.server.api.v1.endpoints.alerts import get_alert_history
 
         mock_db = AsyncMock()
         mock_result = MagicMock()
@@ -101,7 +101,7 @@ class TestAlertsAPI:
     @pytest.mark.asyncio
     async def test_mark_alert_read_not_found(self):
         """존재하지 않는 alert history에 read 요청 시 404가 발생해야 한다"""
-        from apps.api.api.v1.endpoints.alerts import mark_alert_read
+        from apps.server.api.v1.endpoints.alerts import mark_alert_read
         from fastapi import HTTPException
 
         mock_db = AsyncMock()
@@ -117,7 +117,7 @@ class TestAlertsAPI:
     @pytest.mark.asyncio
     async def test_mark_alert_read_success(self):
         """존재하는 alert history에 read 요청 시 is_read=True로 업데이트되어야 한다"""
-        from apps.api.api.v1.endpoints.alerts import mark_alert_read
+        from apps.server.api.v1.endpoints.alerts import mark_alert_read
 
         mock_history = MagicMock()
         mock_history.id = uuid.uuid4()

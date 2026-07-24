@@ -1,5 +1,5 @@
 import pytest
-from apps.api.core import middleware
+from apps.server.core import middleware
 
 """
 ===============================================================================

@@ -14,8 +14,8 @@ class TestBackfillPipeline:
 
     def test_duplicate_detector_plus_historical_crawler_integration(self):
         """DuplicateDetector + HistoricalCrawler 연동 통합 테스트"""
-        from apps.services.news.duplicate_detector import DuplicateDetector
-        from apps.services.news.crawler_historical import HistoricalCrawler
+        from apps.batch.services.news.duplicate_detector import DuplicateDetector
+        from apps.batch.services.news.crawler_historical import HistoricalCrawler
 
         detector = DuplicateDetector(similarity_threshold=0.85)
         crawler = HistoricalCrawler()
@@ -42,14 +42,14 @@ class TestBackfillPipeline:
 
     def test_date_range_covers_backfill_period(self):
         """2022~2024 전체를 월별로 커버하는지 확인"""
-        from apps.services.news.crawler_historical import date_range_months
+        from apps.batch.services.news.crawler_historical import date_range_months
         ranges = list(date_range_months(date(2022, 1, 1), date(2024, 12, 31)))
         # 36개월
         assert len(ranges) == 36
 
     def test_backfill_job_model_properties(self):
         """BackfillJob 모델의 progress_pct와 duration_seconds 속성"""
-        from apps.api.models.backfill import BackfillJob
+        from shared.models.backfill import BackfillJob
         from datetime import datetime, timezone, timedelta
 
         job = BackfillJob()
@@ -65,7 +65,7 @@ class TestBackfillPipeline:
 
     def test_backfill_job_no_total_urls(self):
         """total_urls=0이면 progress_pct=None이어야 한다"""
-        from apps.api.models.backfill import BackfillJob
+        from shared.models.backfill import BackfillJob
         job = BackfillJob()
         job.total_urls = 0
         job.processed = 0
@@ -75,8 +75,8 @@ class TestBackfillPipeline:
     async def test_backfill_api_e2e_with_mock(self):
         """POST /api/v1/backfill/news → 202 + job_id 반환 통합 테스트"""
         from fastapi.testclient import TestClient
-        from apps.api.main import app
-        from apps.api.core.database import get_db
+        from apps.server.main import app
+        from shared.db.session import get_db
 
         mock_db = AsyncMock()
 
@@ -110,7 +110,7 @@ class TestBackfillPipeline:
             with TestClient(app, raise_server_exceptions=False) as client:
                 FastAPICache.init(InMemoryBackend(), prefix="integration-backfill")
 
-                with patch("apps.api.api.v1.endpoints.backfill._run_backfill") as mock_run:
+                with patch("apps.server.api.v1.endpoints.backfill._run_backfill") as mock_run:
                     response = client.post(
                         "/api/v1/backfill/news",
                         json={

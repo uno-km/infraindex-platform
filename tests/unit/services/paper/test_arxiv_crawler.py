@@ -2,7 +2,7 @@ import pytest
 import datetime
 from unittest.mock import patch, MagicMock
 
-from apps.services.paper.crawler_arxiv import ArXivCrawler
+from apps.batch.services.paper.crawler_arxiv import ArXivCrawler
 
 @pytest.mark.asyncio
 async def test_fetch_recent_arxiv_papers():

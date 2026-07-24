@@ -30,7 +30,7 @@ from httpx import ASGITransport, AsyncClient
 @pytest.fixture(scope="module")
 def api_client():
     """FastAPI TestClient — 동기 테스트용"""
-    from apps.api.main import app
+    from apps.server.main import app
     with TestClient(app) as client:
         yield client
 
@@ -38,8 +38,8 @@ def api_client():
 @pytest_asyncio.fixture
 async def async_api_client():
     """httpx AsyncClient — 비동기 테스트용"""
-    from apps.api.main import app
-    from apps.api.core.database import get_db
+    from apps.server.main import app
+    from shared.db.session import get_db
     from unittest.mock import AsyncMock
 
     async def override_get_db():
@@ -52,7 +52,7 @@ async def async_api_client():
 
     app.dependency_overrides[get_db] = override_get_db
     
-    from apps.api.core.config import settings
+    from shared.config.settings import settings
     original_use_real_db = settings.USE_REAL_DB
     settings.USE_REAL_DB = False
     
@@ -95,7 +95,7 @@ class TestQuarantineService:
     """P3: QuarantineService 품질 필터 유닛 테스트"""
 
     def setup_method(self):
-        from apps.worker.core.quarantine import QuarantineService
+        from apps.batch.worker.core.quarantine import QuarantineService
         self.svc = QuarantineService
 
     def test_valid_data_passes(self):
@@ -159,7 +159,7 @@ class TestAWSCrawler:
     """P3: AWS Crawler 유닛 테스트"""
 
     def setup_method(self):
-        from apps.services.gpu.crawler_aws import AWSCrawler
+        from apps.batch.services.gpu.crawler_aws import AWSCrawler
         self.crawler = AWSCrawler()
 
     def test_fallback_mode_returns_data(self):
@@ -218,14 +218,14 @@ class TestAWSCrawler:
 
 class TestKoreanCrawlers:
     def test_korean_universal_provider_slugs(self):
-        from apps.services.gpu.crawler_korean import KoreanUniversalCrawler
+        from apps.batch.services.gpu.crawler_korean import KoreanUniversalCrawler
         for slug in ["gpuaas", "cloudv", "runyourai", "gabia", "ktcloud"]:
             c = KoreanUniversalCrawler(slug)
             assert c.provider_slug == slug
 
     @pytest.mark.asyncio
     async def test_korean_crawler_returns_normalized_data(self):
-        from apps.services.gpu.crawler_korean import KoreanUniversalCrawler
+        from apps.batch.services.gpu.crawler_korean import KoreanUniversalCrawler
         crawler = KoreanUniversalCrawler("cloudv")
         result = await crawler.execute_pipeline()
         assert len(result) > 0
@@ -235,7 +235,7 @@ class TestKoreanCrawlers:
 
     @pytest.mark.asyncio
     async def test_vessl_crawler(self):
-        from apps.services.gpu.crawler_korean import VesslCrawler
+        from apps.batch.services.gpu.crawler_korean import VesslCrawler
         crawler = VesslCrawler()
         result = await crawler.execute_pipeline()
         assert len(result) > 0
@@ -243,7 +243,7 @@ class TestKoreanCrawlers:
 
     @pytest.mark.asyncio
     async def test_xesktop_crawler(self):
-        from apps.services.gpu.crawler_korean import XesktopCrawler
+        from apps.batch.services.gpu.crawler_korean import XesktopCrawler
         crawler = XesktopCrawler()
         result = await crawler.execute_pipeline()
         assert len(result) > 0
@@ -330,13 +330,13 @@ class TestAPIEndpoints:
     @pytest.mark.asyncio
     async def test_cors_wildcard_not_present(self, async_api_client):
         """P0-002: CORS 와일드카드 제거 확인"""
-        from apps.api.core.config import settings
+        from shared.config.settings import settings
         assert "*" not in settings.BACKEND_CORS_ORIGINS
 
     def test_postgres_password_has_no_default(self):
         """P0-003: POSTGRES_PASSWORD 기본값 없음 확인"""
         import inspect
-        from apps.api.core.config import Settings
+        from shared.config.settings import Settings
         fields = Settings.model_fields
         pw_field = fields.get("POSTGRES_PASSWORD")
         # pydantic v2: no default means PydanticUndefined
@@ -351,8 +351,8 @@ class TestAPIEndpoints:
 class TestPostgresStorage:
     @pytest.mark.asyncio
     async def test_save_empty_data_no_error(self):
-        from apps.worker.core.storage import PostgresStorage
-        import apps.worker.core.storage as storage_mod
+        from apps.batch.worker.core.storage import PostgresStorage
+        import apps.batch.worker.core.storage as storage_mod
         storage = PostgresStorage()
         # 빈 데이터 — DB 연결 없이 조기 반환해야 함
         with patch.object(storage_mod, "_ensure_pg_engine", return_value=(AsyncMock(), AsyncMock())):
@@ -364,8 +364,8 @@ class TestPostgresStorage:
                 pass  # DATABASE_URL 없음 — 정상
 
     def test_ensure_pg_engine_raises_without_env(self):
-        from apps.worker.core.storage import _ensure_pg_engine
-        import apps.worker.core.storage as storage_mod
+        from apps.batch.worker.core.storage import _ensure_pg_engine
+        import apps.batch.worker.core.storage as storage_mod
         import os
         original = os.environ.get("DATABASE_URL")
         if "DATABASE_URL" in os.environ:
@@ -390,7 +390,7 @@ class TestPostgresStorage:
 class TestIdempotency:
     @pytest.mark.asyncio
     async def test_acquire_lock_with_mock_db(self):
-        from apps.worker.core.idempotency import acquire_lock
+        from apps.batch.worker.core.idempotency import acquire_lock
 
         # Mock DB session
         mock_db = AsyncMock()
@@ -406,8 +406,8 @@ class TestIdempotency:
 
     @pytest.mark.asyncio
     async def test_lock_already_held(self):
-        from apps.worker.core.idempotency import acquire_lock
-        from apps.api.models.scheduler import IdempotencyKey
+        from apps.batch.worker.core.idempotency import acquire_lock
+        from shared.models.scheduler import IdempotencyKey
 
         mock_db = AsyncMock()
         mock_result = MagicMock()

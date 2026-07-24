@@ -1,7 +1,7 @@
 import asyncio
 import httpx
-from apps.api.core.database import AsyncSessionLocal
-from apps.api.models.outbox import OutboxEvent
+from shared.db.session import AsyncSessionLocal
+from shared.models.outbox import OutboxEvent
 
 async def fire_event():
     # Insert a dummy event into the DB to trigger the SSE stream

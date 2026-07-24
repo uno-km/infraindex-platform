@@ -1,5 +1,5 @@
-from apps.api.core.search.normalizer import QueryNormalizer
-from apps.api.core.search.alias_resolver import AliasResolver
+from apps.server.core.search.normalizer import QueryNormalizer
+from apps.server.core.search.alias_resolver import AliasResolver
 
 def test_search_pipeline():
     cases = [

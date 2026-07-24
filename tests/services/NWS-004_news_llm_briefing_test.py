@@ -5,9 +5,9 @@ from unittest.mock import AsyncMock, patch
 from sqlalchemy import select
 from fastapi.testclient import TestClient
 
-from apps.api.main import app
-from apps.api.core.database import get_db
-from apps.services.news.models import NewsDailyBriefing
+from apps.server.main import app
+from shared.db.session import get_db
+from shared.models.news import NewsDailyBriefing
 
 client = TestClient(app)
 
@@ -24,7 +24,7 @@ async def test_llm_briefing_generation():
     """
     Test generating a briefing through ai_service
     """
-    from apps.api.core.ai_service import generate_daily_news_briefing
+    from apps.server.core.ai_service import generate_daily_news_briefing
     
     articles = [
         {"title": "Test 1", "source": "Source 1", "summary": "Summary 1", "category": "GPU"},
@@ -32,7 +32,7 @@ async def test_llm_briefing_generation():
     ]
     
     # We don't want to actually call Ollama in unit tests, so we mock the OpenAI client inside ai_service
-    with patch('apps.api.core.ai_service.client') as mock_client:
+    with patch('apps.server.core.ai_service.client') as mock_client:
         mock_response = AsyncMock()
         mock_response.choices = [
             AsyncMock(message=AsyncMock(content="# AI Briefing\nThis is a test briefing."))
@@ -69,7 +69,7 @@ async def test_api_generate_briefing():
 
     app.dependency_overrides[get_db] = override_get_db
     
-    with patch('apps.api.core.ai_service.client') as mock_client:
+    with patch('apps.server.core.ai_service.client') as mock_client:
         mock_response = AsyncMock()
         mock_response.choices = [
             AsyncMock(message=AsyncMock(content="# AI Briefing Mock"))

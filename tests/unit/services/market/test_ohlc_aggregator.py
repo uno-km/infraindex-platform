@@ -20,7 +20,7 @@ class TestOHLCCalculation:
 
     def test_basic_ohlc_calculation(self):
         """기본 OHLC 값 계산 정확도 검증"""
-        from apps.services.market.ohlc_aggregator import calculate_ohlc
+        from apps.batch.services.market.ohlc_aggregator import calculate_ohlc
         
         prices = [
             (datetime(2026, 7, 1, 9, 0), 2_200_000),   # 첫 관측 → open
@@ -39,7 +39,7 @@ class TestOHLCCalculation:
 
     def test_single_price_point_ohlc(self):
         """단일 가격 포인트에서 OHLC 모두 동일해야 함"""
-        from apps.services.market.ohlc_aggregator import calculate_ohlc
+        from apps.batch.services.market.ohlc_aggregator import calculate_ohlc
         
         prices = [(datetime(2026, 7, 1, 9, 0), 3_000_000)]
         result = calculate_ohlc(prices)
@@ -51,7 +51,7 @@ class TestOHLCCalculation:
 
     def test_average_price_calculation(self):
         """평균가 계산 정확도 검증"""
-        from apps.services.market.ohlc_aggregator import calculate_ohlc
+        from apps.batch.services.market.ohlc_aggregator import calculate_ohlc
         
         prices = [
             (datetime(2026, 7, 1, 9, 0), 1000),
@@ -64,14 +64,14 @@ class TestOHLCCalculation:
 
     def test_empty_prices_raises(self):
         """빈 가격 목록은 ValueError를 발생시켜야 함"""
-        from apps.services.market.ohlc_aggregator import calculate_ohlc
+        from apps.batch.services.market.ohlc_aggregator import calculate_ohlc
         
         with pytest.raises(ValueError, match="prices must not be empty"):
             calculate_ohlc([])
 
     def test_prices_sorted_by_time(self):
         """시간 정렬 없이 들어온 데이터도 올바르게 처리해야 함"""
-        from apps.services.market.ohlc_aggregator import calculate_ohlc
+        from apps.batch.services.market.ohlc_aggregator import calculate_ohlc
         
         # 시간 역순으로 입력
         prices = [
@@ -99,7 +99,7 @@ class TestOHLCAggregator:
         """
         하루치 관측 데이터가 있을 때 OHLC 집계 후 DB upsert 호출 검증
         """
-        from apps.services.market.ohlc_aggregator import OHLCAggregator
+        from apps.batch.services.market.ohlc_aggregator import OHLCAggregator
         
         aggregator = OHLCAggregator()
         mock_db = AsyncMock()
@@ -136,7 +136,7 @@ class TestOHLCAggregator:
         """
         하루치 관측 데이터가 없을 때 upsert가 호출되지 않아야 함
         """
-        from apps.services.market.ohlc_aggregator import OHLCAggregator
+        from apps.batch.services.market.ohlc_aggregator import OHLCAggregator
         
         aggregator = OHLCAggregator()
         mock_db = AsyncMock()
@@ -153,7 +153,7 @@ class TestOHLCAggregator:
 
     def test_vendor_count_included(self):
         """여러 벤더의 가격이 포함될 때 vendor_count가 올바른지 검증"""
-        from apps.services.market.ohlc_aggregator import calculate_ohlc
+        from apps.batch.services.market.ohlc_aggregator import calculate_ohlc
         
         # 3개 판매처의 가격 (listing_vendor 정보 포함)
         prices = [
@@ -178,7 +178,7 @@ class TestOHLCAPISchema:
 
     def test_ohlc_to_apexcharts_format(self):
         """OHLC → ApexCharts 변환 포맷 검증"""
-        from apps.services.market.ohlc_aggregator import ohlc_to_apexcharts
+        from apps.batch.services.market.ohlc_aggregator import ohlc_to_apexcharts
 
         raw = {
             "trade_date": date(2026, 7, 1),
@@ -203,7 +203,7 @@ class TestOHLCAPISchema:
 
     def test_summary_schema(self):
         """차트 요약 응답 스키마 검증"""
-        from apps.services.market.ohlc_aggregator import compute_summary
+        from apps.batch.services.market.ohlc_aggregator import compute_summary
 
         ohlc_rows = [
             {"trade_date": date(2026, 7, 1), "open_price": 2_200_000, "high_price": 2_500_000, "low_price": 2_100_000, "close_price": 2_350_000},

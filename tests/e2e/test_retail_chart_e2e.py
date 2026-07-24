@@ -13,8 +13,8 @@ class TestRetailChartE2E:
     @pytest.fixture
     def app_client(self):
         from fastapi.testclient import TestClient
-        from apps.api.main import app
-        from apps.api.core.database import get_db
+        from apps.server.main import app
+        from shared.db.session import get_db
 
         async def override_get_db():
             yield None

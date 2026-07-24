@@ -1,13 +1,13 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from apps.services.market.crawler_retail import RetailCrawler
+from apps.batch.services.market.crawler_retail import RetailCrawler
 
 @pytest.fixture
 def mock_retail_crawler():
     return RetailCrawler()
 
 @pytest.mark.asyncio
-@patch("apps.services.market.crawler_retail.urllib.request.urlopen")
+@patch("apps.batch.services.market.crawler_retail.urllib.request.urlopen")
 async def test_retail_search_products_success(mock_urlopen, mock_retail_crawler):
     # Mock response
     mock_response = MagicMock()
@@ -22,7 +22,7 @@ async def test_retail_search_products_success(mock_urlopen, mock_retail_crawler)
     assert results[0]["lprice"] == "3000000"
 
 @pytest.mark.asyncio
-@patch("apps.services.market.crawler_retail.urllib.request.urlopen")
+@patch("apps.batch.services.market.crawler_retail.urllib.request.urlopen")
 async def test_retail_search_products_error(mock_urlopen, mock_retail_crawler):
     # Setup error
     mock_urlopen.side_effect = Exception("API Error")
@@ -32,7 +32,7 @@ async def test_retail_search_products_error(mock_urlopen, mock_retail_crawler):
     assert len(results) == 0
 
 @pytest.mark.asyncio
-@patch("apps.services.market.crawler_retail.urllib.request.urlopen")
+@patch("apps.batch.services.market.crawler_retail.urllib.request.urlopen")
 async def test_retail_search_products_filters_accessories(mock_urlopen, mock_retail_crawler):
     mock_response = MagicMock()
     mock_response.getcode.return_value = 200

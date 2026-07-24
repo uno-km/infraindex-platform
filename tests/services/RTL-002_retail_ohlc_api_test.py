@@ -56,8 +56,8 @@ class TestRetailOHLCEndpoint:
     @pytest.mark.asyncio
     async def test_ohlc_returns_apexcharts_format(self):
         """OHLC 응답이 ApexCharts { x, o, h, l, c } 형식이어야 함"""
-        from apps.api.main import app
-        from apps.api.core.database import get_db
+        from apps.server.main import app
+        from shared.db.session import get_db
         from httpx import AsyncClient, ASGITransport
 
         product_id = str(uuid.uuid4())
@@ -103,8 +103,8 @@ class TestRetailOHLCEndpoint:
     @pytest.mark.asyncio
     async def test_ohlc_empty_returns_empty_list(self):
         """데이터 없을 때 200 OK + [] 반환"""
-        from apps.api.main import app
-        from apps.api.core.database import get_db
+        from apps.server.main import app
+        from shared.db.session import get_db
         from httpx import AsyncClient, ASGITransport
 
         mock_db = AsyncMock()
@@ -130,7 +130,7 @@ class TestRetailOHLCEndpoint:
     @pytest.mark.asyncio
     async def test_ohlc_missing_product_id_returns_422(self):
         """product_id 미입력 시 422 Unprocessable Entity"""
-        from apps.api.main import app
+        from apps.server.main import app
         from httpx import AsyncClient, ASGITransport
 
         with patch("slowapi.extension.Limiter._check_request_limit", side_effect=mock_rate_limiter):
@@ -149,8 +149,8 @@ class TestRetailSummaryEndpoint:
     @pytest.mark.asyncio
     async def test_summary_returns_correct_fields(self):
         """summary 응답에 current_price, change_1d, change_pct_1d, ATH, ATL 포함"""
-        from apps.api.main import app
-        from apps.api.core.database import get_db
+        from apps.server.main import app
+        from shared.db.session import get_db
         from httpx import AsyncClient, ASGITransport
 
         product_id = str(uuid.uuid4())
@@ -189,8 +189,8 @@ class TestRetailSummaryEndpoint:
     @pytest.mark.asyncio
     async def test_summary_no_data_returns_nulls(self):
         """데이터 없을 때 None 필드 반환"""
-        from apps.api.main import app
-        from apps.api.core.database import get_db
+        from apps.server.main import app
+        from shared.db.session import get_db
         from httpx import AsyncClient, ASGITransport
 
         mock_db = AsyncMock()
@@ -224,8 +224,8 @@ class TestRetailProductsEndpoint:
     @pytest.mark.asyncio
     async def test_products_returns_list(self):
         """products 엔드포인트가 상품 목록을 반환"""
-        from apps.api.main import app
-        from apps.api.core.database import get_db
+        from apps.server.main import app
+        from shared.db.session import get_db
         from httpx import AsyncClient, ASGITransport
 
         mock_db = AsyncMock()
@@ -262,8 +262,8 @@ class TestRetailProductsEndpoint:
     @pytest.mark.asyncio
     async def test_products_category_filter(self):
         """category 필터가 올바르게 전달되는지 확인 (DB query 파라미터)"""
-        from apps.api.main import app
-        from apps.api.core.database import get_db
+        from apps.server.main import app
+        from shared.db.session import get_db
         from httpx import AsyncClient, ASGITransport
 
         mock_db = AsyncMock()
@@ -298,7 +298,7 @@ class TestOHLCEdgeCases:
 
     def test_ohlc_same_price_all_day(self):
         """하루 종일 가격이 같을 때 OHLC 동일"""
-        from apps.services.market.ohlc_aggregator import calculate_ohlc
+        from apps.batch.services.market.ohlc_aggregator import calculate_ohlc
         prices = [
             (datetime(2026, 7, 1, 9, 0), 2_000_000),
             (datetime(2026, 7, 1, 12, 0), 2_000_000),
@@ -309,7 +309,7 @@ class TestOHLCEdgeCases:
 
     def test_ohlc_negative_price_rejected(self):
         """음수 가격은 ValueError 발생 (비즈니스 룰)"""
-        from apps.services.market.ohlc_aggregator import calculate_ohlc
+        from apps.batch.services.market.ohlc_aggregator import calculate_ohlc
         # 현재 구현에서는 negative price 도 통과하므로, 이 테스트는 향후 validation 추가 시 활성화
         prices = [(datetime(2026, 7, 1, 9, 0), -100)]
         result = calculate_ohlc(prices)
@@ -318,7 +318,7 @@ class TestOHLCEdgeCases:
 
     def test_compute_summary_single_day(self):
         """하루치 데이터만 있을 때 change = 0"""
-        from apps.services.market.ohlc_aggregator import compute_summary
+        from apps.batch.services.market.ohlc_aggregator import compute_summary
         rows = [{"trade_date": date(2026, 7, 1), "open_price": 2_000_000,
                  "high_price": 2_100_000, "low_price": 1_900_000, "close_price": 2_050_000}]
         summary = compute_summary(rows)
@@ -328,7 +328,7 @@ class TestOHLCEdgeCases:
 
     def test_ohlc_to_apexcharts_date_string_format(self):
         """x 필드가 'YYYY-MM-DD' 형식이어야 함"""
-        from apps.services.market.ohlc_aggregator import ohlc_to_apexcharts
+        from apps.batch.services.market.ohlc_aggregator import ohlc_to_apexcharts
         row = {"trade_date": date(2026, 7, 1), "open_price": 1, "high_price": 2, "low_price": 0, "close_price": 1}
         result = ohlc_to_apexcharts(row)
         assert result["x"] == "2026-07-01"

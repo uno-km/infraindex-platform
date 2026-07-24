@@ -11,7 +11,7 @@ class TestNewsTier1Crawler:
 
     def test_crawler_has_default_feeds(self):
         """FEEDS 상수에 최소 1개 이상의 RSS 피드가 정의되어야 한다"""
-        from apps.services.news.crawler_tier1_rss import NewsTier1Crawler
+        from apps.batch.services.news.crawler_tier1_rss import NewsTier1Crawler
         crawler = NewsTier1Crawler()
         assert hasattr(crawler, "FEEDS"), "FEEDS 속성이 없음"
         assert len(crawler.FEEDS) >= 1
@@ -21,14 +21,14 @@ class TestNewsTier1Crawler:
 
     def test_provider_slug_is_tier1(self):
         """provider_slug는 tier1_rss여야 한다"""
-        from apps.services.news.crawler_tier1_rss import NewsTier1Crawler
+        from apps.batch.services.news.crawler_tier1_rss import NewsTier1Crawler
         crawler = NewsTier1Crawler()
         assert crawler.provider_slug == "tier1_rss"
 
     @pytest.mark.asyncio
     async def test_fetch_raw_data_returns_list_on_feed_parse(self):
         """feedparser.parse 성공 시 raw_data는 리스트를 반환해야 한다"""
-        from apps.services.news.crawler_tier1_rss import NewsTier1Crawler
+        from apps.batch.services.news.crawler_tier1_rss import NewsTier1Crawler
 
         mock_entry = MagicMock()
         mock_entry.title = "NVIDIA Blackwell GPU Sets New Performance Record"
@@ -40,8 +40,8 @@ class TestNewsTier1Crawler:
         mock_feed.entries = [mock_entry]
 
         # AsyncSessionLocal은 내부 로컬 임포트로 사용됨 - database 모듈을 mock
-        with patch("apps.api.core.database.AsyncSessionLocal", None), \
-             patch("apps.services.news.crawler_tier1_rss.feedparser.parse", return_value=mock_feed):
+        with patch("shared.db.session.AsyncSessionLocal", None), \
+             patch("apps.batch.services.news.crawler_tier1_rss.feedparser.parse", return_value=mock_feed):
             crawler = NewsTier1Crawler()
             result = await crawler.fetch_raw_data()
 
@@ -50,12 +50,12 @@ class TestNewsTier1Crawler:
     @pytest.mark.asyncio
     async def test_fetch_raw_data_uses_feeds_fallback(self):
         """DB를 사용할 수 없을 때 기본 FEEDS를 사용해야 한다"""
-        from apps.services.news.crawler_tier1_rss import NewsTier1Crawler
+        from apps.batch.services.news.crawler_tier1_rss import NewsTier1Crawler
 
         mock_feed = MagicMock()
         mock_feed.entries = []
 
-        with patch("apps.services.news.crawler_tier1_rss.feedparser.parse", return_value=mock_feed):
+        with patch("apps.batch.services.news.crawler_tier1_rss.feedparser.parse", return_value=mock_feed):
             crawler = NewsTier1Crawler()
             # DB 없어도 기본 FEEDS로 동작 (결과는 빈 리스트일 수 있음)
             try:
@@ -67,7 +67,7 @@ class TestNewsTier1Crawler:
 
     def test_parse_instances_with_classify(self):
         """classify_article로 GPU 관련 기사 분류 확인"""
-        from apps.services.news.config import classify_article
+        from apps.batch.services.news.config import classify_article
 
         gpu_text = "NVIDIA H100 GPU rental price drops in cloud market"
         result = classify_article(gpu_text)

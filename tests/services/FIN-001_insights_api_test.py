@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-from apps.api.main import app
+from apps.server.main import app
 
 client = TestClient(app)
 
@@ -36,7 +36,7 @@ async def test_insights_correlation_structure(monkeypatch):
     mock_db.execute.side_effect = [mock_financial_result, mock_retail_result]
     
     # We should override it properly
-    from apps.api.core.database import get_db
+    from shared.db.session import get_db
     app.dependency_overrides[get_db] = lambda: mock_db
     
     response = client.get("/api/v1/insights/correlation?timeframe=1w")

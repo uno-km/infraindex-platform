@@ -18,17 +18,17 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-from apps.api.models import Base
-from apps.api.core.config import settings
+from shared.models import Base
+from shared.config.settings import settings
 
 # Import all domain models so Alembic can detect them
-from apps.services.gpu.models_history import GpuPriceHistory
-from apps.services.gpu.models_hardware import GpuManufacturer, GpuModel, GpuVariant, CpuManufacturer, CpuModel, CpuVariant
-from apps.services.gpu.models_provider import Provider, ProviderRegion
-from apps.services.gpu.models_offering import InstanceOffering, OfferingGpuConfiguration, OfferingCpuConfiguration, PricingPlan
-from apps.services.retail.models import RtlPriceHistory
-from apps.services.financial.models import FinMktHistory
-from apps.services.news.models import NewsArticle
+from apps.batch.services.gpu.models_history import GpuPriceHistory
+from shared.models.gpu_hardware import GpuManufacturer, GpuModel, GpuVariant, CpuManufacturer, CpuModel, CpuVariant
+from shared.models.gpu_provider import Provider, ProviderRegion
+from shared.models.gpu_offering import InstanceOffering, OfferingGpuConfiguration, OfferingCpuConfiguration, PricingPlan
+from shared.models.retail import RtlPriceHistory
+from apps.batch.services.financial.models import FinMktHistory
+from shared.models.news import NewsArticle
 
 target_metadata = Base.metadata
 

@@ -12,7 +12,7 @@ class TestRetailOHLCPipeline:
 
     def test_calculate_ohlc_integrates_with_apexcharts_format(self):
         """calculate_ohlc -> ohlc_to_apexcharts 체인이 올바른 형식을 반환해야 한다"""
-        from apps.services.market.ohlc_aggregator import calculate_ohlc, ohlc_to_apexcharts
+        from apps.batch.services.market.ohlc_aggregator import calculate_ohlc, ohlc_to_apexcharts
 
         prices = [
             (datetime(2026, 7, 1, 9, 0, tzinfo=timezone.utc), 2_200_000),
@@ -41,7 +41,7 @@ class TestRetailOHLCPipeline:
 
     def test_compute_summary_integrates_with_ohlc(self):
         """compute_summary가 OHLC 데이터를 올바르게 요약해야 한다"""
-        from apps.services.market.ohlc_aggregator import compute_summary
+        from apps.batch.services.market.ohlc_aggregator import compute_summary
 
         ohlc_rows = [
             {"trade_date": date(2026, 7, 1), "close_price": 2_350_000,
@@ -64,7 +64,7 @@ class TestRetailOHLCPipeline:
     @pytest.mark.asyncio
     async def test_retail_crawler_triggers_alert_below_threshold(self):
         """가격이 임계값 이하로 내려가면 AlertEngine이 트리거되어야 한다"""
-        from apps.services.alerts.alert_engine import AlertEngine
+        from apps.batch.services.alerts.alert_engine import AlertEngine
 
         mock_db = AsyncMock()
         mock_rule = MagicMock()
@@ -95,7 +95,7 @@ class TestRetailOHLCPipeline:
     @pytest.mark.asyncio
     async def test_retail_crawler_no_alert_above_threshold(self):
         """가격이 임계값 초과인 경우 알림이 트리거되지 않아야 한다"""
-        from apps.services.alerts.alert_engine import AlertEngine
+        from apps.batch.services.alerts.alert_engine import AlertEngine
 
         mock_db = AsyncMock()
         mock_rule = MagicMock()

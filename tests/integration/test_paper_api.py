@@ -12,8 +12,8 @@ from fastapi.testclient import TestClient
 
 def test_paper_api_integration():
     """Papers API 통합 테스트 - mock DB + mock PaperService"""
-    from apps.api.main import app
-    from apps.api.core.database import get_db
+    from apps.server.main import app
+    from shared.db.session import get_db
 
     # mock DB 세션 생성
     mock_db = AsyncMock()
@@ -46,7 +46,7 @@ def test_paper_api_integration():
             assert list_data["total"] == 0
 
             # 2. Trigger crawl (PaperService mock)
-            with patch("apps.api.api.v1.endpoints.papers.PaperService") as mock_cls:
+            with patch("apps.server.api.v1.endpoints.papers.PaperService") as mock_cls:
                 mock_cls.return_value = mock_service
                 response = client.post("/api/v1/papers/crawl/arxiv?max_results=2")
                 assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
@@ -63,8 +63,8 @@ def test_paper_api_integration():
 
 def test_paper_list_with_filters():
     """논문 목록 필터링 파라미터 통합 테스트"""
-    from apps.api.main import app
-    from apps.api.core.database import get_db
+    from apps.server.main import app
+    from shared.db.session import get_db
 
     mock_db = AsyncMock()
     mock_count = MagicMock()

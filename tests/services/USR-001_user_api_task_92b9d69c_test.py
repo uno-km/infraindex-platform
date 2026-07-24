@@ -17,10 +17,10 @@ def mock_db():
 
 @pytest_asyncio.fixture
 async def async_api_client():
-    from apps.api.main import app
-    from apps.api.core.database import get_db
-    from apps.api.api.deps import get_current_user
-    from apps.api.models.user import UserBas
+    from apps.server.main import app
+    from shared.db.session import get_db
+    from apps.server.api.deps import get_current_user
+    from shared.models.user import UserBas
     from httpx import ASGITransport, AsyncClient
     
     # Create mock user

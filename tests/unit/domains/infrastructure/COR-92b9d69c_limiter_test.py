@@ -1,5 +1,5 @@
 import pytest
-from apps.api.core import limiter
+from apps.server.core import limiter
 
 """
 ===============================================================================

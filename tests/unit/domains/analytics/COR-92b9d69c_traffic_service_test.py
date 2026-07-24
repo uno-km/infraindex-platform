@@ -1,5 +1,5 @@
 import pytest
-from apps.api.core import traffic_service
+from apps.server.core import traffic_service
 
 """
 ===============================================================================

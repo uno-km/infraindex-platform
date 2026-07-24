@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from apps.services.market.crawler_coupang import CoupangCrawler
+from apps.batch.services.market.crawler_coupang import CoupangCrawler
 
 @pytest.fixture
 def mock_coupang_crawler():
@@ -15,7 +15,7 @@ def test_generate_hmac(mock_coupang_crawler):
     assert "access-key=test_access" in hmac_header
     assert "signature=" in hmac_header
 
-@patch("apps.services.market.crawler_coupang.urllib.request.urlopen")
+@patch("apps.batch.services.market.crawler_coupang.urllib.request.urlopen")
 def test_search_products_success(mock_urlopen, mock_coupang_crawler):
     mock_response = MagicMock()
     mock_response.read.return_value = b'{"rCode": "0", "data": {"productData": [{"productName": "RTX 4090", "productPrice": 3000000}]}}'
@@ -27,7 +27,7 @@ def test_search_products_success(mock_urlopen, mock_coupang_crawler):
     assert results[0]["productName"] == "RTX 4090"
     assert results[0]["productPrice"] == 3000000
 
-@patch("apps.services.market.crawler_coupang.urllib.request.urlopen")
+@patch("apps.batch.services.market.crawler_coupang.urllib.request.urlopen")
 def test_search_products_error(mock_urlopen, mock_coupang_crawler):
     mock_response = MagicMock()
     mock_response.read.return_value = b'{"rCode": "401", "rMessage": "Unauthorized"}'
@@ -37,7 +37,7 @@ def test_search_products_error(mock_urlopen, mock_coupang_crawler):
     
     assert len(results) == 0
 
-@patch("apps.services.market.crawler_coupang.urllib.request.urlopen")
+@patch("apps.batch.services.market.crawler_coupang.urllib.request.urlopen")
 def test_search_products_filters_accessories(mock_urlopen, mock_coupang_crawler):
     mock_response = MagicMock()
     # "팬", "쿨러" 등의 금지어가 포함된 데이터와 정상 데이터를 함께 반환

@@ -1,8 +1,8 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock
 from sqlalchemy.ext.asyncio import AsyncSession
-from apps.services.alerts.alert_engine import AlertEngine
-from apps.api.models.alerts import AlertRule
+from apps.batch.services.alerts.alert_engine import AlertEngine
+from shared.models.alerts import AlertRule
 from uuid import uuid4
 
 @pytest.fixture

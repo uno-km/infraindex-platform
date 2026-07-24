@@ -1,5 +1,5 @@
 import pytest
-from apps.api.core.security import get_password_hash, verify_password, create_access_token
+from apps.server.core.security import get_password_hash, verify_password, create_access_token
 
 """
 ===============================================================================

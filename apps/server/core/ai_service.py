@@ -1,0 +1,147 @@
+import os
+from openai import AsyncOpenAI
+import logging
+from shared.config.settings import settings
+
+logger = logging.getLogger(__name__)
+
+# Ollama / Local LLM configuration
+OLLAMA_BASE_URL = settings.OLLAMA_BASE_URL
+OLLAMA_MODEL = settings.OLLAMA_MODEL
+API_KEY = settings.OPENAI_API_KEY
+
+# Prefer OpenAI if key exists, else fallback to Ollama
+if API_KEY:
+    client = AsyncOpenAI(api_key=API_KEY)
+    MODEL = "gpt-4o-mini"
+else:
+    # Use Ollama via OpenAI SDK compatibility
+    client = AsyncOpenAI(base_url=OLLAMA_BASE_URL, api_key="ollama")
+    MODEL = OLLAMA_MODEL
+
+async def generate_daily_news_briefing(date_str: str, articles: list) -> str:
+    """
+    Generate a daily briefing from a list of news articles using a local LLM.
+    """
+    logger.info(f"Generating Daily Briefing for {date_str} using {MODEL}...")
+    
+    if not articles:
+        return f"# {date_str} 브리핑\n\n수집된 뉴스가 없습니다."
+        
+    articles_text = "\n\n".join([
+        f"Title: {a.get('title')}\nSource: {a.get('source')}\nSummary: {a.get('summary')}\nCategory: {a.get('category')}"
+        for a in articles
+    ])
+    
+    prompt = f"""
+    당신은 글로벌 IT, 클라우드, 반도체 산업을 분석하는 시니어 애널리스트입니다.
+    아래는 {date_str}에 수집된 주요 뉴스 기사들입니다:
+    
+    {articles_text}
+    
+    이 기사들을 종합하여 3~4개의 단락으로 구성된 전문가 수준의 마크다운 형식 리포트를 작성해주세요.
+    단순한 요약이 아니라 시장의 흐름(공급망, 가격 변동, 트렌드 등)을 꿰뚫는 인사이트를 포함해야 합니다.
+    """
+
+    try:
+        response = await client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": "You are a professional IT/Semiconductor market analyst. Always respond in Korean and use clear Markdown formatting."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=800,
+            temperature=0.3
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        logger.error(f"LLM Generation failed: {str(e)}")
+        return _get_mock_briefing(date_str)
+
+async def generate_market_analysis(news_data: list, power_data: list, memory_data: list) -> str:
+    """
+    Feeds crawled macro data to an LLM to generate a professional daily briefing.
+    """
+    logger.info("Generating AI Market Analysis from LLM...")
+    
+    prompt = f"""
+    You are a senior data center infrastructure analyst.
+    Write a 3-paragraph executive summary based on the following data:
+    News: {news_data}
+    Power: {power_data}
+    Memory: {memory_data}
+    Focus on supply chain constraints and power costs.
+    """
+
+    try:
+        response = await client.chat.completions.create(
+            model=MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=300
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        logger.error(f"LLM Generation failed: {str(e)}")
+        return _get_mock_analysis()
+
+async def summarize_error_logs(logs: list) -> str:
+    """
+    미해결 에러(ErrorLog) 배열을 받아 LLM이 요약하고 휴리스틱 리포트를 작성합니다.
+    """
+    logger.info(f"Summarizing {len(logs)} Error Logs using {MODEL}...")
+    
+    if not logs:
+        return "보고할 에러 로그가 없습니다."
+        
+    logs_text = "\n\n".join([
+        f"- ID: {str(l.id)}\n- Severity: {l.severity}\n- Source: {l.source}\n- Type: {l.error_type}\n- Message: {l.error_message}\n- CreatedAt: {l.created_at}"
+        for l in logs
+    ])
+    
+    prompt = f"""
+    당신은 시스템의 장애를 분석하는 수석 DevOps 엔지니어입니다.
+    아래는 지난 24시간 동안 수집된 시스템 에러 로그입니다:
+    
+    {logs_text}
+    
+    이 로그들을 분석하여 텔레그램으로 발송할 '일일 시스템 상태 보고서'를 작성해주세요.
+    단순 나열이 아닌, 자주 발생하는 에러의 원인 추정(Heuristic)과 우선순위가 높은 조치 사항을 마크다운 포맷으로 깔끔하게 정리해야 합니다.
+    """
+
+    try:
+        response = await client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": "You are a senior DevOps engineer. Always respond in Korean and use clear Markdown formatting for Telegram (use HTML-compatible markdown tags where possible)."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=800,
+            temperature=0.2
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        logger.error(f"LLM Error Summary Generation failed: {str(e)}")
+        return f"🚨 [Fallback] 일일 에러 요약 생성 실패. 총 {len(logs)}건의 미처리 에러가 발생했습니다."
+
+def _get_mock_briefing(date_str: str) -> str:
+    return f"""# {date_str} 글로벌 IT 및 반도체 동향 브리핑 (Auto-generated Mock)
+
+최근 데이터센터 및 반도체 시장은 AI 수요 급증에 따른 공급 병목 현상을 지속적으로 겪고 있습니다. 주요 기업들은 전력 확보와 차세대 메모리 칩 수급에 총력을 다하고 있으며, 특히 HBM(High Bandwidth Memory) 시장의 쏠림 현상이 심화되고 있습니다.
+
+**주요 인사이트:**
+- **공급망 제약:** 최선단 공정의 패키징 캐파 부족으로 인해 주요 AI 가속기의 리드타임이 장기화되고 있습니다.
+- **전력 및 인프라:** 클라우드 사업자(CSP)들의 전력 확보 경쟁이 치열해지며, 특정 지역의 데이터센터 임대료가 급등하는 추세입니다.
+- **전망:** 당분간 하드웨어 인프라에 대한 투자는 공격적으로 진행될 것이며, 관련 반도체 장비 및 부품사들의 실적 호조가 예상됩니다.
+"""
+
+def _get_mock_analysis() -> str:
+    return (
+        "AI Infrastructure Market Analysis (Auto-generated by AI):\n\n"
+        "The global datacenter market is facing significant headwinds in Q3. "
+        "With AWS announcing a massive $10B investment in Mississippi, hyperscalers continue to secure power and land. "
+        "However, Korean authorities are restricting new high-density power permits in Seoul, forcing operators to look elsewhere.\n\n"
+        "On the hardware front, HBM3E supply remains extremely constrained. Spot prices for estimated stacks are hovering around $4,500, "
+        "with lead times extending beyond 40 weeks. DDR5 128GB R-DIMMs are stable at $320, but the bottleneck remains entirely in advanced packaging.\n\n"
+        "Power grids are showing divergence. Texas (ERCOT) remains highly attractive at $0.08/kWh, while Virginia (PJM) and South Korea "
+        "are seeing upward pressure due to grid congestion and regulatory changes. Liquid cooling is rapidly becoming a mandatory requirement for next-gen clusters."
+    )

@@ -1,13 +1,13 @@
 import pytest
 from httpx import AsyncClient, ASGITransport
-from apps.api.main import app
-from apps.api.core.database import get_db
+from apps.server.main import app
+from shared.db.session import get_db
 from datetime import datetime, timezone
 import json
 
 @pytest.mark.asyncio
 async def test_enterprise_crawler_structure(monkeypatch):
-    from apps.services.retail.crawler_enterprise import EnterpriseHardwareCrawler
+    from apps.batch.services.retail.crawler_enterprise import EnterpriseHardwareCrawler
     
     crawler = EnterpriseHardwareCrawler()
     

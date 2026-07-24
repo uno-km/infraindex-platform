@@ -1,0 +1,69 @@
+"use client";
+
+import { useState } from "react";
+import ResourceDashboard from "../components/ResourceDashboard";
+import { RetailDashboard } from "../components/RetailDashboard";
+import InsightDashboard from "../components/InsightDashboard";
+import NewsDashboard from "../components/NewsDashboard";
+import EnterpriseDashboard from "../components/EnterpriseDashboard";
+import AIPricingDashboard from "../components/AIPricingDashboard";
+import TabButton from "../components/TabButton";
+import { useAuth } from "../context/AuthContext";
+import Header from "../components/layout/Header";
+import Sidebar from "../components/layout/Sidebar";
+
+export default function Home() {
+  const [selectedCategory, setSelectedCategory] = useState<string>("gpu");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
+  // gpu/cpu/storage/baremetal → ResourceDashboard
+  const isResourceCategory = ["gpu", "cpu", "storage", "baremetal"].includes(selectedCategory);
+
+  return (
+    <div className="min-h-screen bg-slate-50/50 font-sans text-slate-900 pb-24 selection:bg-indigo-100">
+      {/* Global Header */}
+      <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+
+      {/* Main Layout Area */}
+      <div className="max-w-7xl mx-auto mt-8 px-6 flex gap-8 items-start">
+        {/* Global Sidebar */}
+        <Sidebar selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} />
+
+        {/* Main Dynamic Content Area */}
+        <main className="flex-1 min-w-0">
+          {isResourceCategory && (
+            <ResourceDashboard selectedCategory={selectedCategory} searchQuery={searchQuery} />
+          )}
+
+          {selectedCategory === 'retail' && (
+            <div className="animate-in fade-in zoom-in duration-500">
+              <RetailDashboard />
+            </div>
+          )}
+
+          {selectedCategory === 'enterprise' && (
+            <div className="animate-in fade-in zoom-in duration-500">
+              <EnterpriseDashboard />
+            </div>
+          )}
+
+          {selectedCategory === 'insights' && (
+            <div className="animate-in fade-in zoom-in duration-500">
+              <InsightDashboard />
+            </div>
+          )}
+
+          {selectedCategory === 'news' && (
+            <div className="animate-in fade-in zoom-in duration-500">
+              <NewsDashboard />
+            </div>
+          )}
+
+          {selectedCategory === 'ai-pricing' && (
+            <AIPricingDashboard />
+          )}
+        </main>
+      </div>
+    </div>
+  );
+}

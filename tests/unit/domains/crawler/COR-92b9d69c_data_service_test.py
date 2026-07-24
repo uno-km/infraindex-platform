@@ -1,5 +1,5 @@
 import pytest
-from apps.api.core import data_service
+from apps.server.core import data_service
 
 """
 ===============================================================================

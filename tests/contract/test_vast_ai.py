@@ -1,5 +1,5 @@
 import pytest
-from apps.worker.adapters.vast_ai.parser import VastAiParser
+from apps.batch.worker.adapters.vast_ai.parser import VastAiParser
 
 def test_vast_ai_parser_valid_data():
     raw_data = [

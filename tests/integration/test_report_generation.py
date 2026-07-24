@@ -18,7 +18,7 @@ class TestReportGenerationPipeline:
         Bug Fix 검증: _fetch_price_data가 r.prv_id, r.gpu_mdl을 올바르게 참조하는지 테스트
         (이전 r.provider_id, r.gpu_model AttributeError 수정 확인)
         """
-        from apps.api.api.v1.endpoints.reports import _fetch_price_data
+        from apps.server.api.v1.endpoints.reports import _fetch_price_data
 
         # 실제 Row 객체처럼 prv_id, gpu_mdl 속성을 가진 mock
         mock_row = MagicMock()
@@ -47,7 +47,7 @@ class TestReportGenerationPipeline:
     @pytest.mark.asyncio
     async def test_excel_export_pipeline_no_data(self):
         """데이터 없을 때 Excel 파일이 빈 데이터와 함께 생성되어야 한다"""
-        from apps.api.api.v1.endpoints.reports import export_excel
+        from apps.server.api.v1.endpoints.reports import export_excel
 
         mock_db = AsyncMock()
         mock_result = MagicMock()
@@ -63,7 +63,7 @@ class TestReportGenerationPipeline:
     @pytest.mark.asyncio
     async def test_excel_export_pipeline_with_data(self):
         """데이터가 있을 때 Excel 파일이 정상 생성되어야 한다"""
-        from apps.api.api.v1.endpoints.reports import export_excel
+        from apps.server.api.v1.endpoints.reports import export_excel
 
         mock_row = MagicMock()
         mock_row.day = date(2026, 7, 22)
@@ -87,7 +87,7 @@ class TestReportGenerationPipeline:
     @pytest.mark.asyncio
     async def test_daily_brief_json_structure(self):
         """GET /daily-brief가 올바른 JSON 구조를 반환해야 한다"""
-        from apps.api.api.v1.endpoints.reports import get_daily_brief_json
+        from apps.server.api.v1.endpoints.reports import get_daily_brief_json
 
         result = await get_daily_brief_json()
 

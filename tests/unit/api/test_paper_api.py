@@ -12,32 +12,32 @@ class TestPaperAPI:
 
     def test_papers_router_importable(self):
         """papers router가 임포트 가능해야 한다"""
-        from apps.api.api.v1.endpoints.papers import router
+        from apps.server.api.v1.endpoints.papers import router
         assert router is not None
 
     def test_list_papers_route_exists(self):
         """GET /papers/ 라우트가 등록되어야 한다"""
-        from apps.api.api.v1.endpoints.papers import router
+        from apps.server.api.v1.endpoints.papers import router
         routes = [r.path for r in router.routes]
         assert len(routes) >= 1
 
     def test_crawl_trigger_route_exists(self):
         """POST /papers/crawl/arxiv 라우트가 등록되어야 한다"""
-        from apps.api.api.v1.endpoints.papers import router
+        from apps.server.api.v1.endpoints.papers import router
         routes = [r.path for r in router.routes]
         assert any("crawl" in r for r in routes), f"crawl 라우트 없음: {routes}"
 
     @pytest.mark.asyncio
     async def test_list_papers_db_none_returns_empty(self):
         """DB가 None일 때 빈 items 반환해야 한다"""
-        from apps.api.api.v1.endpoints.papers import list_papers
+        from apps.server.api.v1.endpoints.papers import list_papers
         result = await list_papers(q=None, source=None, category=None, page=1, size=20, db=None)
         assert result == {"items": [], "total": 0, "page": 1, "size": 20}
 
     @pytest.mark.asyncio
     async def test_list_papers_with_mock_db(self):
         """DB 모킹으로 페이퍼 목록 조회 테스트"""
-        from apps.api.api.v1.endpoints.papers import list_papers
+        from apps.server.api.v1.endpoints.papers import list_papers
 
         mock_paper = MagicMock()
         mock_paper.id = "paper-uuid-001"
@@ -73,11 +73,11 @@ class TestPaperAPI:
     @pytest.mark.asyncio
     async def test_trigger_crawl_arxiv_with_mock(self):
         """ArXiv 크롤 트리거 테스트 (PaperService 모킹)"""
-        from apps.api.api.v1.endpoints.papers import trigger_crawl_arxiv
+        from apps.server.api.v1.endpoints.papers import trigger_crawl_arxiv
 
         mock_db = AsyncMock()
 
-        with patch("apps.api.api.v1.endpoints.papers.PaperService") as mock_service_cls:
+        with patch("apps.server.api.v1.endpoints.papers.PaperService") as mock_service_cls:
             mock_service = AsyncMock()
             mock_service.crawl_and_save_arxiv_recent = AsyncMock(return_value=5)
             mock_service_cls.return_value = mock_service
@@ -90,7 +90,7 @@ class TestPaperAPI:
     @pytest.mark.asyncio
     async def test_get_paper_not_found_raises_404(self):
         """존재하지 않는 paper_id로 조회 시 404가 발생해야 한다"""
-        from apps.api.api.v1.endpoints.papers import get_paper
+        from apps.server.api.v1.endpoints.papers import get_paper
         from fastapi import HTTPException
 
         mock_db = AsyncMock()

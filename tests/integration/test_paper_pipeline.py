@@ -15,7 +15,7 @@ class TestPaperPipeline:
         ArXivCrawler._parse_entry 출력이 PaperService에서 요구하는 형식과 호환되어야 한다.
         feedparser entry의 links는 .href 속성이 있는 객체여야 함.
         """
-        from apps.services.paper.crawler_arxiv import ArXivCrawler
+        from apps.batch.services.paper.crawler_arxiv import ArXivCrawler
 
         crawler = ArXivCrawler()
 
@@ -60,8 +60,8 @@ class TestPaperPipeline:
     @pytest.mark.asyncio
     async def test_paper_service_upsert_new_paper(self):
         """PaperService가 새 논문을 DB에 저장하는 통합 플로우 테스트"""
-        from apps.services.paper.paper_service import PaperService
-        from apps.services.paper.crawler_arxiv import ArXivCrawler
+        from apps.batch.services.paper.paper_service import PaperService
+        from apps.batch.services.paper.crawler_arxiv import ArXivCrawler
 
         mock_db = AsyncMock()
         mock_source = MagicMock()
@@ -98,8 +98,8 @@ class TestPaperPipeline:
     @pytest.mark.asyncio
     async def test_paper_service_skip_duplicate_paper(self):
         """이미 존재하는 논문은 업데이트만 하고 count에 포함되지 않아야 한다"""
-        from apps.services.paper.paper_service import PaperService
-        from apps.services.paper.crawler_arxiv import ArXivCrawler
+        from apps.batch.services.paper.paper_service import PaperService
+        from apps.batch.services.paper.crawler_arxiv import ArXivCrawler
 
         mock_db = AsyncMock()
         mock_source = MagicMock()

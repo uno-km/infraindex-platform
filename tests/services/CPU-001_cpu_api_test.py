@@ -10,8 +10,8 @@ from unittest.mock import AsyncMock, MagicMock
 
 @pytest_asyncio.fixture
 async def async_api_client():
-    from apps.api.main import app
-    from apps.api.core.database import get_db
+    from apps.server.main import app
+    from shared.db.session import get_db
     from unittest.mock import AsyncMock
 
     async def override_get_db():
@@ -24,7 +24,7 @@ async def async_api_client():
 
     app.dependency_overrides[get_db] = override_get_db
     
-    from apps.api.core.config import settings
+    from shared.config.settings import settings
     original_use_real_db = settings.USE_REAL_DB
     settings.USE_REAL_DB = False
     

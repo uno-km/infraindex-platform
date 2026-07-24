@@ -1,5 +1,5 @@
 import pytest
-from apps.api.core.config import settings
+from shared.config.settings import settings
 
 """
 ===============================================================================

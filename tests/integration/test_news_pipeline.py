@@ -11,7 +11,7 @@ class TestNewsPipeline:
 
     def test_classify_then_map_to_tags(self):
         """classify_article 결과가 뉴스 태그 형식과 호환되어야 한다"""
-        from apps.services.news.config import classify_article
+        from apps.batch.services.news.config import classify_article
 
         article_text = "NVIDIA H100 GPU cloud rental prices fall as competition increases"
         classification = classify_article(article_text)
@@ -25,7 +25,7 @@ class TestNewsPipeline:
 
     def test_classify_unrelated_article(self):
         """무관한 기사는 분류되지 않아야 한다"""
-        from apps.services.news.config import classify_article
+        from apps.batch.services.news.config import classify_article
 
         article_text = "Seoul opens new public park near Han River"
         result = classify_article(article_text)
@@ -34,7 +34,7 @@ class TestNewsPipeline:
     @pytest.mark.asyncio
     async def test_news_keyword_alert_triggers_on_crawl(self):
         """크롤된 뉴스가 알림 키워드에 매칭되면 AlertEngine이 트리거되어야 한다"""
-        from apps.services.alerts.alert_engine import AlertEngine
+        from apps.batch.services.alerts.alert_engine import AlertEngine
 
         mock_db = AsyncMock()
         mock_rule = MagicMock()
@@ -61,7 +61,7 @@ class TestNewsPipeline:
     @pytest.mark.asyncio
     async def test_news_keyword_alert_no_match(self):
         """뉴스 제목에 알림 키워드가 없으면 알림이 트리거되지 않아야 한다"""
-        from apps.services.alerts.alert_engine import AlertEngine
+        from apps.batch.services.alerts.alert_engine import AlertEngine
 
         mock_db = AsyncMock()
         mock_rule = MagicMock()
@@ -86,14 +86,14 @@ class TestNewsPipeline:
 
     def test_paper_service_importable_without_circular_import(self):
         """PaperService는 순환 임포트 없이 임포트 가능해야 한다"""
-        from apps.services.paper.paper_service import PaperService
+        from apps.batch.services.paper.paper_service import PaperService
         assert PaperService is not None
 
     @pytest.mark.asyncio
     async def test_paper_upsert_on_new_paper(self):
         """새 논문은 DB에 add되어야 한다"""
-        from apps.services.paper.paper_service import PaperService
-        from apps.services.paper.crawler_arxiv import ArXivCrawler
+        from apps.batch.services.paper.paper_service import PaperService
+        from apps.batch.services.paper.crawler_arxiv import ArXivCrawler
 
         mock_db = AsyncMock()
         mock_source = MagicMock()

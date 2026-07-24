@@ -1,5 +1,5 @@
 import pytest
-from apps.services.financial.crawler import StockMarketCrawler, DramFuturesCrawler
+from apps.batch.services.financial.crawler import StockMarketCrawler, DramFuturesCrawler
 
 @pytest.mark.asyncio
 async def test_dram_futures_crawler():

@@ -11,12 +11,12 @@ class TestNewsAPI:
 
     def test_news_router_importable(self):
         """news router가 임포트 가능해야 한다"""
-        from apps.services.news.router import router
+        from apps.batch.services.news.router import router
         assert router is not None
 
     def test_news_list_route_exists(self):
         """GET / 뉴스 목록 라우트가 등록되어야 한다"""
-        from apps.services.news.router import router
+        from apps.batch.services.news.router import router
         routes = [r.path for r in router.routes]
         # GET "" 또는 "/"
         assert any(r in ["", "/"] for r in routes), f"뉴스 목록 라우트 없음: {routes}"
@@ -24,7 +24,7 @@ class TestNewsAPI:
     @pytest.mark.asyncio
     async def test_get_latest_news_db_none_returns_empty(self):
         """DB가 None일 때 빈 items를 반환해야 한다"""
-        from apps.services.news.router import get_latest_news
+        from apps.batch.services.news.router import get_latest_news
         result = await get_latest_news(
             query=None, category=None, content_type=None,
             is_semiconductor_related=None, source_id=None, tag_id=None,
@@ -35,7 +35,7 @@ class TestNewsAPI:
     @pytest.mark.asyncio
     async def test_get_latest_news_with_mock_db(self):
         """DB 모킹으로 뉴스 목록 조회 테스트"""
-        from apps.services.news.router import get_latest_news
+        from apps.batch.services.news.router import get_latest_news
 
         mock_article = MagicMock()
         mock_article.id = "art-uuid-001"
@@ -66,7 +66,7 @@ class TestNewsAPI:
     @pytest.mark.asyncio
     async def test_get_latest_news_with_category_filter(self):
         """카테고리 필터가 쿼리에 적용되어야 한다"""
-        from apps.services.news.router import get_latest_news
+        from apps.batch.services.news.router import get_latest_news
 
         mock_db = AsyncMock()
         mock_result = MagicMock()
@@ -84,6 +84,6 @@ class TestNewsAPI:
     @pytest.mark.asyncio
     async def test_briefing_route_exists(self):
         """뉴스 브리핑 라우트가 존재해야 한다"""
-        from apps.services.news.router import router
+        from apps.batch.services.news.router import router
         routes = [r.path for r in router.routes]
         assert any("briefing" in r for r in routes), f"briefing 라우트 없음: {routes}"

@@ -10,7 +10,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 @pytest.mark.asyncio
 async def test_classify_article_with_heuristic():
     """휴리스틱 태깅 함수 검증"""
-    from apps.services.news.config import classify_article
+    from apps.batch.services.news.config import classify_article
     text = "NVIDIA announced the new H100 GPU and HBM3e memory"
     result = classify_article(text)
     
@@ -24,7 +24,7 @@ async def test_classify_article_with_heuristic():
 async def test_crawler_upsert_logic():
     """크롤러가 DB에 Source와 Tag를 Upsert 하는 로직 테스트"""
     # This is an integration/logic test mock
-    from apps.api.models import NewsSource, NewsTag, NewsArticle
+    from shared.models import NewsSource, NewsTag, NewsArticle
     
     mock_db = AsyncMock()
     
@@ -65,7 +65,7 @@ async def test_crawler_upsert_logic():
         "is_semiconductor_related": True
     }
     
-    from apps.services.news.crawler import NewsAggregatorService
+    from apps.batch.services.news.crawler import NewsAggregatorService
     service = NewsAggregatorService()
     
     # Service 함수 호출

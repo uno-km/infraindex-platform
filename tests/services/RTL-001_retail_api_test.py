@@ -26,9 +26,9 @@ def mock_db_result():
 
 @pytest.mark.asyncio
 async def test_retail_ohlc_returns_correct_structure(mock_db_result):
-    from apps.api.main import app
-    from apps.api.core.config import settings
-    from apps.api.core.database import get_db
+    from apps.server.main import app
+    from shared.config.settings import settings
+    from shared.db.session import get_db
     
     # Bypass the database dependency
     settings.USE_REAL_DB = False
@@ -66,7 +66,7 @@ async def test_retail_ohlc_returns_correct_structure(mock_db_result):
 
 @pytest.mark.asyncio
 async def test_retail_ohlc_invalid_timeframe():
-    from apps.api.main import app
+    from apps.server.main import app
     
     def mock_check_limit(*args, **kwargs):
         for arg in args:
