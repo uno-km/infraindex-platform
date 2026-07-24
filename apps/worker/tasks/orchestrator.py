@@ -299,11 +299,11 @@ async def _get_batch_details(bat_id: str):
             result = await session.execute(stmt)
             dtls = result.scalars().all()
             
-            # extract provider_slugs from ref_val_1
-            slugs = [dtl.ref_val_1 for dtl in dtls if dtl.ref_val_1]
+            # extract job details
+            jobs = [{"bat_id": dtl.bat_id, "job_id": dtl.job_id, "slug": dtl.ref_val_1} for dtl in dtls if dtl.ref_val_1]
             
         await engine.dispose()
-        return slugs
+        return jobs
     except Exception as e:
         logger.error(f"Failed to fetch DTLs for {bat_id}: {e}")
         return []
@@ -313,20 +313,61 @@ def run_batch_chain(bat_id: str):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     try:
-        slugs = loop.run_until_complete(_get_batch_details(bat_id))
+        jobs = loop.run_until_complete(_get_batch_details(bat_id))
     finally:
         loop.close()
         
-    if not slugs:
+    if not jobs:
         logger.warning(f"No DTLs found for {bat_id} or USE_YN is not 'Y'.")
         return
         
-    logger.info(f"Constructing sequential chain for {bat_id}: {slugs}")
+    logger.info(f"Constructing sequential chain for {bat_id}: {[j['slug'] for j in jobs]}")
     
     # 순차 실행을 위해 chain 구성 (si = immutable signature, 결과를 다음 태스크에 넘기지 않음)
-    tasks = [run_provider_collection.si(slug) for slug in slugs]
+    tasks = [run_provider_collection.si(j['bat_id'], j['job_id'], j['slug']) for j in jobs]
     workflow = chain(*tasks)
     workflow.apply_async()
+
+async def _insert_history(bat_id: str, job_id: str, start_dt, end_dt, status: str, err_msg: str = None):
+    try:
+        from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+        from apps.api.models.batch_schedule import SysBatSchHist, SysBatSchDtl
+        
+        db_url = settings.DATABASE_URL
+        if db_url.startswith("postgresql://") and "+asyncpg" not in db_url:
+            db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+        engine = create_async_engine(db_url, echo=False, future=True)
+        SessionLocal = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
+
+        async with SessionLocal() as session:
+            # 1. Insert History
+            hist = SysBatSchHist(
+                bat_id=bat_id,
+                job_id=job_id,
+                start_dt=start_dt,
+                end_dt=end_dt,
+                status=status,
+                err_msg=err_msg
+            )
+            session.add(hist)
+            
+            # 2. Update DTL LAST_RUN_DT
+            from sqlalchemy import update
+            stmt = update(SysBatSchDtl).where(
+                SysBatSchDtl.bat_id == bat_id,
+                SysBatSchDtl.job_id == job_id
+            ).values(last_run_dt=end_dt)
+            if err_msg:
+                # err_msg 컬럼이 모델에 정의되어 있는지 확인 후 기록
+                stmt = stmt.values(err_msg=err_msg[:500])
+            
+            await session.execute(stmt)
+            await session.commit()
+            
+        await engine.dispose()
+    except Exception as e:
+        logger.error(f"Failed to insert history for {bat_id}/{job_id}: {e}")
 
 async def _update_dtl_error(provider_slug: str, error_msg: str):
     try:
@@ -358,14 +399,23 @@ async def _update_dtl_error(provider_slug: str, error_msg: str):
     retry_backoff=True,
     retry_kwargs={"max_retries": 3},
 )
-def run_provider_collection(provider_slug: str):
-    """Celery wrapper for the extraction function."""
+def run_provider_collection(bat_id: str, job_id: str, provider_slug: str):
+    """Celery wrapper for the extraction function with history logging."""
+    import traceback
+    from datetime import datetime, timezone
+    
+    start_dt = datetime.now(timezone.utc).replace(tzinfo=None)
+    
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     try:
         loop.run_until_complete(execute_extraction(provider_slug))
+        end_dt = datetime.now(timezone.utc).replace(tzinfo=None)
+        loop.run_until_complete(_insert_history(bat_id, job_id, start_dt, end_dt, "SUCCESS"))
     except Exception as e:
-        loop.run_until_complete(_update_dtl_error(provider_slug, str(e)))
+        end_dt = datetime.now(timezone.utc).replace(tzinfo=None)
+        err_trace = traceback.format_exc()
+        loop.run_until_complete(_insert_history(bat_id, job_id, start_dt, end_dt, "FAIL", err_trace))
         raise e
     finally:
         loop.close()

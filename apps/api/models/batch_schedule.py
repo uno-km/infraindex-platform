@@ -59,3 +59,21 @@ class SysBatSchDtl(Base):
 
     # 관계 설정
     master_schedule = relationship("SysBatSchBas", back_populates="details")
+
+
+class SysBatSchHist(Base):
+    """
+    배치 스케줄 실행 이력 테이블 (HIST)
+    """
+    __tablename__ = "SYS_BAT_SCH_HIST"
+
+    seq = Column("SEQ", Integer, primary_key=True, autoincrement=True, comment="이력 일련번호")
+    bat_id = Column("BAT_ID", String(50), nullable=False, index=True, comment="배치 마스터 ID")
+    job_id = Column("JOB_ID", String(50), nullable=False, index=True, comment="세부 잡 ID")
+    
+    status = Column("STATUS", String(20), nullable=False, comment="실행 결과 (SUCCESS / FAIL)")
+    start_dt = Column("START_DT", DateTime, nullable=False, comment="시작 일시")
+    end_dt = Column("END_DT", DateTime, nullable=False, comment="종료 일시")
+    err_msg = Column("ERR_MSG", Text, nullable=True, comment="에러 발생 시 전문(Traceback)")
+    
+    crt_dt = Column("CRT_DT", DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None), comment="생성일시")

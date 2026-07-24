@@ -93,7 +93,7 @@ async def get_price_history(
 
     query = (
         select(GpuPriceHistory)
-        .where(_build_filter(PriceHistory, provider, model_name, hw_type))
+        .where(_build_filter(GpuPriceHistory, provider, model_name, hw_type))
         .where(GpuPriceHistory.ts >= since)
         .order_by(GpuPriceHistory.ts.asc())
         .limit(limit)

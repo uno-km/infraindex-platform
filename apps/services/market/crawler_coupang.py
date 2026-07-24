@@ -6,6 +6,7 @@ import urllib.parse
 import json
 import logging
 import time
+from typing import List, Dict, Any
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -80,55 +81,100 @@ class CoupangCrawler:
             logger.error(f"Error fetching from Coupang API: {e}")
             return []
 
+    def get_seed_queries(self) -> List[str]:
+        return [
+            # GPUs
+            "RTX 4090", "RTX 4080 SUPER", "RTX 4070 Ti", "RX 7900 XTX",
+            # CPUs
+            "i9-14900K", "Ryzen 9 7950X3D", "i7-14700K", "Ryzen 7 7800X3D",
+            # RAM
+            "DDR5 32GB", "DDR5 64GB", "DDR4 32GB",
+            # SSD
+            "2TB NVMe M.2", "4TB NVMe SSD", "Samsung 990 PRO", "SK Hynix P41"
+        ]
+
     async def sync_to_db(self, db: AsyncSession):
         if not self.access_key or not self.secret_key:
             return {"status": "error", "message": "COUPANG_ACCESS_KEY or COUPANG_SECRET_KEY is missing."}
 
-        stmt = select(MarketProduct)
-        result = await db.execute(stmt)
-        products = result.scalars().all()
-
-        fallback_models = []
-        if not products:
-            logger.warning("No models found in MarketProduct. Using fallback list.")
-            fallback_models = [
-                {"id": "mock_4090", "model_name": "RTX 4090", "manufacturer": "NVIDIA", "category": "GPU"},
-                {"id": "mock_4080", "model_name": "RTX 4080", "manufacturer": "NVIDIA", "category": "GPU"},
-                {"id": "mock_14900k", "model_name": "i9-14900K", "manufacturer": "Intel", "category": "CPU"},
-            ]
-        
-        items_to_search = products if products else fallback_models
+        models_to_search = self.get_seed_queries()
         
         total_inserted = 0
         now = datetime.now(timezone.utc)
 
-        for p in items_to_search:
-            product_id = str(p.id) if hasattr(p, 'id') else p["id"]
-            model_name = p.model_name if hasattr(p, 'model_name') else p["model_name"]
-            
-            logger.info(f"Crawling Coupang prices for: {model_name}")
-            items = self.search_products(model_name, limit=5)
+        for query in models_to_search:
+            logger.info(f"Crawling Coupang prices for seed: {query}")
+            items = self.search_products(query, limit=5)
             
             for item in items:
                 vendor = "Coupang 로켓배송" if item.get("isRocket") else "Coupang"
                 price = int(item.get("productPrice", 0))
+                title = item.get("productName", "")
+                link = item.get("productUrl", "")
+                
                 if price <= 0:
                     continue
                 
+                search_text = f"{query} {title}".lower()
+                category = "OTHER"
+                if any(k in search_text for k in ["rtx", "rx 7", "rx 6", "gtx", "radeon"]):
+                    category = "GPU"
+                elif any(k in search_text for k in ["core i", "ryzen", "xeon", "epyc", "intel core"]):
+                    category = "CPU"
+                elif any(k in search_text for k in ["a100", "h100", "v100", "tesla", "rtx 6000", "l40"]):
+                    category = "SERVER_GPU"
+                elif any(k in search_text for k in ["ddr4", "ddr5", "ram", "메모리"]):
+                    category = "RAM"
+                elif any(k in search_text for k in ["ssd", "nvme", "m.2"]):
+                    category = "SSD"
+                    
+                manufacturer = "Unknown"
+                if any(k in search_text for k in ["nvidia", "지포스", "geforce"]): manufacturer = "NVIDIA"
+                elif any(k in search_text for k in ["amd", "radeon", "ryzen", "epyc"]): manufacturer = "AMD"
+                elif any(k in search_text for k in ["intel", "인텔", "xeon", "core"]): manufacturer = "Intel"
+                elif any(k in search_text for k in ["samsung", "삼성"]): manufacturer = "Samsung"
+                elif any(k in search_text for k in ["sk hynix", "하이닉스"]): manufacturer = "SK Hynix"
+                elif any(k in search_text for k in ["micron", "마이크론", "crucial"]): manufacturer = "Micron"
+                
+                model_name = query
+                
+                stmt = select(MarketProduct).where(MarketProduct.model_name == model_name)
+                result = await db.execute(stmt)
+                product = result.scalar_one_or_none()
+                
+                if not product:
+                    product = MarketProduct(
+                        manufacturer=manufacturer,
+                        model_name=model_name,
+                        product_line=category,
+                        category=category
+                    )
+                    db.add(product)
+                    await db.flush()
+                
                 # Create Listing
-                listing = MarketListing(
-                    product_id=product_id,
-                    vendor_name=vendor,
-                    original_title=item.get("productName", model_name),
-                    url=item.get("productUrl", ""),
-                    condition="new"
+                stmt_listing = select(MarketListing).where(
+                    (MarketListing.product_id == str(product.id)) & 
+                    (MarketListing.vendor_name == vendor) &
+                    (MarketListing.url == link)
                 )
-                db.add(listing)
-                await db.flush() # get listing id
+                res_listing = await db.execute(stmt_listing)
+                listing = res_listing.scalar_one_or_none()
+                
+                if not listing:
+                    listing = MarketListing(
+                        product_id=str(product.id),
+                        vendor_name=vendor,
+                        original_title=title,
+                        url=link,
+                        condition="new"
+                    )
+                    db.add(listing)
+                    await db.flush()
                 
                 # Create Price Observation
                 obs = MarketPriceObservation(
-                    listing_id=listing.id,
+                    listing_id=str(listing.id),
                     price=price,
                     shipping_fee=0 if item.get("isFreeShipping") else 3000,
                     total_price=price + (0 if item.get("isFreeShipping") else 3000),
@@ -141,7 +187,6 @@ class CoupangCrawler:
                 
                 # Check for alerts
                 alert_engine = AlertEngine()
-                link = item.get("productUrl", "")
                 await alert_engine.check_retail_alerts(db, model_name, price, link)
 
         await db.commit()

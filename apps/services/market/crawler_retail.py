@@ -28,28 +28,23 @@ class RetailCrawler:
         self.client_id = settings.NAVER_SHOPPING_CLIENT_ID
         self.client_secret = settings.NAVER_SHOPPING_CLIENT_SECRET
 
-    async def fetch_models(self, db: AsyncSession) -> List[str]:
-        """Fetch all GPU and CPU model names from the database."""
-        models = []
-        
-        # Get GPU models
-        gpu_stmt = select(GpuModel.name)
-        gpu_res = await db.execute(gpu_stmt)
-        for row in gpu_res.scalars():
-            models.append(row)
-            
-        # Get CPU models
-        cpu_stmt = select(CpuModel.name)
-        cpu_res = await db.execute(cpu_stmt)
-        for row in cpu_res.scalars():
-            models.append(row)
-            
-        # Fallback if DB is empty for hardware models
-        if not models:
-            logger.warning("No models found in GpuModel or CpuModel tables. Using fallback list.")
-            models = ["RTX 4090", "RTX 4080", "i9-14900K", "Ryzen 9 7950X"]
-            
-        return models
+    def get_seed_queries(self) -> List[str]:
+        """
+        Provides a diverse set of hardware keywords to kickstart the crawling process.
+        The crawler will dynamically discover and register specific models found from these seeds.
+        """
+        return [
+            # GPUs
+            "RTX 4090", "RTX 4080 SUPER", "RTX 4070 Ti", "RX 7900 XTX",
+            # CPUs
+            "i9-14900K", "Ryzen 9 7950X3D", "i7-14700K", "Ryzen 7 7800X3D",
+            # Server/AI GPUs
+            "NVIDIA A100", "NVIDIA H100", "NVIDIA RTX 6000 Ada", "Tesla V100",
+            # RAM
+            "DDR5 32GB", "DDR5 64GB", "DDR4 32GB",
+            # SSD
+            "2TB NVMe M.2", "4TB NVMe SSD", "Samsung 990 PRO", "SK Hynix P41"
+        ]
 
     async def search_naver_shopping(self, query: str) -> List[Dict[str, Any]]:
         """Search Naver Shopping for a given model."""
@@ -87,7 +82,7 @@ class RetailCrawler:
             return []
 
     async def sync_to_db(self, db: AsyncSession) -> Dict[str, Any]:
-        models_to_search = await self.fetch_models(db)
+        models_to_search = self.get_seed_queries()
         
         if not self.client_id or not self.client_secret:
             return {
@@ -99,9 +94,9 @@ class RetailCrawler:
         inserted_prices = 0
         crawled_items = 0
         
-        for model_name in models_to_search:
-            logger.info(f"Crawling retail prices for: {model_name}")
-            items = await self.search_naver_shopping(model_name)
+        for query in models_to_search:
+            logger.info(f"Crawling retail prices for seed: {query}")
+            items = await self.search_naver_shopping(query)
             
             for item in items:
                 crawled_items += 1
@@ -120,17 +115,39 @@ class RetailCrawler:
                 if price <= 0:
                     continue
                 
-                # Determine category heuristically
-                category = "CPU" if "intel" in model_name.lower() or "ryzen" in model_name.lower() else "GPU"
+                # Heuristic parsing for category and manufacturer from title & query
+                search_text = f"{query} {title}".lower()
                 
-                # 1. Upsert MarketProduct
+                category = "OTHER"
+                if any(k in search_text for k in ["rtx", "rx 7", "rx 6", "gtx", "radeon"]):
+                    category = "GPU"
+                elif any(k in search_text for k in ["core i", "ryzen", "xeon", "epyc", "intel core"]):
+                    category = "CPU"
+                elif any(k in search_text for k in ["a100", "h100", "v100", "tesla", "rtx 6000", "l40"]):
+                    category = "SERVER_GPU"
+                elif any(k in search_text for k in ["ddr4", "ddr5", "ram", "메모리"]):
+                    category = "RAM"
+                elif any(k in search_text for k in ["ssd", "nvme", "m.2"]):
+                    category = "SSD"
+                    
+                manufacturer = "Unknown"
+                if any(k in search_text for k in ["nvidia", "지포스", "geforce"]): manufacturer = "NVIDIA"
+                elif any(k in search_text for k in ["amd", "radeon", "ryzen", "epyc"]): manufacturer = "AMD"
+                elif any(k in search_text for k in ["intel", "인텔", "xeon", "core"]): manufacturer = "Intel"
+                elif any(k in search_text for k in ["samsung", "삼성"]): manufacturer = "Samsung"
+                elif any(k in search_text for k in ["sk hynix", "하이닉스"]): manufacturer = "SK Hynix"
+                elif any(k in search_text for k in ["micron", "마이크론", "crucial"]): manufacturer = "Micron"
+                
+                # 1. Upsert MarketProduct (Use the seed query as the standardized model_name for grouping)
+                model_name = query
+                
                 stmt = select(MarketProduct).where(MarketProduct.model_name == model_name)
                 result = await db.execute(stmt)
                 product = result.scalar_one_or_none()
                 
                 if not product:
                     product = MarketProduct(
-                        manufacturer="Unknown", # Will need better parsing in the future
+                        manufacturer=manufacturer,
                         model_name=model_name,
                         product_line=category,
                         category=category

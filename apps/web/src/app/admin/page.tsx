@@ -6,11 +6,13 @@ import { useAuth } from '../../context/AuthContext';
 import CrawlerConfigTab from './tabs/CrawlerConfigTab';
 import UsersTab from './tabs/UsersTab';
 import DataViewerTab from './tabs/DataViewerTab';
+import BatchHistoryTab from './tabs/BatchHistoryTab';
 import Link from 'next/link';
 
 export default function AdminDashboard() {
   const { user, isAuthenticated, isLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState('crawlers');
+  const [activeTab, setActiveTab] = useState('batch');
+  const [batchSubTab, setBatchSubTab] = useState('crawlers');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   if (isLoading) {
@@ -79,13 +81,13 @@ export default function AdminDashboard() {
           </div>
         </header>
 
-        {/* Tabs Navigation */}
-        <div className="flex flex-wrap gap-3 mb-8 bg-[#111] p-2 rounded-2xl border border-gray-800 w-fit">
+        {/* Top Tier Tabs Navigation */}
+        <div className="flex flex-wrap gap-3 mb-4 bg-[#111] p-2 rounded-2xl border border-gray-800 w-fit">
           <button 
-            onClick={() => setActiveTab('crawlers')}
-            className={`px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all duration-300 ${activeTab === 'crawlers' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-900/50' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+            onClick={() => setActiveTab('batch')}
+            className={`px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all duration-300 ${activeTab === 'batch' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-900/50' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
           >
-            <Server className="w-4 h-4" /> Crawler Config
+            <Server className="w-4 h-4" /> Batch
           </button>
           <button 
             onClick={() => setActiveTab('users')}
@@ -101,10 +103,29 @@ export default function AdminDashboard() {
           </button>
         </div>
 
+        {/* Sub Tier Tabs Navigation (Only for Batch) */}
+        {activeTab === 'batch' && (
+          <div className="flex flex-wrap gap-2 mb-8 ml-2 border-l-2 border-indigo-900/50 pl-4">
+            <button 
+              onClick={() => setBatchSubTab('crawlers')}
+              className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all duration-300 ${batchSubTab === 'crawlers' ? 'bg-white/10 text-white shadow-inner' : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'}`}
+            >
+              Crawler Config
+            </button>
+            <button 
+              onClick={() => setBatchSubTab('history')}
+              className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all duration-300 ${batchSubTab === 'history' ? 'bg-white/10 text-white shadow-inner' : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'}`}
+            >
+              Batch Execution History
+            </button>
+          </div>
+        )}
+
         {/* Tab Content Panel */}
         <div className="bg-[#111] rounded-3xl p-6 md:p-8 border border-gray-800 shadow-2xl relative overflow-hidden group">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-50"></div>
-          {activeTab === 'crawlers' && <CrawlerConfigTab />}
+          {activeTab === 'batch' && batchSubTab === 'crawlers' && <CrawlerConfigTab />}
+          {activeTab === 'batch' && batchSubTab === 'history' && <BatchHistoryTab />}
           {activeTab === 'users' && <UsersTab />}
           {activeTab === 'data' && <DataViewerTab />}
         </div>

@@ -222,25 +222,23 @@ class DataService:
         cpu_map = {}
         for r in records:
             cpu_name = r.get("cpu_model") or "Unknown CPU"
-            cores = r.get("cores", 0)
-                
             if cpu_name not in cpu_map:
                 cpu_map[cpu_name] = {
                     "id": cpu_name,
                     "name": cpu_name,
-                    "vram_gb": r.get("sys_ram_gb") or 0, # reusing vram_gb field in UI for RAM for now
+                    "vram_gb": r.get("sys_ram_gb") or 0,
                     "popularity_score": 0,
                     "offers": []
                 }
             
             avail = r.get("availability_status")
             is_avail = avail if isinstance(avail, bool) else (str(avail).lower() == "available")
-            
             provider_name = r.get("provider", "Unknown")
             price = float(r.get("price_per_hour", 0.0))
+            if price <= 0:
+                continue
             
             existing_offer = next((o for o in cpu_map[cpu_name]["offers"] if o["provider"] == provider_name), None)
-            
             if existing_offer:
                 if price < existing_offer["price_per_hour"]:
                     existing_offer["price_per_hour"] = price
@@ -256,7 +254,177 @@ class DataService:
                     "sys_ram_gb": r.get("sys_ram_gb"),
                     "tdp_w": r.get("tdp_w"),
                 })
+        
+        # DB가 비어있는 경우 Fallback 데이터를 가공하여 제공
+        result_list = list(cpu_map.values())
+        if not result_list:
+            return [
+                {
+                    "id": "c6g.2xlarge",
+                    "name": "AWS EC2 c6g.2xlarge (Graviton2)",
+                    "vram_gb": 16,
+                    "offers": [{"provider": "aws", "price_per_hour": 0.272, "is_available": True, "region": "Seoul", "provider_link": "https://aws.amazon.com/ec2"}]
+                },
+                {
+                    "id": "n2-standard-4",
+                    "name": "GCP n2-standard-4 (Intel Xeon)",
+                    "vram_gb": 16,
+                    "offers": [{"provider": "gcp", "price_per_hour": 0.194, "is_available": True, "region": "Seoul", "provider_link": "https://cloud.google.com/compute"}]
+                },
+                {
+                    "id": "F4s_v2",
+                    "name": "Azure F4s v2 (Intel Xeon)",
+                    "vram_gb": 8,
+                    "offers": [{"provider": "azure", "price_per_hour": 0.169, "is_available": True, "region": "Korea Central"}]
+                },
+                {
+                    "id": "g3.c4.m16",
+                    "name": "NCloud Standard g3 (Intel Xeon)",
+                    "vram_gb": 16,
+                    "offers": [{"provider": "ncloud", "price_per_hour": 0.150, "is_available": True, "region": "KR", "provider_link": "https://www.ncloud.com"}]
+                }
+            ]
+        return result_list
+
+    @staticmethod
+    async def get_storages_for_ui() -> List[Dict[str, Any]]:
+        """Aggregates raw records into a nice structure for the Storage UI dashboard."""
+        # 1차적으로 tbl_storage_prc_hist DB 조회 시도
+        storage_map = {}
+        if settings.USE_REAL_DB:
+            from sqlalchemy.ext.asyncio import AsyncSession
+            from apps.api.core.database import AsyncSessionLocal
+            from apps.api.models.storage import StoragePriceHistory
+            from sqlalchemy import select, desc
             
-        return list(cpu_map.values())
+            async with AsyncSessionLocal() as db:
+                result = await db.execute(
+                    select(StoragePriceHistory)
+                    .order_by(desc(StoragePriceHistory.ts))
+                    .limit(200)
+                )
+                rows = result.scalars().all()
+                for r in rows:
+                    model_name = r.storage_mdl
+                    # 가격은 시간당 임대로 환산(월 가격 / 730시간)하여 UI 구조의 price_per_hour와 매핑
+                    price_per_hour = round(r.prc_pgb_mth / 730.0, 6)
+                    
+                    if model_name not in storage_map:
+                        storage_map[model_name] = {
+                            "id": model_name,
+                            "name": model_name,
+                            "vram_gb": 1000, # default 1TB representation
+                            "popularity_score": 0,
+                            "offers": []
+                        }
+                    
+                    provider_name = r.prv_id.lower()
+                    existing_offer = next((o for o in storage_map[model_name]["offers"] if o["provider"] == provider_name), None)
+                    if not existing_offer:
+                        storage_map[model_name]["offers"].append({
+                            "provider": provider_name,
+                            "price_per_hour": price_per_hour,
+                            "is_available": True,
+                            "region": "global"
+                        })
+                        
+        result_list = list(storage_map.values())
+        if not result_list:
+            # Fallback 데이터
+            return [
+                {
+                    "id": "gp3",
+                    "name": "AWS EBS gp3 (Block Storage)",
+                    "vram_gb": 1000,
+                    "offers": [{"provider": "aws", "price_per_hour": 0.118, "is_available": True, "region": "Seoul", "provider_link": "https://aws.amazon.com/ebs"}]
+                },
+                {
+                    "id": "pd-ssd",
+                    "name": "GCP Persistent Disk SSD",
+                    "vram_gb": 1000,
+                    "offers": [{"provider": "gcp", "price_per_hour": 0.204, "is_available": True, "region": "Seoul"}]
+                },
+                {
+                    "id": "premium-ssd",
+                    "name": "Azure Premium SSD",
+                    "vram_gb": 1024,
+                    "offers": [{"provider": "azure", "price_per_hour": 0.170, "is_available": True, "region": "Korea Central"}]
+                },
+                {
+                    "id": "b2-storage",
+                    "name": "Backblaze B2 (Object Storage)",
+                    "vram_gb": 1000,
+                    "offers": [{"provider": "backblaze", "price_per_hour": 0.005, "is_available": True, "region": "Global"}]
+                }
+            ]
+        return result_list
+
+    @staticmethod
+    async def get_baremetals_for_ui() -> List[Dict[str, Any]]:
+        """Aggregates raw records into a nice structure for the Baremetal UI dashboard."""
+        records = await DataService.get_latest_prices(hardware_type="baremetal")
+        
+        bm_map = {}
+        for r in records:
+            bm_name = r.get("cpu_model") or r.get("gpu_model") or "Unknown Baremetal"
+            if bm_name not in bm_map:
+                bm_map[bm_name] = {
+                    "id": bm_name,
+                    "name": bm_name,
+                    "vram_gb": r.get("sys_ram_gb") or 0,
+                    "popularity_score": 0,
+                    "offers": []
+                }
+            
+            avail = r.get("availability_status")
+            is_avail = avail if isinstance(avail, bool) else (str(avail).lower() == "available")
+            provider_name = r.get("provider", "Unknown")
+            price = float(r.get("price_per_hour", 0.0))
+            if price <= 0:
+                continue
+            
+            existing_offer = next((o for o in bm_map[bm_name]["offers"] if o["provider"] == provider_name), None)
+            if existing_offer:
+                if price < existing_offer["price_per_hour"]:
+                    existing_offer["price_per_hour"] = price
+                    existing_offer["region"] = r.get("region", "global")
+                    existing_offer["provider_link"] = r.get("provider_link")
+            else:
+                bm_map[bm_name]["offers"].append({
+                    "provider": provider_name,
+                    "price_per_hour": price,
+                    "is_available": is_avail,
+                    "region": r.get("region", "global"),
+                    "provider_link": r.get("provider_link"),
+                    "sys_ram_gb": r.get("sys_ram_gb"),
+                    "tdp_w": r.get("tdp_w"),
+                })
+        
+        result_list = list(bm_map.values())
+        if not result_list:
+            # Fallback 데이터
+            return [
+                {
+                    "id": "i3.metal",
+                    "name": "AWS EC2 i3.metal (72 Cores)",
+                    "vram_gb": 512,
+                    "offers": [{"provider": "aws", "price_per_hour": 6.176, "is_available": True, "region": "Seoul"}]
+                },
+                {
+                    "id": "c2-metal-88",
+                    "name": "GCP c2-metal-88 (88 Cores)",
+                    "vram_gb": 352,
+                    "offers": [{"provider": "gcp", "price_per_hour": 4.900, "is_available": True, "region": "Seoul"}]
+                },
+                {
+                    "id": "bm-high-cpu",
+                    "name": "KT Cloud Baremetal (40 Cores)",
+                    "vram_gb": 192,
+                    "offers": [{"provider": "ktcloud", "price_per_hour": 2.500, "is_available": True, "region": "KR"}]
+                }
+            ]
+        return result_list
+
 
 data_service = DataService()
+

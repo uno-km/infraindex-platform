@@ -239,3 +239,33 @@ async def list_login_history(
         }
         for h in histories
     ]
+
+# --- 6. Batch History ---
+
+@router.get("/batch/history", dependencies=[Depends(verify_admin)])
+async def list_batch_history(
+    db: AsyncSession = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100,
+) -> Any:
+    """
+    List batch execution history.
+    """
+    from apps.api.models.batch_schedule import SysBatSchHist
+    result = await db.execute(
+        select(SysBatSchHist).order_by(SysBatSchHist.seq.desc()).offset(skip).limit(limit)
+    )
+    histories = result.scalars().all()
+    return [
+        {
+            "seq": h.seq,
+            "bat_id": h.bat_id,
+            "job_id": h.job_id,
+            "status": h.status,
+            "start_dt": h.start_dt.isoformat() if h.start_dt else None,
+            "end_dt": h.end_dt.isoformat() if h.end_dt else None,
+            "err_msg": h.err_msg,
+            "crt_dt": h.crt_dt.isoformat() if h.crt_dt else None,
+        }
+        for h in histories
+    ]

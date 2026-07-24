@@ -1,4 +1,4 @@
-from apps.worker.celery_app import app
+from apps.worker.celery_app import celery_app
 from apps.api.core.database import AsyncSessionLocal
 from apps.services.news.models import NewsArticle
 
@@ -91,7 +91,7 @@ async def _run_3_tier_crawling():
 
     return total_added
 
-@app.task(name="news.tick")
+@celery_app.task(name="news.tick")
 def execute_news_extraction():
     """매시간 마스터 스케줄러가 호출하는 글로벌 뉴스 다중 폴백 크롤링 Celery Task"""
     

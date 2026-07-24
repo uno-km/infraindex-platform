@@ -66,8 +66,21 @@ class KoreanUniversalCrawler(BasePlaywrightCrawler):
         return []
 
     def normalize_pricing(self, parsed_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """이미 정규화됨 - 그대로 반환"""
-        return parsed_data
+        """하드웨어 타입에 맞게 키 변환 및 하드웨어 타입 명시"""
+        normalized = []
+        for item in parsed_data:
+            new_item = item.copy()
+            new_item["hardware_type"] = self.hardware_type
+            
+            if self.hardware_type == "cpu":
+                if "gpu_model" in new_item:
+                    new_item["cpu_model"] = new_item.pop("gpu_model")
+                if "cores" not in new_item:
+                    new_item["cores"] = 0
+                
+            normalized.append(new_item)
+            
+        return normalized
 
 
 class VesslCrawler(BasePlaywrightCrawler):
@@ -84,7 +97,16 @@ class VesslCrawler(BasePlaywrightCrawler):
         return raw_data if isinstance(raw_data, list) else []
 
     def normalize_pricing(self, parsed_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        return parsed_data
+        if self.hardware_type == "cpu":
+            return []
+            
+        normalized = []
+        for item in parsed_data:
+            new_item = item.copy()
+            new_item["hardware_type"] = self.hardware_type
+            normalized.append(new_item)
+            
+        return normalized
 
 
 class XesktopCrawler(BasePlaywrightCrawler):
