@@ -1,8 +1,9 @@
 import io
+import os
 from typing import Any, List, Dict
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, Query
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, cast, Date
 import openpyxl
@@ -65,6 +66,20 @@ async def export_excel(
     Exports time-series pricing data as a styled Excel file.
     (수정: Mock 데이터 제거 → 실제 price_history DB 조회)
     """
+    # --- File-based Disk Cache (Cost-Effective Caching) ---
+    cache_dir = os.path.join(os.getcwd(), "storage", "cache", "excel")
+    os.makedirs(cache_dir, exist_ok=True)
+    filename = f"{gpu_model_id}_pricing_last{days}days_{datetime.now().strftime('%Y%m%d')}.xlsx"
+    cache_file_path = os.path.join(cache_dir, filename)
+
+    if os.path.exists(cache_file_path):
+        # Serve from disk cache if generated today
+        return FileResponse(
+            path=cache_file_path,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": f"attachment; filename={filename}"},
+        )
+
     rows = await _fetch_price_data(db, gpu_model_id, days)
 
     wb = openpyxl.Workbook()
@@ -125,13 +140,11 @@ async def export_excel(
     ws_meta.append(["Rows", len(rows)])
     ws_meta.append(["Source", "InfraIndex price_history DB"])
 
-    stream = io.BytesIO()
-    wb.save(stream)
-    stream.seek(0)
+    # Save to disk cache
+    wb.save(cache_file_path)
 
-    filename = f"{gpu_model_id}_pricing_{datetime.now().strftime('%Y%m%d')}.xlsx"
-    return StreamingResponse(
-        stream,
+    return FileResponse(
+        path=cache_file_path,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": f"attachment; filename={filename}"},
     )

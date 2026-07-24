@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, Query, HTTPException, Response
+from fastapi_cache.decorator import cache
+from apps.server.core.cache_utils import get_cache_control
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
@@ -10,7 +12,8 @@ from shared.models.market import MarketProduct, MarketListing, MarketPriceObserv
 
 router = APIRouter()
 
-@router.get("/products", response_model=List[Dict[str, Any]])
+@router.get("/products", response_model=List[Dict[str, Any]], dependencies=[Depends(get_cache_control(max_age=60, s_maxage=600))])
+@cache(expire=600)
 async def get_market_products(
     query: str = Query(None, description="상품명 검색"),
     category: str = Query(None, description="카테고리 필터"),
@@ -64,7 +67,8 @@ async def sync_retail_market_from_crawler(db: AsyncSession = Depends(get_db)):
     return result
 
 
-@router.get("/products/{product_id}/prices", response_model=List[Dict[str, Any]])
+@router.get("/products/{product_id}/prices", response_model=List[Dict[str, Any]], dependencies=[Depends(get_cache_control(max_age=60, s_maxage=3600))])
+@cache(expire=3600)
 async def get_product_prices(
     product_id: str,
     period: str = Query("1M", description="기간 (1W, 1M, 3M, 6M, 1Y, ALL)"),
@@ -145,7 +149,8 @@ async def get_product_prices(
     return data
 
 
-@router.get("/products/{product_id}/vendors", response_model=List[Dict[str, Any]])
+@router.get("/products/{product_id}/vendors", response_model=List[Dict[str, Any]], dependencies=[Depends(get_cache_control(max_age=60, s_maxage=600))])
+@cache(expire=600)
 async def get_product_vendors(
     product_id: str,
     db: AsyncSession = Depends(get_db)
