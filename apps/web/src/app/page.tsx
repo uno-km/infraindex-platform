@@ -6,6 +6,7 @@ import { RetailDashboard } from "../components/RetailDashboard";
 import InsightDashboard from "../components/InsightDashboard";
 import NewsDashboard from "../components/NewsDashboard";
 import EnterpriseDashboard from "../components/EnterpriseDashboard";
+import StorageDashboard from "../components/StorageDashboard";
 import TabButton from "../components/TabButton";
 import { useAuth } from "../context/AuthContext";
 import Header from "../components/layout/Header";
@@ -15,7 +16,8 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<string>("gpu");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  const isResourceCategory = ["gpu", "cpu", "storage", "baremetal"].includes(selectedCategory);
+  // gpu/cpu/baremetal → GpuDashboard, storage → StorageDashboard
+  const isGpuCategory = ["gpu", "cpu", "baremetal"].includes(selectedCategory);
 
   return (
     <div className="min-h-screen bg-slate-50/50 font-sans text-slate-900 pb-24 selection:bg-indigo-100">
@@ -29,8 +31,14 @@ export default function Home() {
 
         {/* Main Dynamic Content Area */}
         <main className="flex-1 min-w-0">
-          {isResourceCategory && (
+          {isGpuCategory && (
             <GpuDashboard selectedCategory={selectedCategory} searchQuery={searchQuery} />
+          )}
+
+          {selectedCategory === 'storage' && (
+            <div className="animate-in fade-in zoom-in duration-500">
+              <StorageDashboard />
+            </div>
           )}
 
           {selectedCategory === 'retail' && (

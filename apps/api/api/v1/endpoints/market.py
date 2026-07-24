@@ -28,7 +28,14 @@ async def get_market_products(
     if query:
         stmt = stmt.where(MarketProduct.model_name.ilike(f"%{query}%"))
     if category:
-        stmt = stmt.where(MarketProduct.category == category)
+        # 대소문자 정규화 + "Server GPU" → "SERVER_GPU" 등 공백 처리
+        cat_norm = category.upper().replace(" ", "_")
+        # DB에 저장된 category와 case-insensitive 비교
+        stmt = stmt.where(
+            MarketProduct.category.ilike(category) |
+            MarketProduct.category.ilike(cat_norm) |
+            MarketProduct.category.ilike(category.replace(" ", ""))
+        )
         
     stmt = stmt.limit(limit)
     result = await db.execute(stmt)

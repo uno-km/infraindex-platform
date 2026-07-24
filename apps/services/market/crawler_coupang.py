@@ -55,7 +55,17 @@ class CoupangCrawler:
                 data = json.loads(res_data)
                 if data.get("rCode") == "0" and "data" in data:
                     items = data["data"].get("productData", [])
-                    negative_keywords = ["쿨러", "파워", "케이스", "팬", "방열판", "수냉", "가이드", "브라켓", "케이블", "스티커", "박스", "공박스", "fan", "cooler", "heatsink", "water block"]
+                    negative_keywords = [
+                        # 쿨링 악세사리
+                        "쿨러", "쿨링팬", "히트싱크", "방열판", "수냉", "수냉쿨러", "워터블록",
+                        "팬", "blower", "cooler", "cooling fan", "heatsink", "water block", "fan",
+                        # 케이스/브라켓
+                        "케이스", "브라켓", "홀더", "거치대", "받침대",
+                        # 케이블/악세사리
+                        "케이블", "어댑터", "젠더", "커넥터", "파워케이블",
+                        # 비GPU 부품
+                        "마우스", "키보드", "모니터", "헤드셋",
+                    ]
                     filtered_items = []
                     for item in items:
                         name = item.get("productName", "").lower()

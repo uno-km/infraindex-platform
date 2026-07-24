@@ -36,7 +36,7 @@ export default function NewsDashboard() {
       const res = await fetch(`/api/v1/news?${params.toString()}`);
       if (!res.ok) throw new Error("API_ERROR");
       const data = await res.json();
-      setNews(data || []);
+      setNews(Array.isArray(data) ? data : (data?.items || []));
     } catch (err) {
       console.error("News API failed:", err);
       setNews([]);

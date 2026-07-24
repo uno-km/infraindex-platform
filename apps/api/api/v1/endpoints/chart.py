@@ -401,3 +401,44 @@ async def get_unified_price_series(
         )
         for (m_name, prov), points in series_map.items()
     ]
+
+
+@router.post("/storage/sync-global", summary="전세계 스토리지 가격 동기화")
+async def sync_global_storage_prices(
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    전세계 18개 스토리지 공급자(AWS/GCP/Azure/Cloudflare/Backblaze 등 + 국내)
+    공개 가격을 수집하여 DB에 저장합니다.
+    실시간 환율(USD/KRW)을 적용합니다.
+    """
+    if db is None:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=503, detail="Database not available")
+
+    from apps.services.market.crawler_storage_global import GlobalStorageCrawler
+    crawler = GlobalStorageCrawler()
+    result = await crawler.sync_to_db(db)
+    return result
+
+
+@router.get("/storage/providers", summary="수집된 스토리지 공급자 목록")
+async def list_storage_providers(
+    db: AsyncSession = Depends(get_db),
+):
+    """StoragePriceHistory에 저장된 공급자 + 제품 목록 반환"""
+    if db is None:
+        return []
+
+    from sqlalchemy import distinct
+    stmt = (
+        select(
+            distinct(StoragePriceHistory.prv_id).label("provider"),
+            StoragePriceHistory.storage_mdl.label("product"),
+        )
+        .order_by(StoragePriceHistory.prv_id)
+    )
+    result = await db.execute(stmt)
+    rows = result.all()
+    return [{"provider": r.provider, "product": r.product} for r in rows]
+
