@@ -269,3 +269,93 @@ async def list_batch_history(
         }
         for h in histories
     ]
+
+
+# --- 7. Batch Schedule (SysBatSchBas) 목록 조회 ---
+
+@router.get("/batch/schedules", dependencies=[Depends(verify_admin)])
+async def list_batch_schedules(
+    db: AsyncSession = Depends(get_db),
+) -> Any:
+    """
+    배치 스케줄 마스터(SYS_BAT_SCH_BAS) 목록을 하위 DTL(잡 목록)과 함께 반환합니다.
+    """
+    from shared.models.batch_schedule import SysBatSchBas
+    from sqlalchemy.orm import selectinload
+
+    result = await db.execute(
+        select(SysBatSchBas)
+        .options(selectinload(SysBatSchBas.details))
+        .order_by(SysBatSchBas.bat_id)
+    )
+    schedules = result.scalars().all()
+    return [
+        {
+            "bat_id": s.bat_id,
+            "bat_nm": s.bat_nm,
+            "run_hr": s.run_hr,
+            "run_min": s.run_min,
+            "run_sec": s.run_sec,
+            "use_yn": s.use_yn,
+            "last_run_dt": s.last_run_dt.isoformat() if s.last_run_dt else None,
+            "nxt_run_dt": s.nxt_run_dt.isoformat() if s.nxt_run_dt else None,
+            "err_msg": s.err_msg,
+            "jobs": [
+                {
+                    "job_id": d.job_id,
+                    "job_nm": d.job_nm,
+                    "exec_typ": d.exec_typ,
+                    "exec_path": d.exec_path,
+                    "run_ord": d.run_ord,
+                    "use_yn": d.use_yn,
+                    "ref_val_1": d.ref_val_1,
+                    "last_run_dt": d.last_run_dt.isoformat() if d.last_run_dt else None,
+                    "err_msg": d.err_msg,
+                }
+                for d in sorted(s.details, key=lambda x: x.run_ord)
+            ]
+        }
+        for s in schedules
+    ]
+
+
+# --- 8. CollectionRun 조회 ---
+
+@router.get("/batch/collection-runs", dependencies=[Depends(verify_admin)])
+async def list_collection_runs(
+    db: AsyncSession = Depends(get_db),
+    provider_id: str = None,
+    skip: int = 0,
+    limit: int = 100,
+) -> Any:
+    """
+    수집 실행 로그(collection_runs) 조회.
+    provider_id 쿼리파라미터로 특정 공급자 필터링 가능.
+    """
+    from shared.models.quality import CollectionRun
+    from sqlalchemy import desc
+
+    if provider_id:
+        stmt = select(CollectionRun).where(
+            CollectionRun.provider_id == provider_id
+        ).order_by(desc(CollectionRun.started_at)).offset(skip).limit(limit)
+    else:
+        stmt = select(CollectionRun).order_by(
+            desc(CollectionRun.started_at)
+        ).offset(skip).limit(limit)
+
+    result = await db.execute(stmt)
+    runs = result.scalars().all()
+    return [
+        {
+            "id": str(r.id),
+            "provider_id": r.provider_id,
+            "status": r.status,
+            "items_collected": r.items_collected,
+            "started_at": r.started_at.isoformat() if r.started_at else None,
+            "completed_at": r.completed_at.isoformat() if r.completed_at else None,
+            "error_message": r.error_message,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+        }
+        for r in runs
+    ]

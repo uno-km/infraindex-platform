@@ -86,37 +86,65 @@ class StockMarketCrawler(BaseProviderCrawler):
 
 class DramFuturesCrawler(BaseProviderCrawler):
     """
-    Mock crawler for DRAM Futures. Real APIs are often paywalled (e.g. DRAMeXchange).
-    This simulates futures volatility tracking.
+    메모리 시장 지표 크롤러.
+    DRAMeXchange 등 실시간 DRAM 선물 API가 유료이므로,
+    메모리 관련 반도체 기업(SK하이닉스, Micron, Samsung) 주가 데이터를
+    yfinance로 수집하여 메모리 시장 동향의 대리 지표로 활용합니다.
     """
-    name = "dram_futures"
+    name = "dram_proxy"
+    # 메모리 관련 대표 종목
+    MEMORY_SYMBOLS = ["000660.KS", "MU", "005930.KS"]  # SK하이닉스, Micron, 삼성전자
 
     @property
     def provider_slug(self) -> str:
         return self.name
 
     async def fetch_raw_data(self) -> Any:
-        import random
-        await asyncio.sleep(0.1)
-        base_price = 2.50 # Base price for 8Gb DDR4
-        volatility = random.uniform(0.95, 1.05)
-        
-        return {
-            "symbol": "DRAM_8Gb_DDR4",
-            "asset_type": "future",
-            "open": base_price,
-            "high": base_price * 1.02,
-            "low": base_price * 0.98,
-            "close": base_price * volatility,
-            "volume": random.randint(1000, 50000),
-            "currency": "USD"
-        }
+        loop = asyncio.get_event_loop()
+        def download_data():
+            try:
+                return yf.download(self.MEMORY_SYMBOLS, period="5d", group_by="ticker", auto_adjust=True, progress=False)
+            except Exception as e:
+                logger.error(f"[dram_proxy] yfinance 다운로드 실패: {e}")
+                return None
+
+        return await loop.run_in_executor(None, download_data)
 
     def parse_instances(self, raw_data: Any) -> List[Dict[str, Any]]:
-        return [raw_data]
+        if raw_data is None or (hasattr(raw_data, 'empty') and raw_data.empty):
+            return []
+
+        label_map = {
+            "000660.KS": "SK Hynix (KRX)",
+            "MU": "Micron Technology (NASDAQ)",
+            "005930.KS": "Samsung Electronics (KRX)",
+        }
+        parsed = []
+        for symbol in self.MEMORY_SYMBOLS:
+            try:
+                if len(self.MEMORY_SYMBOLS) > 1:
+                    ticker_data = raw_data[symbol]
+                else:
+                    ticker_data = raw_data
+                if not ticker_data.empty:
+                    latest = ticker_data.iloc[-1]
+                    parsed.append({
+                        "symbol": symbol,
+                        "name": label_map.get(symbol, symbol),
+                        "asset_type": "memory_proxy_stock",
+                        "close": float(latest.get("Close", 0)),
+                        "currency": "KRW" if symbol.endswith(".KS") else "USD",
+                    })
+            except Exception as e:
+                logger.warning(f"[dram_proxy] {symbol} 파싱 실패: {e}")
+        return parsed
+
+    def parse_instances(self, raw_data: Any) -> List[Dict[str, Any]]:
+        return self.parse_instances(raw_data)
 
     def normalize_pricing(self, parsed_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         return parsed_data
-        
+
     def save(self, data: List[Dict[str, Any]]) -> None:
-        print(f"[DramFuturesCrawler] Ready to save {len(data)} futures market records.")
+        logger.info(f"[dram_proxy] {len(data)} 건 메모리 프록시 주가 수집 완료.")
+

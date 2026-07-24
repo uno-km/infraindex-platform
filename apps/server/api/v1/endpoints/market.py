@@ -88,33 +88,7 @@ async def get_product_prices(
     listings = result.scalars().all()
     
     if not listings:
-        # Mock 데이터 반환 (현재 DB가 비어있을 확률이 높으므로 시연을 위해)
-        # Phase 2 검증 시 빈 차트가 나오지 않게 임시 데이터 제공
-        import datetime
-        import random
-        
-        base_price = 2500000
-        data = []
-        today = datetime.date.today()
-        for i in range(30):
-            day = today - datetime.timedelta(days=29 - i)
-            # random fluctuation
-            open_p = base_price + random.randint(-50000, 50000)
-            high_p = open_p + random.randint(10000, 100000)
-            low_p = open_p - random.randint(10000, 100000)
-            close_p = open_p + random.randint(-30000, 30000)
-            base_price = close_p
-            
-            data.append({
-                "time": day.isoformat(),
-                "open": open_p,
-                "high": high_p,
-                "low": low_p,
-                "close": close_p,
-                "currency": "KRW",
-                "note": "관측된 호가의 일별 집계입니다 (가상 데이터 - DB 없음)"
-            })
-        return data
+        return []
 
     listing_ids = [l.id for l in listings]
     

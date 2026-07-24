@@ -1,62 +1,53 @@
 from typing import Any, Dict, List
 import asyncio
-from datetime import datetime, timezone
-import random
+import logging
 
-from apps.batch.worker.providers.common.base import BaseProviderCrawler
-from shared.models.retail import RtlPriceHistory
+logger = logging.getLogger(__name__)
 
-class RetailUniversalCrawler(BaseProviderCrawler):
+class RetailUniversalCrawler:
     """
-    Retail price crawler for E-commerce sites like Danawa, Coupang, Amazon, Naver Shopping.
-    This crawler currently uses a mock strategy for bot-protected pages but establishes
-    the architecture to scrape retail prices and save them to RetailGpuPriceHistory.
+    리테일 가격 크롤러 통합 인터페이스.
+    Naver Shopping API + Coupang Affiliate API 실크롤링으로 데이터를 수집합니다.
+    목업 데이터를 완전히 제거하고 실 API를 사용합니다.
     """
     name = "retail_universal"
-    
-    # Mock data representing what would be fetched from search results
-    MOCK_SEARCH_RESULTS = [
-        {"platform": "danawa", "type": "gpu", "manufacturer": "nvidia", "model_name": "RTX 4090", "capacity": 24, "price": 2800000.0, "currency": "KRW"},
-        {"platform": "coupang", "type": "gpu", "manufacturer": "nvidia", "model_name": "RTX 4090", "capacity": 24, "price": 2850000.0, "currency": "KRW"},
-        {"platform": "amazon", "type": "gpu", "manufacturer": "nvidia", "model_name": "RTX 4090", "capacity": 24, "price": 1699.0, "currency": "USD"},
-        {"platform": "danawa", "type": "cpu", "manufacturer": "amd", "model_name": "Ryzen 9 7950X", "capacity": None, "price": 750000.0, "currency": "KRW"},
-        {"platform": "naver", "type": "ram", "manufacturer": "samsung", "model_name": "DDR5 32GB PC5-44800", "capacity": 32, "price": 120000.0, "currency": "KRW"},
-    ]
 
-    @property
-    def provider_slug(self) -> str:
-        return self.name
+    async def sync_to_db(self, db) -> Dict[str, Any]:
+        """
+        Naver + Coupang 크롤러를 순차적으로 실행하여 실제 가격 데이터를 DB에 적재합니다.
+        """
+        from apps.batch.services.market.crawler_retail import RetailCrawler
+        from apps.batch.services.market.crawler_coupang import CoupangCrawler
 
-    async def fetch_raw_data(self) -> Any:
-        """
-        Simulates fetching HTML or API responses from various platforms.
-        In a real scenario, this would use Playwright with Stealth or official APIs.
-        """
-        await asyncio.sleep(0.1) # Simulate network delay
-        return self.MOCK_SEARCH_RESULTS
+        results = {
+            "status": "success",
+            "naver": {},
+            "coupang": {},
+        }
 
-    def parse_instances(self, raw_data: Any) -> List[Dict[str, Any]]:
-        # In a real scraper, this extracts DOM elements into dicts.
-        return raw_data
+        # 1. Naver Shopping 크롤링
+        logger.info("[RetailUniversal] Naver Shopping 크롤러 시작...")
+        try:
+            naver_crawler = RetailCrawler()
+            naver_result = await naver_crawler.sync_to_db(db)
+            results["naver"] = naver_result
+            logger.info(f"[RetailUniversal] Naver 완료: {naver_result}")
+        except Exception as e:
+            logger.error(f"[RetailUniversal] Naver 크롤러 실패: {e}")
+            results["naver"] = {"status": "error", "message": str(e)}
+            results["status"] = "partial"
 
-    def normalize_pricing(self, parsed_data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """
-        Transforms the raw scraped data into standard dictionary formats.
-        """
-        normalized = []
-        for item in parsed_data:
-            # Simulate real-time price fluctuation for testing chart capabilities
-            fluctuation = random.uniform(0.98, 1.02)
-            adjusted_price = round(item["price"] * fluctuation, 2)
-            
-            normalized.append({
-                "platform": item["platform"],
-                "hardware_type": item["type"],
-                "manufacturer": item["manufacturer"],
-                "model_name": item["model_name"],
-                "capacity_gb": item["capacity"],
-                "price": adjusted_price,
-                "currency": item["currency"],
-                "is_official": item["platform"] == "official"
-            })
-        return normalized
+        # 2. Coupang 크롤링 (API 호출 분산을 위해 1초 대기 후 실행)
+        await asyncio.sleep(1.0)
+        logger.info("[RetailUniversal] Coupang 크롤러 시작...")
+        try:
+            coupang_crawler = CoupangCrawler()
+            coupang_result = await coupang_crawler.sync_to_db(db)
+            results["coupang"] = coupang_result
+            logger.info(f"[RetailUniversal] Coupang 완료: {coupang_result}")
+        except Exception as e:
+            logger.error(f"[RetailUniversal] Coupang 크롤러 실패: {e}")
+            results["coupang"] = {"status": "error", "message": str(e)}
+            results["status"] = "partial"
+
+        return results
