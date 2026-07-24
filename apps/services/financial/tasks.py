@@ -41,15 +41,15 @@ async def execute_financial_extraction(provider_slug: str):
                 async with db.begin():
                     for item in raw_normalized:
                         record = FinMktHistory(
-                            symbol=item["symbol"],
-                            asset_type=item["asset_type"],
-                            open=item["open"],
-                            high=item["high"],
-                            low=item["low"],
-                            close=item["close"],
-                            volume=item.get("volume"),
-                            currency=item.get("currency", "USD"),
-                            timestamp=datetime.now(timezone.utc)
+                            sym_cd=item["symbol"],
+                            ast_typ=item["asset_type"],
+                            opn_prc=item["open"],
+                            hi_prc=item["high"],
+                            lo_prc=item["low"],
+                            cls_prc=item["close"],
+                            vol_cnt=item.get("volume"),
+                            crncy_cd=item.get("currency", "USD"),
+                            ts=datetime.now(timezone.utc)
                         )
                         db.add(record)
             await engine.dispose()
